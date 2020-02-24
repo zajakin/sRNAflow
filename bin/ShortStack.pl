@@ -1,0 +1,1 @@
+/data/pawel/sRNAflow/.nextflow/work/stage/8b/b881200eb1cf0276df6ca7b1b7c529/ShortStack

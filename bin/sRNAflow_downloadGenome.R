@@ -1,0 +1,31 @@
+#!/usr/bin/env Rscript --vanilla 
+getDir<-function(base,sep=''){
+	filenames<-c()
+	if(zz<- file(paste(c(base,'/'),collapse=""),open="r",method="libcurl")){
+		if(substr(base[1],1,5)=='http:') sep='"'
+		filenames<-scan(zz,what=character(),sep=sep)
+		close(zz)
+	}
+	return(filenames)
+}
+
+getDBfile<-function(base=c('http://ftp.ensembl.org/pub/current_gtf/',specie),sp=specie,ext=".gtf.gz",sep=''){
+	if(length(filenames<-getDir(base))>0){
+		filenames <- as.character(filenames[grep(ext,filenames)])
+		tmp<-sapply(filenames,nchar)
+		filenames <-filenames[tmp==min(tmp)][1]
+		download.file(paste(c(base,'/',filenames),collapse=""),paste0(sp,ext),"auto",mode = "wb")
+		ext2<-gsub(".*\\.",".",sub(".gz","",ext))
+		out<-file(paste0(specie,ext2),"wt")
+		zz <-gzcon(file(paste0(sp,ext),"r"))
+		tmp<-readLines(zz)
+		close(zz)
+		writeLines(tmp,out,sep="\n")
+		close(out)
+	}
+}
+
+getDBfile(c('ftp://ftp.ensembl.org/pub/current_gtf/',specie),specie,".gtf.gz")
+getDBfile(c('ftp://ftp.ensembl.org/pub/current_fasta/',specie,'/dna'),specie,".dna.primary_assembly.fa.gz")
+# system(paste0("zcat ",specie,".dna.primary_assembly.fa.gz > ",specie,".fa"))
+# system(paste0("zcat ",specie,".gtf.gz > ",specie,".gtf"))
