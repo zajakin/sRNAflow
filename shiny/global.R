@@ -6,11 +6,13 @@ wd<-sub("/shiny$","",getwd())
 # source(paste0(wd,"/shiny/utils.R"))
 
 examples<-dir(path = paste0(wd,"/data/example-samples"),full.names = FALSE, recursive = TRUE, include.dirs = TRUE)
-examples<-cbind(file=paste0("data/example-samples/",examples),
+if(length(examples)>0)
+  examples<-cbind(file=paste0("data/example-samples/",examples),
 				size=humanReadable(file.info(paste0(wd,"/data/example-samples/",examples))$size),
 				date=format(file.info(paste0(wd,"/data/example-samples/",examples))$mtime,"%d.%m.%Y %H:%M:%OS"))
 serverFiles<-dir(path = paste0(wd,"/data/input"),full.names = FALSE, recursive = TRUE, include.dirs = TRUE)
-serverFiles<-cbind(file=paste0("data/input/",serverFiles),
+if(length(serverFiles)>0)
+  serverFiles<-cbind(file=paste0("data/input/",serverFiles),
 				size=humanReadable(file.info(paste0(wd,"/data/input/",serverFiles))$size),
 				date=format(file.info(paste0(wd,"/data/input/",serverFiles))$mtime,"%d.%m.%Y %H:%M:%OS"))
 filesIn           <- filesUploaded           <- rbind(rep(NA,3))[-1,]
