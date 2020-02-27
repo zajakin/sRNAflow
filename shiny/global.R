@@ -22,6 +22,8 @@ filesIn           <- filesUploaded           <- rbind(rep(NA,3))[-1,]
 colnames(filesIn) <- colnames(filesUploaded) <- colnames(serverFiles) <- colnames(examples) <- c("file","size","date")
 groups           <- rbind(rep(NA,6))[-1,]
 colnames(groups) <- c("file","size","date","test","control","ignore")
+if(file.exists(paste0(wd,"/data/FilesIn.RData"))) load(paste0(wd,"/data/FilesIn.RData"))
+if(file.exists(paste0(wd,"/data/Groups.RData"))) load(paste0(wd,"/data/Groups.RData"))
 
 # timeout<-2147483
 # options(app_init_timeout=timeout)
