@@ -1,57 +1,36 @@
-	ui <- fluidPage(
-		radioButtons("dist", "Distribution type:",
-					 c("Normal" = "norm",
-					   "Uniform" = "unif",
-					   "Log-normal" = "lnorm",
-					   "Exponential" = "exp"),inline=TRUE),
-		plotOutput("distPlot")
-	)
-	
-	server <- function(input, output) {
-		output$distPlot <- renderPlot({
-			dist <- switch(input$dist,
-						   norm = rnorm,
-						   unif = runif,
-						   lnorm = rlnorm,
-						   exp = rexp,
-						   rnorm)
-			
-			hist(dist(500))
-		})
-	}
-	
-	shinyApp(ui, server)
-
-
-	# Not run: 
-	library(shiny)
-	library(pixiedust)
-	library(shinydust)
-	
-	server <- shinyServer(function(input, output) {
-		output$table <-
-			renderText({
-				cbind(rownames(mtcars), mtcars) %>%
-					radioTable(inputId = "chooseCar",
-							   label = "",
-							   choices = paste0("car", 1:nrow(mtcars)),
-							   table_label = "Select a Vehicle",
-							   pixie = . %>%
-							   	sprinkle(bg_pattern_by = "rows") %>%
-							   	sprinkle_table(pad = 7) %>%
-							   	sprinkle_colnames("rownames(mtcars)" = "",
-							   					  control = ""))
-			})
-		
-		output$choice <- renderText(input$chooseCar)
-	})
-	
-	ui <- shinyUI(fluidPage(
-		wellPanel(
-			verbatimTextOutput("choice"),
-			uiOutput("table")
-		)
-	))
-	
-	shinyApp(ui = ui, server = server)
-	
+library(shiny)
+library(DT)
+shinyApp(
+  ui = fluidPage(
+    title = 'Radio buttons in a table',
+    DT::dataTableOutput('foo'),
+    verbatimTextOutput('sel')
+  ),
+  server = function(input, output, session) {
+    m = matrix(
+      as.character(1:5), nrow = 12, ncol = 5, byrow = TRUE,
+      dimnames = list(month.abb, LETTERS[1:5])
+    )
+    for (i in seq_len(nrow(m))) {
+      m[i, ] = sprintf(
+        '<input type="radio" name="%s" value="%s"/>',
+        month.abb[i], m[i, ]
+      )
+    }
+    m
+    output$foo = DT::renderDataTable(
+      m, escape = FALSE, selection = 'none', server = FALSE,
+      options = list(dom = 't', paging = FALSE, ordering = FALSE),
+      callback = JS("table.rows().every(function(i, tab, row) {
+          var $this = $(this.node());
+          $this.attr('id', this.data()[0]);
+          $this.addClass('shiny-input-radiogroup');
+        });
+        Shiny.unbindAll(table.table().node());
+        Shiny.bindAll(table.table().node());")
+    )
+    output$sel = renderPrint({
+      str(sapply(month.abb, function(i) input[[i]]))
+    })
+  }
+)

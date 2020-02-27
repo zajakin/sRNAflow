@@ -1,30 +1,27 @@
 library(shinydashboard)
 source(paste0(wd,"/shiny/files_input.R"))
 
-header <- dashboardHeader(title = "sRNAflow" ) #,dropdownMenuOutput("messageMenu"))
+header <- dashboardHeader(title = "sRNAflow" ,dropdownMenuOutput("messageMenu"))
 
 sidebar <- dashboardSidebar(
-    # conditionalPanel(
-    #     condition = "run == ''",
-        sidebarMenu(
-            id = "tabs",
-            menuItem("Seq Data Input", tabName="Files", icon = icon("cloud-upload"), selected = TRUE),
-            menuItem("Select groups", tabName="Groups", icon = icon("cloud-upload"), selected = TRUE),
-            menuItem("Configuration", tabName = "Config", icon = icon("th")),
-            # The following menus are just displayed when a sample set has been loaded
-            menuItem("Report", tabName = "Report", icon = icon("asterisk"))
-        ),
-        div(class="hide_when_sidebar_collapsed",
-            # tags$p(class="sidebartext", style="padding-left: 10px;color: #b8c7ce; ", "To start  data, upload a dataset in the 'Seq Data Input' tab."),
-            uiOutput("bookmarkBtnUI")
-        ),
-    # ),
-    conditionalPanel(
-        condition = "bins == 3",
-        sidebarMenu(
-            menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard"))
-        )
+    sidebarMenu(
+        id = "tabs",
+        menuItem("Seq Data Input", tabName="Files", icon = icon("cloud-upload"), selected = TRUE),
+        menuItem("Select groups", tabName="Groups", icon = icon("cloud-upload"), selected = TRUE),
+        menuItem("Configuration", tabName = "Config", icon = icon("th")),
+        # The following menus are just displayed when a sample set has been loaded
+        menuItem("Report", tabName = "Report", icon = icon("asterisk"))
     ),
+    div(class="hide_when_sidebar_collapsed",
+        # tags$p(class="sidebartext", style="padding-left: 10px;color: #b8c7ce; ", "To start  data, upload a dataset in the 'Seq Data Input' tab."),
+        uiOutput("bookmarkBtnUI")
+    ),
+    # conditionalPanel(
+    #     condition = "bins == 3",
+    #     sidebarMenu(
+    #         menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard"))
+    #     )
+    # ),
     sidebarMenu(
         menuItem("About", tabName = "About"), textOutput("clock")
     )
@@ -33,16 +30,16 @@ sidebar <- dashboardSidebar(
 body <- dashboardBody(
     tabItems(
         # First tab content
-        tabItem(tabName = "dashboard",h2("Work process..."),
-                fluidRow(
-                    box(plotOutput("distPlot", height = 250)),
-                    
-                    box(
-                        title = "Controls",
-                        sliderInput("bins", "Number of observations:", 1, 100, 50)
-                    )
-                )
-        ),
+        # tabItem(tabName = "dashboard",h2("Work process..."),
+        #         fluidRow(
+        #             box(plotOutput("distPlot", height = 250)),
+        #             
+        #             box(
+        #                 title = "Controls",
+        #                 sliderInput("bins", "Number of observations:", 1, 100, 50)
+        #             )
+        #         )
+        # ),
         tabItem("Files",
                 h2("Input files"),
                 filesInputUI("datafile")
