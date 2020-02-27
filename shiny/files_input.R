@@ -74,7 +74,10 @@ selectGroupsUI <- function(id) {
 	ns <- NS(id)
 	shiny::tagList(
 		hr(),
-		h2("Selected files:")
-		# DT::dataTableOutput("filesIn")
+		# h2("Selected files:"),
+		DT::dataTableOutput("groups"),
+		# verbatimTextOutput("input$groups_state"),
+		# verbatimTextOutput("input$groups_cell_clicked"),
+		verbatimTextOutput("sel")
 	)
 }

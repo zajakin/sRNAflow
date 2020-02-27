@@ -8,7 +8,6 @@ getDir<-function(base,sep=''){
 	}
 	return(filenames)
 }
-
 getDBfile<-function(base=c('http://ftp.ensembl.org/pub/current_gtf/',specie),sp=specie,ext=".gtf.gz",sep=''){
 	if(length(filenames<-getDir(base))>0){
 		filenames <- as.character(filenames[grep(ext,filenames)])

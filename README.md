@@ -1,7 +1,7 @@
 # sRNAflow
 
 
-## To do
+## TODO
 
 ### Shiny
 * https://shiny.rstudio.com/gallery/widget-gallery.html
