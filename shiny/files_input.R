@@ -78,7 +78,7 @@ selectGroupsUI <- function(id) {
 		DT::dataTableOutput("groups"),
 		# verbatimTextOutput("input$groups_state"),
 		# verbatimTextOutput("input$groups_cell_clicked"),
-		verbatimTextOutput("groups", placeholder =TRUE),
-		verbatimTextOutput("sel")
+		# verbatimTextOutput("groups", placeholder =TRUE),
+		verbatimTextOutput("sel", placeholder =TRUE)
 	)
 }

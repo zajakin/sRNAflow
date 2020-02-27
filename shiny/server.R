@@ -101,9 +101,9 @@ output$groups = DT::renderDataTable({
         # groups<-list()
         if(nrow(groups)>0){
             rownames(groups)<-paste0("S",1:nrow(groups))
-            groups[,"test"]   <-paste0('<input type="radio" name="',rownames(groups),'" value="1" //>')
-            groups[,"control"]<-paste0('<input type="radio" name="',rownames(groups),'" value="0" //>')
-            groups[,"ignore"] <-paste0('<input type="radio" name="',rownames(groups),'" value="-1" //>')
+            groups[,"test"]   <-paste0('<input type="radio" name="',rownames(groups),'" value="1"/>')
+            groups[,"control"]<-paste0('<input type="radio" name="',rownames(groups),'" value="0"/>')
+            groups[,"ignore"] <-paste0('<input type="radio" name="',rownames(groups),'" value="-1"/>')
             # for(s in 1:nrow(groups)){
             #     groups[s,"test"]<-radioButtons(paste0("S",s),"Distribution type:",
             #                     choiceNames = list(HTML("<td>Norm</td>"),HTML("<td>Control</td>"),
@@ -125,16 +125,21 @@ output$groups = DT::renderDataTable({
 )  #             sel[1:nrow(filesIn)]
 
 output$sel = renderPrint({
-    print(length(input))
-    if(length(c(input$filesUploaded_rows_selected,input$examples_rows_selected,input$serverFiles_rows_selected,input$filesIn_rows_selected)))
+    if(length(input$groups_cell_clicked)>0)
         print(rownames(groups))
+        print(input)
+        print(input$groups_state)
+        print(input$bins)
+        print(input$groups_rows_all)
+        print(input$groups_rows_current)
+        print(input$groups_search)
     # if(nrow(groups)>0 & length(input$S1)>0)
         # if(length(mget(paste0("input$",rownames(groups))))>0){
             # print(rownames(groups))
             # sel<-str(sapply(rownames(groups), function(i) input[[i]]))
             # sel<-input$groups_state
             sel<-input$groups_cell_clicked
-            sel<-input$S1
+            # sel<-input$S1
             sel<<-sel
             # print(sel)
             sel
