@@ -18,12 +18,15 @@ if(length(serverFiles)>0){
 				size=humanReadable(file.info(paste0(wd,"/data/input/",serverFiles))$size),
 				date=format(file.info(paste0(wd,"/data/input/",serverFiles))$mtime,"%d.%m.%Y %H:%M:%OS"))
 } else serverFiles<-rbind(rep(NA,3))[-1,]
-filesIn           <- filesUploaded           <- rbind(rep(NA,3))[-1,]
-colnames(filesIn) <- colnames(filesUploaded) <- colnames(serverFiles) <- colnames(examples) <- c("file","size","date")
+filesUploaded           <- rbind(rep(NA,3))[-1,]
+colnames(filesUploaded) <- colnames(serverFiles) <- colnames(examples) <- c("file","size","date")
 groups           <- rbind(rep(NA,6))[-1,]
 colnames(groups) <- c("file","size","date","test","control","ignore")
-if(file.exists(paste0(wd,"/data/FilesIn.RData"))) load(paste0(wd,"/data/FilesIn.RData"))
-if(file.exists(paste0(wd,"/data/Groups.RData"))) load(paste0(wd,"/data/Groups.RData"))
+if(!exists("FilesIn"))
+	if(file.exists(paste0(wd,"/data/FilesIn.RData"))){
+		load(paste0(wd,"/data/FilesIn.RData"))
+	} else { FilesIn <- rbind(rep(NA,3))[-1,]; colnames(FilesIn) <- c("file","size","date"); }
+# if(file.exists(paste0(wd,"/data/GroupsSel.RData"))) load(paste0(wd,"/data/GroupsSel.RData"))
 
 # timeout<-2147483
 # options(app_init_timeout=timeout)

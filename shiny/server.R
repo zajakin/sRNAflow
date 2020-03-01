@@ -46,6 +46,7 @@ server <- function(input, output) {
     }, server = TRUE)
     
     output$filesIn = DT::renderDataTable({
+        filesIn <- FilesIn
         s = input$filesIn_rows_selected
         if (length(s)) filesIn <- rbind(filesIn[-s,])
         s = input$filesUploaded_rows_selected
@@ -60,13 +61,13 @@ server <- function(input, output) {
         if(nrow(filesIn)>0) colnames(filesIn)<-c("file","size","date")
         filesIn <- unique(filesIn)
         FilesIn <<- filesIn
-        save(filesIn,file=paste0(wd,"/data/FilesIn.RData"))
+        save(FilesIn,file=paste0(wd,"/data/FilesIn.RData"))
         filesIn
     }, server = TRUE)
 
     output$groups = DT::renderDataTable({
-        if(length(c(input$filesUploaded_rows_selected,input$examples_rows_selected,input$serverFiles_rows_selected,input$filesIn_rows_selected))>0)
-            groups <- cbind(rbind(FilesIn),test="",control="",ignore="")
+        tmp<-length(c(input$filesUploaded_rows_selected,input$examples_rows_selected,input$serverFiles_rows_selected,input$filesIn_rows_selected))>0
+        groups <- cbind(rbind(FilesIn),test="",control="",ignore="")
         colnames(groups)<-c("file","size","date","test","control","ignore")
         if(nrow(groups)>0){
             # rownames(groups)<-paste0("S",1:nrow(groups))
@@ -75,7 +76,6 @@ server <- function(input, output) {
             groups[,"ignore"] <-paste0('<input type="radio" name="',groups[,"file"],'" value="-1"/>')
         }
         Groups <<- groups
-        save(groups,file=paste0(wd,"/data/Groups.RData"))
         groups
     }, server = FALSE, escape = FALSE, selection = 'none', options = list(dom = 't', paging = FALSE, ordering = FALSE), 
     callback = DT::JS("table.rows().every(function(i, tab, row) {
@@ -89,11 +89,12 @@ server <- function(input, output) {
 
     output$sel = renderPrint({
         if(length(input$groups_cell_clicked)>0){
-            print(input$groups_cell_clicked)
+            # print(input$groups_cell_clicked)
             sel<-c()
             sel<-sapply(Groups[,"file"], function(i) c<-c(sel,input[[i]]))
             names(sel)<-Groups[,"file"]
-            Sel<<-sel
+            Sel <<- sel
+            save(Sel,file=paste0(wd,"/data/GroupsSel.RData"))
             sel
         }
     })
