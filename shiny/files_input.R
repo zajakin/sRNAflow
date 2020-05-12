@@ -55,18 +55,7 @@ filesInputUI <- function(id) {
 	# fluidRow(
 	# 	column(9, DT::dataTableOutput("filesIn")),
 	# 	column(3, verbatimTextOutput("filesIn_selected"))
-	# ),
-
-	# h1('A Client-side Table'),
-	# fluidRow(
-	# 	column(6, DT::dataTableOutput('x1')),
 	# 	column(6, plotOutput('x2', height = 500))
-	# ),
-	# 
-	# h1('A Server-side Table'),
-	# fluidRow(
-	# 	column(9, DT::dataTableOutput('x3')),
-	# 	column(3, verbatimTextOutput('x4'))
 	# )
 	)
 }
@@ -74,11 +63,7 @@ selectGroupsUI <- function(id) {
 	ns <- NS(id)
 	shiny::tagList(
 		hr(),
-		# h2("Selected files:"),
 		DT::dataTableOutput("groups"),
-		# verbatimTextOutput("input$groups_state"),
-		# verbatimTextOutput("input$groups_cell_clicked"),
-		# verbatimTextOutput("groups", placeholder =TRUE),
 		verbatimTextOutput("sel", placeholder =TRUE)
 	)
 }

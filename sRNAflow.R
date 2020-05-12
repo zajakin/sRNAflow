@@ -13,3 +13,4 @@ source("shiny/server.R")
 
 # Run the application 
 shinyApp(ui = ui, server = server)
+# setwd("shiny"); shiny::runApp(display.mode="showcase")

@@ -4,10 +4,9 @@
 #     cat(".")
 # })
 
-server <- function(input, output) {
+server <- function(input, output, session) {
     output$messageMenu <- renderMenu({
-        # Code to generate each of the messageItems here, in a list. This assumes
-        # that messageData is a data frame with two columns, 'from' and 'message'.
+        # Code to generate each of the messageItems here, in a list. This assumes that messageData is a data frame with two columns, 'from' and 'message'.
         messageData<-rbind(c(from="",message=""))
         msgs <- apply(messageData, 1, function(row) {
             messageItem(from = row[["from"]], message = row[["message"]])
@@ -68,14 +67,11 @@ server <- function(input, output) {
     output$groups = DT::renderDataTable({
         tmp<-length(c(input$filesUploaded_rows_selected,input$examples_rows_selected,input$serverFiles_rows_selected,input$filesIn_rows_selected))>0
         groups <- cbind(rbind(FilesIn),test="",control="",ignore="")
-        colnames(groups)<-c("file","size","date","test","control","ignore")
-        if(nrow(groups)>0){
-            # rownames(groups)<-paste0("S",1:nrow(groups))
-            groups[,"test"]<-sprintf('<input type="radio" name="%s" value="1"/>',groups[,"file"])
-            groups[,"control"]<-paste0('<input type="radio" name="',groups[,"file"],'" value="0"/>')
-            groups[,"ignore"] <-paste0('<input type="radio" name="',groups[,"file"],'" value="-1"/>')
-        }
-        Groups <<- groups
+        choices <- c("test","control","ignore")
+        colnames(groups)<-c("file","size","date",choices)
+        if(nrow(groups)>0) groups[,4:6]<-paste0('<input type="radio" name="',groups[,"file"],'" value="',rep(choices,each=nrow(groups)),'"/>')
+        GroupsSel<<-GroupsSel[names(GroupsSel) %in% FilesIn[,"file"]]
+        for(s in names(GroupsSel)) if(!is.null(GroupsSel[s][[1]])) groups[groups[,"file"]==s,GroupsSel[s][[1]]]<-sub("/>"," checked/>",groups[groups[,"file"]==s,GroupsSel[s][[1]]])
         groups
     }, server = FALSE, escape = FALSE, selection = 'none', options = list(dom = 't', paging = FALSE, ordering = FALSE), 
     callback = DT::JS("table.rows().every(function(i, tab, row) {
@@ -88,24 +84,22 @@ server <- function(input, output) {
     )
 
     output$sel = renderPrint({
-        if(length(input$groups_cell_clicked)>0){
-            # print(input$groups_cell_clicked)
+        sel <- GroupsSel
+        if(length(c(input$groups_cell_clicked,input$filesUploaded_rows_selected,input$examples_rows_selected,input$serverFiles_rows_selected,input$filesIn_rows_selected))>0){
+            # browser()
+            # View(input$groups_cell_clicked)
             sel<-c()
-            sel<-sapply(Groups[,"file"], function(i) c<-c(sel,input[[i]]))
-            names(sel)<-Groups[,"file"]
-            Sel <<- sel
-            save(Sel,file=paste0(wd,"/data/GroupsSel.RData"))
-            sel
+            for(s in FilesIn[,"file"]){
+                if(length(grep(s,names(input)))>0){
+                    sel[s]<-as.character(input[[s]])
+                    names(sel)[length(sel)]<-s
+                }
+            }
+            sel<-c(GroupsSel[!names(GroupsSel) %in% names(sel)],sel)
+            GroupsSel <<- sel
+            save(GroupsSel,file=paste0(wd,"/data/GroupsSel.RData"))
         }
+        sel
     })
-
-    output$examples_selected = renderPrint({
-        s = input$examples_rows_selected
-        if (length(s)) {
-            cat('These rows were selected:\n\n')
-            cat(s, sep = ', ')
-        }
-    })
-    
     output$session_info<-renderPrint(sessionInfo())
 }

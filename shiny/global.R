@@ -20,13 +20,16 @@ if(length(serverFiles)>0){
 } else serverFiles<-rbind(rep(NA,3))[-1,]
 filesUploaded           <- rbind(rep(NA,3))[-1,]
 colnames(filesUploaded) <- colnames(serverFiles) <- colnames(examples) <- c("file","size","date")
-groups           <- rbind(rep(NA,6))[-1,]
-colnames(groups) <- c("file","size","date","test","control","ignore")
+# groups           <- rbind(rep(NA,6))[-1,]
+# colnames(groups) <- c("file","size","date","test","control","ignore")
 if(!exists("FilesIn"))
 	if(file.exists(paste0(wd,"/data/FilesIn.RData"))){
 		load(paste0(wd,"/data/FilesIn.RData"))
 	} else { FilesIn <- rbind(rep(NA,3))[-1,]; colnames(FilesIn) <- c("file","size","date"); }
-# if(file.exists(paste0(wd,"/data/GroupsSel.RData"))) load(paste0(wd,"/data/GroupsSel.RData"))
+if(!exists("GroupsSel"))
+	if(file.exists(paste0(wd,"/data/GroupsSel.RData"))){
+		load(paste0(wd,"/data/GroupsSel.RData"))
+	} else { GroupsSel <- rbind(rep(NA,6))[-1,]; colnames(FilesIn) <- c("file","size","date","test","control","ignore"); }
 
 # timeout<-2147483
 # options(app_init_timeout=timeout)
