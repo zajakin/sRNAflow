@@ -36,7 +36,11 @@ vignettes/*.pdf
 .Rproj.user
 .nextflow
 #tutorial*.*
-data/*
+data/FilesIn.RData
+data/GroupsSel.RData
+data/input
+data/results
+data/test
 db/*
 README.html
 old
