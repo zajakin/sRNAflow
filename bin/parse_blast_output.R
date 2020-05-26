@@ -1,9 +1,9 @@
 #!/usr/bin/R --no-save
-source("bin/util.R")
+source("bin/utils.R")
 
 options(echo=TRUE)
 args<-commandArgs()
-if(interactive()) args[3:5] <- c(paste0("data/test"),paste0("data/example-samples/Cancer_1.fa"),4)
+if(interactive()) args[3:5] <- c(paste0("data/test"),paste0("../example-samples/Cancer_1.fa"),4)
 print(args)
 WD <-   args[3]
 file <- args[4]
@@ -11,13 +11,14 @@ core <- args[5]
 
 out<- paste0("blasts/",basename(file),".blast")
 DV <- "nt"
-blastn<- paste0("export BATCH_SIZE=50000; export BLASTDB=",homedir,"/data/db/blast; blastn -max_hsps 1 ")
+blastn<- paste0("export BATCH_SIZE=50000; export BLASTDB=$HOME/data/db/blast; blastn -max_hsps 1 ")
 DB <- paste("-remote -db",DV)
 DB <- paste("-db",DV,"-num_threads",core)
 colQuery<-  "qseqid ssciname staxid scomname sskingdom evalue bitscore qlen slen length pident mismatch qcovs stitle sseqid sstart send"
 colNames<- c("read","name","taxid","nameEn","kingdom","evalue","bitscore","qlen","slen","length","pident","mismatch","qcovs","stitle","sseqid","sstart","send")
 # blastopt<-paste(DB, "-evalue 1e+6 -word_size 7 -reward 2 -penalty -3 -gapopen 5 -gapextend 2")
 # blastopt<-paste(DB, "-evalue 100 -perc_identity 100")
+# export PATH=$HOME/bin:$HOME/conda/bin:$HOME/.local/bin:${PATH:-/usr/bin:.}; $HOME/bin/c; update_blastdb --decompress nt"
 # outfmt <- "-outfmt \"6 qseqid ssciname staxid scomname evalue bitscore length pident\""
 setwd(WD)
 getwd()
@@ -28,7 +29,7 @@ if(!dir.exists("logs")) dir.create("logs")
 if(!dir.exists("blasts.tmp")) dir.create("blasts.tmp")
 
 if(length(grep(".faTab",file))==0){
-    system(paste0("fasta_formatter -i ",file," -t -o faTab/",basename(file),".faTab"),intern = TRUE)
+    system(paste0("$HOME/conda/bin/fasta_formatter -i ",file," -t -o faTab/",basename(file),".faTab"),intern = TRUE)
     fileT<-paste0("faTab/",basename(file),".faTab")
 } else fileT<-file
 print(date())
@@ -76,7 +77,7 @@ if(!file.exists(paste0("forKrona/",basename(file),".forKrona.txt"))){
     if(file.exists(out)) file.remove(out)
     file.append(out,paste0("blasts.tmp/",basename(file),c(".short",".mid",".long"),".blast"))
 }
-    # system(paste(blastn,blastopt,' -outfmt \"6 qseqid ssciname staxid scomname sskingdom evalue bitscore qlen slen length pident mismatch qcovs stitle\" -task blastn-short -query ',file," -out ",out," 2>&1 > ",paste0(file,".blast.log  ")),intern = TRUE)    
+# system(paste(blastn,blastopt,' -outfmt \"6 qseqid ssciname staxid scomname sskingdom evalue bitscore qlen slen length pident mismatch qcovs stitle\" -task blastn-short -query ',file," -out ",out," 2>&1 > ",paste0(file,".blast.log  ")),intern = TRUE)    
 # bsub  -Is -M 94000 -n 4 -R "rusage[mem=94000,numcpus=4.00] span[ptile=4]" bash
     # system(paste(blastn,blastopt,' -outfmt \"6 qseqid ssciname staxid scomname sskingdom evalue bitscore qlen slen length pident mismatch qcovs stitle\" -query ',file," -out ",out),intern = TRUE )
 
@@ -302,8 +303,8 @@ for(id in species99[,"id"]){
 
 
 dir.create("genomes/bowtie2")
-system(paste("bowtie2-build --threads ",core," genomes/genomes.fa genomes/bowtie2/genomes"))
-
+if(file.size("genomes/genomes.fa")>(2^32-1)){ system(paste("bowtie2-build --threads ",core," --large-index genomes/genomes.fa genomes/bowtie2/genomes"))
+} else system(paste("bowtie2-build --threads ",core," genomes/genomes.fa genomes/bowtie2/genomes"))
 
 refseq[refseq[,"species_taxid"]==species99[6,"id"],"ftp_path"]
 genbank[genbank[,"species_taxid"]==species99[6,"id"],"ftp_path"]
