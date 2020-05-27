@@ -14,7 +14,7 @@ results_path = "${workflow.projectDir}/data/results/${params.name}"
 
 // fq_queue = Channel.fromPath("data/test/*.fq","data/test/*.fastq").map { file -> tuple(file.simpleName, file) }
 
-// Step x. Builds the genome
+// Step 3. Download genome
 process downloadGenome {
 	storeDir 'db/genomes'
 	input:
@@ -31,21 +31,22 @@ source("sRNAflow_downloadGenome.R")
 	"""
 }
 
-// Step x. Builds the genome
+// Step 4. Builds the genome
 process build_bowtie2_index {
 	storeDir 'db/genomes'
 	input:
 	file genome from genomes_fasta
-    file "sRNAflow_bowtie2_index.sh" from file("bin/sRNAflow_bowtie2_index.sh")
+    file "sRNAflow_bowtie2_index.R" from file("bin/sRNAflow_bowtie2_index.R")
 	tag "$genome.baseName"
 	output:
-	file "${genome}.*.bt2" into genome_index
+	file "${genome}.*.bt2*" into genome_index
 	"""
-	source ./sRNAflow_bowtie2_index.sh ${genome} ${task.cpus}
+#!/usr/bin/env Rscript --vanilla ${genome} ${task.cpus}
+source("sRNAflow_bowtie2_index.R")
 	"""
 }
 
-// // Step x. ShortStack
+// // Step 6. ShortStack
 // process ShortStack {
 // 	storeDir 'bin'
 // 	input:
