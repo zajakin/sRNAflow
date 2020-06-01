@@ -31,6 +31,13 @@ if(!exists("GroupsSel"))
 		load(paste0(wd,"/data/GroupsSel.RData"))
 	} else { GroupsSel <- rbind(rep(NA,6))[-1,]; colnames(FilesIn) <- c("file","size","date","test","control","ignore"); }
 
+if(!exists("Exp"))
+	if(file.exists(paste0(wd,"/data/Config.RData"))){
+		load(paste0(wd,"/data/Config.RData"))
+	} else {
+		Exp <- ""
+	}
+
 # timeout<-2147483
 # options(app_init_timeout=timeout)
 # options(shiny.app_init_timeout=timeout)

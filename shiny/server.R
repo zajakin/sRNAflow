@@ -102,4 +102,9 @@ server <- function(input, output, session) {
         sel
     })
     output$session_info<-renderPrint(sessionInfo())
+    output$Config<-renderPrint({
+        Exp<<-input$Exp
+        save(Exp,file=paste0(wd,"/data/Config.RData"))
+        Exp
+    })
 }

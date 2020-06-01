@@ -49,7 +49,9 @@ body <- dashboardBody(
                 selectGroupsUI("groups")
         ),
         tabItem(tabName = "Config",
-                h2("Configuration")
+                h2("Configuration"),
+                textInput("Exp",  "Experiment ID:", value = Exp),
+                verbatimTextOutput("Config")
         ),
         tabItem(tabName = "Report",
                 h2("Report")

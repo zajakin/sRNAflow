@@ -2,8 +2,10 @@
 source("bin/utils.R")
 
 options(echo=TRUE)
-args<-commandArgs()
-if(interactive()) args[3:5] <- c(paste0("data/test"),paste0("../example-samples/Cancer_1.fa"),4)
+if(!exists("args")){
+    args<-commandArgs()
+    if(interactive()) args[3:5] <- c(paste0("data/test"),paste0("../example-samples/Cancer_1.fa"),4)
+}
 print(args)
 WD <-   args[3]
 file <- args[4]
@@ -201,10 +203,10 @@ if(!dir.exists("reads")) dir.create("reads")
 write.table(reads,file=paste0("reads/",basename(file),".reads.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
 write.table(reads[,1:2],file=paste0("forKrona/",basename(file),".forKrona.txt"),quote=FALSE,row.names=FALSE,col.names=FALSE,sep="\t")
 if(!dir.exists("output")) dir.create("output")
-system(paste0(homedir,"/conda/bin/ktImportTaxonomy forKrona/",basename(file),".forKrona.txt -o output/",basename(file),".report.htm"),intern = TRUE)
+system(paste0("$HOME/conda/bin/ktImportTaxonomy forKrona/",basename(file),".forKrona.txt -o output/",basename(file),".report.htm"),intern = TRUE)
 warnings()
 date()
-quit()
+#quit()
 
 # for(i in dir("Alisa",".long.blast",recursive = TRUE)){
 #     print(paste(i,length(unique(read.table(paste0("Alisa/",i), comment.char="",skip=0,quote = "", header = FALSE, sep = "\t",dec = ".", na.strings = "",as.is = TRUE)[,1])),
