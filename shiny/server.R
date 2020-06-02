@@ -105,6 +105,6 @@ server <- function(input, output, session) {
     output$Config<-renderPrint({
         Exp<<-input$Exp
         save(Exp,file=paste0(wd,"/data/Config.RData"))
-        Exp
+        list(Exp=Exp)
     })
 }
