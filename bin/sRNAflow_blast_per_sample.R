@@ -7,11 +7,13 @@ if(!exists("args")){
     if(interactive()) args[3:5] <- c(paste0("data/test"),paste0("../example-samples/Cancer_1.fa"),4)
 }
 print(args)
+#assign(WD,file,type,core) <- args[3:6]
 WD <-   args[3]
-file <- args[4]
-core <- args[5]
+name <- args[4]
+file <- args[5]
+core <- args[6]
 
-out<- paste0("blasts/",basename(file),".blast")
+out<- paste0("blasts/",name,".blast")
 DV <- "nt"
 blastn<- paste0("export BATCH_SIZE=50000; export BLASTDB=$HOME/data/db/blast; blastn -max_hsps 1 ")
 DB <- paste("-remote -db",DV)
@@ -22,27 +24,24 @@ colNames<- c("read","name","taxid","nameEn","kingdom","evalue","bitscore","qlen"
 # blastopt<-paste(DB, "-evalue 100 -perc_identity 100")
 # export PATH=$HOME/bin:$HOME/conda/bin:$HOME/.local/bin:${PATH:-/usr/bin:.}; $HOME/bin/c; update_blastdb --decompress nt"
 # outfmt <- "-outfmt \"6 qseqid ssciname staxid scomname evalue bitscore length pident\""
+for(i in c("forKrona","faTab","blasts","logs","blasts.tmp")) if(!dir.exists(paste0(WD,i))) dir.create(paste0(WD,i))
+
 setwd(WD)
 getwd()
-if(!dir.exists("forKrona")) dir.create("forKrona")
-if(!dir.exists("faTab")) dir.create("faTab")
-if(!dir.exists("blasts")) dir.create("blasts")
-if(!dir.exists("logs")) dir.create("logs")
-if(!dir.exists("blasts.tmp")) dir.create("blasts.tmp")
-
 if(length(grep(".faTab",file))==0){
-    system(paste0("$HOME/conda/bin/fasta_formatter -i ",file," -t -o faTab/",basename(file),".faTab"),intern = TRUE)
-    fileT<-paste0("faTab/",basename(file),".faTab")
+    system(paste0("$HOME/conda/bin/fasta_formatter -i ",file," -t -o faTab/",name,".faTab"),intern = TRUE)
+    fileT<-paste0("faTab/",name,".faTab")
 } else fileT<-file
+
 print(date())
-if(!file.exists(paste0("forKrona/",basename(file),".forKrona.txt"))){
-    bname<-paste0("blasts.tmp/",basename(file),".short.blast")
-    if(!file.exists(paste0("blasts.tmp/",basename(file),".short.blast.done"))){
+if(!file.exists(paste0("forKrona/",name,".forKrona.txt"))){
+    bname<-paste0("blasts.tmp/",name,".short.blast")
+    if(!file.exists(paste0("blasts.tmp/",name,".short.blast.done"))){
         system(paste0("cat ",fileT," | awk -F '\\t' '{if (length($2)<20) print \">\" $1 \"\\n\" $2}' > ",fileT,".short"),intern = TRUE)
         blastopt<-paste(DB, "-evalue 1e+6 -word_size 10 -reward 2 -penalty -3 -ungapped -perc_identity 100")
         if(file.size(paste0(fileT,".short"))>1)
-            if(system(paste0(blastn,blastopt,' -outfmt \"6 ',colQuery,'\" -task blastn-short -query ',fileT,".short -out ",bname," >> logs/",basename(file),".txt 2>&1 "),intern = FALSE)==0)
-                file.create(paste0("blasts.tmp/",basename(file),".short.blast.done"))
+            if(system(paste0(blastn,blastopt,' -outfmt \"6 ',colQuery,'\" -task blastn-short -query ',fileT,".short -out ",bname," >> logs/",name,".txt 2>&1 "),intern = FALSE)==0)
+                file.create(paste0("blasts.tmp/",name,".short.blast.done"))
     }
     if(file.exists(bname) & file.size(bname)>1){
         short<-read.table(bname, comment.char="",quote = "", header = FALSE, sep = "\t",dec = ".", na.strings = "NA",as.is = TRUE)
@@ -51,13 +50,13 @@ if(!file.exists(paste0("forKrona/",basename(file),".forKrona.txt"))){
         short<-short[short[,"qlen"]==short[,"length"],]
         write.table(short,file=bname,quote=FALSE,col.names=FALSE,row.names=FALSE,sep="\t")
     }
-    bname<-paste0("blasts.tmp/",basename(file),".mid.blast")
-    if(!file.exists(paste0("blasts.tmp/",basename(file),".mid.blast.done"))){
+    bname<-paste0("blasts.tmp/",name,".mid.blast")
+    if(!file.exists(paste0("blasts.tmp/",name,".mid.blast.done"))){
         system(paste0("cat ",fileT," | awk -F '\\t' '{if (length($2)>19 && length($2)<31) print \">\" $1 \"\\n\" $2}' > ",fileT,".mid"),intern = TRUE)
         blastopt<-paste(DB, "-evalue 10 -word_size 7 -reward 2 -penalty -3 -gapopen 5 -gapextend 2")
         if(file.size(paste0(fileT,".mid"))>1)
-            if(system(paste0(blastn,blastopt,' -outfmt \"6 ',colQuery,'\" -task blastn-short -query ',fileT,".mid -out ",bname," >> logs/",basename(file),".txt 2>&1 "),intern = FALSE)==0)
-                file.create(paste0("blasts.tmp/",basename(file),".mid.blast.done"))
+            if(system(paste0(blastn,blastopt,' -outfmt \"6 ',colQuery,'\" -task blastn-short -query ',fileT,".mid -out ",bname," >> logs/",name,".txt 2>&1 "),intern = FALSE)==0)
+                file.create(paste0("blasts.tmp/",name,".mid.blast.done"))
     }
     # if(file.exists(bname) & file.size(bname)>1){
         # mid<-read.table(bname, comment.char="",quote = "", header = FALSE, sep = "\t",dec = ".", na.strings = "NA",as.is = TRUE)
@@ -68,16 +67,16 @@ if(!file.exists(paste0("forKrona/",basename(file),".forKrona.txt"))){
         # table(mid[,"mismatch"])
         # write.table(mid,file=bname,quote=FALSE,col.names=FALSE,row.names=FALSE,sep="\t")
     # }
-    bname<-paste0("blasts.tmp/",basename(file),".long.blast")
-    if(!file.exists(paste0("blasts.tmp/",basename(file),".long.blast.done"))){
+    bname<-paste0("blasts.tmp/",name,".long.blast")
+    if(!file.exists(paste0("blasts.tmp/",name,".long.blast.done"))){
         system(paste0("cat ",fileT," | awk -F '\\t' '{if (length($2)>30) print \">\" $1 \"\\n\" $2}' > ",fileT,".long"),intern = TRUE)
         blastopt<-paste(DB, "-evalue 0.01 -word_size 11 -reward 2 -penalty -3 -gapopen 5 -gapextend 2")
         if(file.size(paste0(fileT,".long"))>1)
-            if(system(paste0(blastn,blastopt,' -outfmt \"6 ',colQuery,'\" -query ',fileT,".long -out ",bname," >> logs/",basename(file),".txt 2>&1 "),intern = FALSE)==0)
-                file.create(paste0("blasts.tmp/",basename(file),".long.blast.done"))
+            if(system(paste0(blastn,blastopt,' -outfmt \"6 ',colQuery,'\" -query ',fileT,".long -out ",bname," >> logs/",name,".txt 2>&1 "),intern = FALSE)==0)
+                file.create(paste0("blasts.tmp/",name,".long.blast.done"))
     }
     if(file.exists(out)) file.remove(out)
-    file.append(out,paste0("blasts.tmp/",basename(file),c(".short",".mid",".long"),".blast"))
+    file.append(out,paste0("blasts.tmp/",name,c(".short",".mid",".long"),".blast"))
 }
 # system(paste(blastn,blastopt,' -outfmt \"6 qseqid ssciname staxid scomname sskingdom evalue bitscore qlen slen length pident mismatch qcovs stitle\" -task blastn-short -query ',file," -out ",out," 2>&1 > ",paste0(file,".blast.log  ")),intern = TRUE)    
 # bsub  -Is -M 94000 -n 4 -R "rusage[mem=94000,numcpus=4.00] span[ptile=4]" bash
@@ -197,12 +196,12 @@ if(length(fa[!(fa %in% reads[,1])])>0)
 
 print(date())
 if(!dir.exists("species")) dir.create("species")
-write.table(species2,file=paste0("species/",basename(file),".species.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
-write.table(species99,file=paste0("species/",basename(file),".species99.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
+write.table(species2,file=paste0("species/",name,".species.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
+write.table(species99,file=paste0("species/",name,".species99.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
 if(!dir.exists("reads")) dir.create("reads")
-write.table(reads,file=paste0("reads/",basename(file),".reads.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
-write.table(reads[,1:2],file=paste0("forKrona/",basename(file),".forKrona.txt"),quote=FALSE,row.names=FALSE,col.names=FALSE,sep="\t")
+write.table(reads,file=paste0("reads/",name,".reads.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
+write.table(reads[,1:2],file=paste0("forKrona/",name,".forKrona.txt"),quote=FALSE,row.names=FALSE,col.names=FALSE,sep="\t")
 if(!dir.exists("output")) dir.create("output")
-system(paste0("$HOME/conda/bin/ktImportTaxonomy forKrona/",basename(file),".forKrona.txt -o output/",basename(file),".report.htm"),intern = TRUE)
+system(paste0("$HOME/conda/bin/ktImportTaxonomy forKrona/",name,".forKrona.txt -o output/",name,".report.htm"),intern = TRUE)
 warnings()
 date()
