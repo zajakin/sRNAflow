@@ -13,7 +13,7 @@ for(i in 1:nrow(filesIn)){
 	s<-sub(ext,"",basename(rf))
 	filesIn[i,"name"]<-s
 	d<-paste0("data/",Exp,"/",s,"/")
-	dir.create(paste0(d,"faTab"),recursive = T)
+	if(!dir.exists(paste0(d,"faTab"))) dir.create(paste0(d,"faTab"),recursive = T)
 	filesIn[i,"wd"]<-d
 	if(ext %in% c(".fq",".fastq")){
 		filesIn[i,"wf"]<-rf
@@ -40,10 +40,10 @@ for(i in 1:nrow(filesIn)){
 
 #blast per sample
 #args <- c("R","--no-save",paste0("data/test"),paste0("../example-samples/Cancer_1.fa"),4)
-for(i in 1:nrow(filesIn)){
-	for(r in 1:as.numeric(Rep)){
-		args <- c("sRNAflow","--no-save",filesIn[i,"wd"],paste0(filesIn[i,"name"],"_random",tsize,".",r),filesIn[i,paste0("ft",r)],4)
-		source("bin/sRNAflow_blast_per_sample.R")
+for(idr in 1:nrow(filesIn)){
+	for(re in 1:as.numeric(Rep)){
+		args <- c("sRNAflow","--no-save",file.path(wd,filesIn[idr,"wd"]),paste0(filesIn[idr,"name"],"_random",tsize,".",re),file.path(wd,filesIn[idr,paste0("ft",re)]),4)
+		source(file.path(wd,"bin/sRNAflow_blast_per_sample.R"))
 	}
 }
 

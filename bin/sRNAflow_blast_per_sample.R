@@ -205,3 +205,5 @@ if(!dir.exists("output")) dir.create("output")
 system(paste0("$HOME/conda/bin/ktImportTaxonomy forKrona/",name,".forKrona.txt -o output/",name,".report.htm"),intern = TRUE)
 warnings()
 date()
+setwd(wd)
+

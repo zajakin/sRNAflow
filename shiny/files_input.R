@@ -1,5 +1,4 @@
-# install.packages("remotes")
-# remotes::install_github("fbreitwieser/shinyFileTree")
+# devtools::install_github("fbreitwieser/shinyFileTree", type = "source")
 library(shinyFileTree)
 
 uploadFilePanel <- function(ns) {
