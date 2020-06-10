@@ -3,6 +3,7 @@ wd<-sub("/bin$","",getwd())
 setwd(wd)
 source("shiny/global.R")
 #FilesIn; GroupsSel; Exp; Rep    
+specie<-"homo_sapiens"
 tsize<-"2000"
 Rep<-2
 filesIn<-cbind(rf=FilesIn[,"file"],gr=unlist(GroupsSel[FilesIn[,"file"]]),wd="",name="",wf="",type="",ft="",ft1="",ft2="")
@@ -50,7 +51,11 @@ for(idr in 1:nrow(filesIn)){
 #aggregate species  ########
 source("bin/sRNAflow_aggregate_species.R")
 
+#download main genomes from Ensembl  ########
+source("bin/sRNAflow_downloadMainGenomes.R")
+
 #download genomes
+source("bin/sRNAflow_downloadGenomes.R")
 
 #index generation
 
