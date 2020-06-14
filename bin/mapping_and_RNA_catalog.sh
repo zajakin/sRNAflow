@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 function mycount {
       htseq_opt="htseq-count -f sam -a 0 -s no --secondary-alignments score -q" #--additional-attr=gene_name
       # htseq_opt="featureCounts -s no"
@@ -34,7 +34,7 @@ function mycount {
       cat $shdir/htseq-count_$f.Lost_reads.txt | awk '$2 > 0' > $shdir/htseq-count_$f.Lost_reads.morethen0.txt
       cat $shdir/htseq-count_$f.Lost_reads.morethen0.txt | awk '{print $1}' > $shdir/tmp.txt
       grep -Ff $shdir/tmp.txt $DB/$DV.gtf > $shdir/htseq-count_$f.Lost_reads.gtf
-      rename $shdir/tmp.txt $shdir/htseq-count_$f.All.txt
+      mv $shdir/tmp.txt $shdir/htseq-count_$f.All.txt
       # rm $shdir/tmp.gtf
       # GTFmiRNA=`ls $GTFPATH*.gtf | grep "miRNA"`
       grep -vh -P "^__" $shdir/htseq-count_$f.piRNAdb_mergedFeatures.txt $shdir/htseq-count_$f.piRNAbank_mergedFeatures.txt $shdir/htseq-count_$f.piRBase_mergedFeatures.txt  > $shdir/htseq-count_$f.all_piRNA_mergedFeatures.txt
@@ -90,8 +90,11 @@ function send2blast { #  set 1=$ff; set 2=$out/$f; set 3="1"; set 4=$core; send2
 function send2kraken { #  set 1=$ff; set 2=$out/$f; set 3="1"; set 4=$core; send2blast $ff $out/$f 1 4
   filename=${1##*/}
   fa=$2/${filename%.*}
-  mem=64000
-  bsub -M $mem -n $4 -R "rusage[mem=$mem,numcpus=$4.00] span[ptile=$4]" "$HOME/bin/c; kraken2 --threads $4 --db $HOME/data/db/kraken2 --report $fa.kraken2.report --fasta-input $1 2> $fa.kraken2.log | cut -f2,3 > $fa.kraken2_4krona.txt ; ktImportTaxonomy $fa.kraken2_4krona.txt -o $fa.kraken2_report.html 2>&1 >> $fa.kraken2.log ; kraken-biom --max C --min G --fmt json -o $fa.json.biom $fa.kraken2.report"
+  # mem=64000
+  kraken2 --threads $4 --db $HOME/data/db/kraken2 --report $fa.kraken2.report --fasta-input $1 2> $fa.kraken2.log | cut -f2,3 > $fa.kraken2_4krona.txt
+  ktImportTaxonomy $fa.kraken2_4krona.txt -o $fa.kraken2_report.html 2>&1 >> $fa.kraken2.log
+  kraken-biom --max C --min G --fmt json -o $fa.json.biom $fa.kraken2.report
+  # bsub -M $mem -n $4 -R "rusage[mem=$mem,numcpus=$4.00] span[ptile=$4]" "$HOME/bin/c; kraken2 --threads $4 --db $HOME/data/db/kraken2 --report $fa.kraken2.report --fasta-input $1 2> $fa.kraken2.log | cut -f2,3 > $fa.kraken2_4krona.txt ; ktImportTaxonomy $fa.kraken2_4krona.txt -o $fa.kraken2_report.html 2>&1 >> $fa.kraken2.log ; kraken-biom --max C --min G --fmt json -o $fa.json.biom $fa.kraken2.report"
 }
 function send2sourmash { #  set 1=$ff; set 2=$out/$f; set 3="1"; set 4=$core; send2blast $ff $out/$f 1 4
   filename=${ff##*/}
@@ -105,20 +108,18 @@ function send2sourmash { #  set 1=$ff; set 2=$out/$f; set 3="1"; set 4=$core; se
 #   send2sourmash $ff $out/${f##*/} 0 $core
 # done
 
-core=4
+core=`nproc`
 export PATH=$HOME/bin:$HOME/conda/bin:$HOME/.local/bin:$PATH
-origout=analysis_long.withRepeats
-# WD="/homes/pavelz/data/shared/Cristina_merged_43-91"
-WD="."
-DV=homo_sapiens
-DB="/homes/pavelz/data/db/$DV"
-out="$WD/$origout/$DV"
-samtools="$HOME/conda/bin/samtools "
-gencore="$HOME/conda/bin/gencore "
-shortstack="$HOME/bin/ShortStack "
+# origout=analysis_long.withRepeats
+out="$2"
+DV="genomes"
+DB="$out/$DV"
+samtools="samtools "
+gencore="$HOME/conda/envs/gencore/bin/gencore "
+shortstack="$(pwd)/bin/ShortStack "
 rRNAdb="$HOME/data/db/sortmerna/rRNA_databases/silva-euk-18s-id95.fasta,$HOME/data/db/sortmerna/rRNA_databases/silva-euk-18s-id95:$HOME/data/db/sortmerna/rRNA_databases/silva-euk-28s-id98.fasta,$HOME/data/db/sortmerna/rRNA_databases/silva-euk-28s-id98:$HOME/data/db/sortmerna/rRNA_databases/rfam-5s-database-id98-dna.fasta,$HOME/data/db/sortmerna/rRNA_databases/rfam-5s-database-id98-dna:$HOME/data/db/sortmerna/rRNA_databases/rfam-5.8s-database-id98-dna.fasta,$HOME/data/db/sortmerna/rRNA_databases/rfam-5.8s-database-id98-dna"
 
-cd $WD
+cd $out
 mkdir -p $out/qc $out/qc_raw
 
 function send2cluster {
@@ -228,8 +229,6 @@ done
   # bjobs | awk '{print $1}' | grep -v "JOBID" | xargs -L1 bkill
 }
 
-i=""
-ff="$i"
 ff="$1"
 fn="${ff##*/}"
 f=${fn%.*}
@@ -237,7 +236,7 @@ f=${fn%.*}
 inFasta=""
 txtLog=$out/$f/stat.txt
 # if [ ! -e "$out/$f/Unmapped_$f.fa" ]; then 
-  mkdir $out/$f
+  # mkdir $out/$f
   echo -e "File\t$f" > $txtLog
   if [ "${ff}" == "data/$f.fa" ]; then 
 #      ff=data/$f.fa
@@ -326,9 +325,9 @@ if [ "$inFasta" == "" ]; then
 else
   ln -rfs $out/$f/Unmapped_$f.fq $ff
 fi
-send2kraken $ff $out/$f 0 $core
-send2blast $ff $out/$f 1 $core
-send2blast $ff $out/$f 2 $core
+# send2kraken $ff $out/$f 0 $core
+# send2blast $ff $out/$f 1 $core
+# send2blast $ff $out/$f 2 $core
 # send2sourmash $fasta $out/$f 0 $core
 # # # rm -rf "$out/$f.1" "$out/$f.2"  # --blast '1 cigar qcov qstrand'
 # # sortmerna --ref $rRNAdb --reads $out/$f/Unmapped_$f.fq --sam --SQ --blast 0 --aligned $out/$f/Unmapped_$f\_with_rRNA --fastx --other $out/$f/Unmapped_$f\_without_rRNA -m 4096 --log -a $core

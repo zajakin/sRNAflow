@@ -54,15 +54,23 @@ source("bin/sRNAflow_aggregate_species.R")
 #download main genomes from Ensembl  ########
 source("bin/sRNAflow_downloadMainGenomes.R")
 
-#download genomes
+#create GTF files ####
+
+
+#download genomes  index generation   #####
 source("bin/sRNAflow_downloadGenomes.R")
 
-#index generation
+# download --- genomes.gtf
+
+
+# system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' db/genomes/homo_sapiens.gtf"),intern = TRUE)
+# system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' db/gtf_biotypes/*.gtf"),intern = TRUE)
+system(paste("ln -fs ",file.path(wd,"db","gtf_biotypes"),file.path(wd,"data",Exp,"genomes","gtf_biotypes")))
+system(paste("ln -fs ",file.path(wd,"db","genomes","homo_sapiens.gtf"),file.path(wd,"data",Exp,"genomes","genomes.gtf")))
 
 #mapping
-for(file in FilesIn[,"file"]) system(paste("bin/mapping_and_RNA_catalog.sh",file),intern = TRUE)
+for(file in filesIn[,"wf"]) system(paste0(wd,"/bin/mapping_and_RNA_catalog.sh ",file.path(wd,file)," ",file.path(wd,"data",Exp)),intern = TRUE)
 
-#RNA catalog
 
 #Diff expression DESeq2
 

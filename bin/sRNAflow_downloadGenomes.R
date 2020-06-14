@@ -1,7 +1,6 @@
 #!/usr/bin/env Rscript --vanilla 
 WD<-file.path("data",Exp,"genomes")
 if(!dir.exists(file.path(WD,"archive"))) dir.create(file.path(WD,"archive"),recursive = TRUE)
-if(!dir.exists(file.path(WD,"fasta"))) dir.create(file.path(WD,"fasta"),recursive = TRUE)
 i<-0
 ext<-"_genomic.fna.gz"
 fa<-file.path(WD,"genomes.fa")
@@ -26,8 +25,7 @@ for(id in species99[,"id"]){
 	}
 }
 
-dir.create(file.path(WD,"bowtie2"))
-if(file.size(fa)>(2^32-1)){ system(paste("bowtie2-build --threads ",core," --large-index ",fa,file.path(WD,"bowtie2","genomes")))
-} else system(paste("bowtie2-build --threads ",core,fa,file.path(WD,"bowtie2","genomes")))
+if(file.size(fa)>(2^32-1)){ system(paste("bowtie2-build --threads ",core," --large-index ",fa,file.path(WD,"genomes")))
+} else system(paste("bowtie2-build --threads ",core,fa,file.path(WD,"genomes")))
 
 # as.vector(md5sum(dir(R.home(), pattern = "^COPY", full.names = TRUE)))
