@@ -3,7 +3,7 @@ library(gdata)
 options(shiny.maxRequestSize=10000*1024^2)
 
 wd<-sub("/shiny$","",getwd())
-# source(paste0(wd,"/shiny/utils.R"))
+source(paste0(wd,"/bin/utils.R"))
 if(!dir.exists(paste0(wd,"/data/example-samples"))) dir.create(paste0(wd,"/data/example-samples"),recursive = TRUE)
 examples<-dir(path = paste0(wd,"/data/example-samples"),full.names = FALSE, recursive = TRUE, include.dirs = TRUE)
 if(length(examples)>0){

@@ -2,10 +2,12 @@
 wd<-sub("/bin$","",getwd())
 setwd(wd)
 source("shiny/global.R")
-#FilesIn; GroupsSel; Exp; Rep    
+#FilesIn; GroupsSel; Exp; Rep
 specie<-"homo_sapiens"
 tsize<-"2000"
 Rep<-2
+limFC<-1; lim<-2
+
 filesIn<-cbind(rf=FilesIn[,"file"],gr=unlist(GroupsSel[FilesIn[,"file"]]),wd="",name="",wf="",type="",ft="",ft1="",ft2="")
 #test fastq?, convert to fastq
 for(i in 1:nrow(filesIn)){
@@ -60,7 +62,7 @@ source("bin/sRNAflow_downloadMainGenomes.R")
 #download genomes  index generation   #####
 source("bin/sRNAflow_downloadGenomes.R")
 
-# download --- genomes.gtf
+# download --- genomes.gtf   TODO ####
 
 
 # system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' db/genomes/homo_sapiens.gtf"),intern = TRUE)
@@ -69,12 +71,15 @@ system(paste("ln -fs ",file.path(wd,"db","gtf_biotypes"),file.path(wd,"data",Exp
 system(paste("ln -fs ",file.path(wd,"db","genomes","homo_sapiens.gtf"),file.path(wd,"data",Exp,"genomes","genomes.gtf")))
 
 #mapping
-for(file in filesIn[,"wf"]) system(paste0(wd,"/bin/mapping_and_RNA_catalog.sh ",file.path(wd,file)," ",file.path(wd,"data",Exp)),intern = TRUE)
+for(file in filesIn[,"wf"]) system(paste0(wd,"/bin/sRNAflow_mapping_and_RNA_catalog.sh ",file.path(wd,file)," ",file.path(wd,"data",Exp)),intern = TRUE)
 
+#United table
+system(paste0(wd,"/bin/sRNAflow_united_table_of_mapping_and_RNA_catalogs.sh ",file.path(wd,"data",Exp)),intern = TRUE)
 
 #Diff expression DESeq2
+source("bin/sRNAflow_DESeq2.R")
 
-#GOstats
+#GOstats  TODO
 
 #miRanda
 
