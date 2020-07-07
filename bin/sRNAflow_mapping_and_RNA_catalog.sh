@@ -122,10 +122,10 @@ txtLog=$out/$f/stat.txt
      # cutadapt --quiet -O 9  -e 0.1 -g $ad3                -o $out/$f/${f}_r2.fastq $out/$f/${f}_r1.fastq
      # cutadapt --quiet -O 13 -e 0   -g XATCACCGACTGCCCATAG -o $out/$f/${f}_r3.fastq $out/$f/${f}_r2.fastq
      # cutadapt --quiet -O 8 -e 0   -g ^ATCACCGACTGCC      -o $out/$f/${f}_r4.fastq $out/$f/${f}_r3.fastq
-     cutadapt --quiet -m 43                         -o $out/$f/${f}_long.fastq      $out/$f/${f}_r3.fastq
-     cutadapt --quiet -M 42                         -o $out/$f/${f}_r4.fastq      $out/$f/${f}_r3.fastq
-     echo -e "Filter_more42\t`grep -c ^@ $out/$f/${f}_r4.fastq`" >> $txtLog
-     cutadapt --quiet -m 10                         -o $out/$f/$f.fastq      $out/$f/${f}_r4.fastq
+     # cutadapt --quiet -m 43                         -o $out/$f/${f}_long.fastq      $out/$f/${f}_r3.fastq
+     # cutadapt --quiet -M 42                         -o $out/$f/${f}_r4.fastq      $out/$f/${f}_r3.fastq
+     # echo -e "Filter_more42\t`grep -c ^@ $out/$f/${f}_r4.fastq`" >> $txtLog
+     cutadapt --quiet -m 10                         -o $out/$f/$f.fastq      $out/$f/${f}_r3.fastq
      echo -e "Filter_less10\t`grep -c ^@ $out/$f/${f}.fastq`" >> $txtLog
      ff=$out/$f/$f.fastq
      fastqc -o $out/qc $ff > /dev/null
@@ -143,7 +143,7 @@ txtLog=$out/$f/stat.txt
     # # bowtie2opt="--time --local -k 21 -p $core -x $DB/$DV $inFasta --un $out/$f/Unmapped_$f.fq --no-unal --score-min G,1,10"
     # # bowtie2 $bowtie2opt -D 20 -R 3 -N 1 -L 20 -i S,1,0.50 -U $ff -S $shdir.sam >> $txtLog  2>&1
     $samtools view -uhS -F4 $shdir.sam | $samtools sort -@ $core - -o $shfile
-    $shortstack --readfile $shfile --genomefile $DB/$DV.fa --outdir $shdir --bowtie_cores $core --mismatches 1 --bowtie_m 21 --ranmax 20 --keep_quals --inbam --nohp >> $out/$f/Shortstack.log 2>&1
+    $shortstack --readfile $shfile --genomefile $DB/$DV.fa --outdir $shdir --bowtie_cores $core --mismatches 1 --bowtie_m 201 --ranmax 200 --keep_quals --inbam --nohp >> $out/$f/Shortstack.log 2>&1
     # # rm $shfile $shdir.sam
     dd=""
     if [ `echo $f | grep -c dd` == 1 ]; then
@@ -172,3 +172,9 @@ txtLog=$out/$f/stat.txt
     # countOver $shdir/$f.sam $shdir $DB/$DV.gtf $DB $DV >> $txtLog
 #   fi
 # # fi
+    awk '!/^@/ {if($3=="*") $3=0; $3=gensub(/_.*/, "",1,$3); print $1 "\t" $3}' $shdir/$f.sam > $out/$f/forKrona/$f.forKrona.txt
+    awk '{print $2}' $out/$f/forKrona/$f.forKrona.txt | sort -n | uniq -c > $out/$f/forKrona/$f.counts.txt
+    $HOME/conda/bin/ktImportTaxonomy $out/$f/forKrona/$f.forKrona.txt -o $out/$f/output/$f.report.htm
+    $HOME/conda/bin/ktImportTaxonomy -c $out/$f/forKrona/$f.forKrona2.txt -o $out/$f/output/$f.report3.htm
+
+
