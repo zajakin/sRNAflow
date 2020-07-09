@@ -16,6 +16,7 @@ core <- args[6]
 out<- paste0("blasts/",name,".blast")
 DV <- "nt"
 blastn<- paste0("export BATCH_SIZE=50000; export BLASTDB=$HOME/data/db/blast; blastn -max_hsps 1 ")
+if(file.exists(file.path(wd,"db","meta.txids"))) blastn<- paste(blastn,"-taxidlist",file.path(wd,"db","meta.txids "))
 DB <- paste("-remote -db",DV)
 DB <- paste("-db",DV,"-num_threads",core)
 colQuery<-  "qseqid ssciname staxid scomname sskingdom evalue bitscore qlen slen length pident mismatch qcovs stitle sseqid sstart send"

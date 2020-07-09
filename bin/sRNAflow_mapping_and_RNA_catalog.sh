@@ -114,7 +114,7 @@ txtLog=$out/$f/stat.txt
      # ad3=ATCACCGACTGCCCATAGAGAG  # Ion Torrent
      # pr3=AGGCTGAGACTGCCAAGGCACACAGGGGATAGG
      # ad5=CCAAGGCG
-     fastqc -o $out/qc_raw $ff  > /dev/null
+     fastqc -o $out/qc_raw $ff  > /dev/null 2>&1
      echo -e "Raw\t`grep -c ^@ $ff`" >> $txtLog
      cutadapt --quiet --quality-cutoff=20,20 -a $ad3 -m 1 -o $out/$f/${f}_r3.fastq $ff
      echo -e "QC_and_adapter3\t`grep -c ^@ $out/$f/${f}_r3.fastq`" >> $txtLog
@@ -128,7 +128,7 @@ txtLog=$out/$f/stat.txt
      cutadapt --quiet -m 10                         -o $out/$f/$f.fastq      $out/$f/${f}_r3.fastq
      echo -e "Filter_less10\t`grep -c ^@ $out/$f/${f}.fastq`" >> $txtLog
      ff=$out/$f/$f.fastq
-     fastqc -o $out/qc $ff > /dev/null
+     fastqc -o $out/qc $ff > /dev/null 2>&1
     fasta=$out/$f/$f.fasta
     fastq_to_fasta -i $ff -o $fasta
     gawk '!/^>/{ i++; seq[i] = length($1); sum += length($1) } END { asort(seq,sorted,"@val_num_asc"); print("reads_after_trimm\t" i "\nmedian_reads_length\t" sorted[int(i/2)] "\nmean_reads_length\t" sum / i) }' $out/$f/$f.fasta >> $txtLog
@@ -142,7 +142,7 @@ txtLog=$out/$f/stat.txt
     bowtie2 $bowtie2opt -D 20 -R 3 -N 0 -L 20 -i S,1,0.50 -U $ff -S $shdir.sam > $out/$f/bowtie2.log 2>&1
     # # bowtie2opt="--time --local -k 21 -p $core -x $DB/$DV $inFasta --un $out/$f/Unmapped_$f.fq --no-unal --score-min G,1,10"
     # # bowtie2 $bowtie2opt -D 20 -R 3 -N 1 -L 20 -i S,1,0.50 -U $ff -S $shdir.sam >> $txtLog  2>&1
-    $samtools view -uhS -F4 $shdir.sam | $samtools sort -@ $core - -o $shfile
+    $samtools view -uhS -F4 $shdir.sam | $samtools sort -@ $core - -o $shfile > /dev/null 2>&1
     $shortstack --readfile $shfile --genomefile $DB/$DV.fa --outdir $shdir --bowtie_cores $core --mismatches 1 --bowtie_m 201 --ranmax 200 --keep_quals --inbam --nohp >> $out/$f/Shortstack.log 2>&1
     # # rm $shfile $shdir.sam
     dd=""
@@ -175,6 +175,5 @@ txtLog=$out/$f/stat.txt
     awk '!/^@/ {if($3=="*") $3=0; $3=gensub(/_.*/, "",1,$3); print $1 "\t" $3}' $shdir/$f.sam > $out/$f/forKrona/$f.forKrona.txt
     awk '{print $2}' $out/$f/forKrona/$f.forKrona.txt | sort -n | uniq -c > $out/$f/forKrona/$f.counts.txt
     $HOME/conda/bin/ktImportTaxonomy $out/$f/forKrona/$f.forKrona.txt -o $out/$f/output/$f.report.htm
-    $HOME/conda/bin/ktImportTaxonomy -c $out/$f/forKrona/$f.forKrona2.txt -o $out/$f/output/$f.report3.htm
 
 

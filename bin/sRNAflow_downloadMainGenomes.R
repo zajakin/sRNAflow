@@ -47,3 +47,11 @@ refseq<-read.table("db/genomes/refseq.txt", comment.char="",skip=1,quote = "", h
 # rownames(refseq)<-refseq[,"taxid"]
 head(refseq)
 dim(refseq)
+
+save(ensemblgenomes,genbank,refseq,file="db/genomes/genomesdb.RData")
+
+#TODO create GTF files, remove united ####
+#TODO download --- genomes.gtf ####
+system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' db/genomes/homo_sapiens.gtf"),intern = TRUE)
+# system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' db/gtf_biotypes/*.gtf"),intern = TRUE)
+
