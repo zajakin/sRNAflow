@@ -1,5 +1,8 @@
 library(shiny)
 library(gdata)
+library(foreach)
+library(doMC)
+registerDoMC()
 options(shiny.maxRequestSize=10000*1024^2)
 
 wd<-sub("/shiny$","",getwd())

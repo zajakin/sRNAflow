@@ -23,7 +23,7 @@ for(id in species99[,"id"]){
 			download.file(paste0(url,"/",basename(url),ext),file.path(WD,"archive",id,paste0(basename(url),ext)))
 		system(paste0("gunzip -c ",file.path(WD,"archive",id,paste0(basename(url),ext))," | sed 's/^>/>",id,"_",spname,"_/g' >> ",fa)  )
 	}
-	#TODO Select representative contig per specie (by clustering?)
+	#IDEA Select representative contig per specie (by clustering?)
 }
 
 if(file.size(fa)>(2^32-1)){ system(paste("bowtie2-build --threads ",core," --large-index ",fa,file.path(WD,"genomes")))

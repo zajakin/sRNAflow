@@ -30,6 +30,10 @@ getDBfile(c('ftp://ftp.ensembl.org/pub/current_fasta/',specie,'/dna'),specie,".d
 # system(paste0("zcat ",specie,".dna.primary_assembly.fa.gz > ",specie,".fa"))
 # system(paste0("zcat ",specie,".gtf.gz > ",specie,".gtf"))
 
+download.file("ftp://mirbase.org/pub/mirbase/CURRENT/mature.fa.gz",file.path("db","genomes","mature.fa.gz"))
+system(paste("gzip -d",file.path("db","genomes","mature.fa.gz")))
+# gzip -cd $DV.fa.gz | fasta_formatter | sed '/^[^>]/ y/uU/tT/' > $DV.fa
+
 download.file("ftp://ftp.ensemblgenomes.org/pub/current/species.txt",file.path("db","genomes","ensemblgenomes.txt"))
 system("sed -i '1 s/$/\tNA/' db/genomes/ensemblgenomes.txt",intern = TRUE)
 ensemblgenomes<-read.table("db/genomes/ensemblgenomes.txt", comment.char="",skip=0,quote = "", header = TRUE, sep = "\t",dec = ".", na.strings = "",as.is = FALSE)
@@ -50,8 +54,8 @@ dim(refseq)
 
 save(ensemblgenomes,genbank,refseq,file="db/genomes/genomesdb.RData")
 
-#TODO create GTF files, remove united ####
-#TODO download --- genomes.gtf ####
+#NOTE create GTF files, remove united ####
+#NOTE download --- genomes.gtf ####
 system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' db/genomes/homo_sapiens.gtf"),intern = TRUE)
 # system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' db/gtf_biotypes/*.gtf"),intern = TRUE)
 
