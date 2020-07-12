@@ -36,8 +36,7 @@ vignettes/*.pdf
 .Rproj.user
 .nextflow
 #tutorial*.*
-data/*
-db/*
+www/*
 README.html
 old
 
