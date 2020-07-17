@@ -1,22 +1,22 @@
 #!/usr/bin/R --no-save
-source("bin/utils.R")
 
-options(echo=TRUE)
-if(!exists("args")){
-    args<-commandArgs()
-    if(interactive()) args[3:5] <- c(paste0("data/test"),paste0("../example-samples/Cancer_1.fa"),4)
-}
-print(args)
-#assign(WD,file,type,core) <- args[3:6]
-WD <-   args[3]
-name <- args[4]
-file <- args[5]
-core <- args[6]
+blast_per_sample<-function(idr,re,wd,filesIn,tsize,core=4){
+    arg <- c("sRNAflow","--no-save",file.path(wd,filesIn[idr,"wd"]),paste0(filesIn[idr,"name"],"_random",tsize,".",re),file.path(wd,filesIn[idr,paste0("ft",re)]),core)
+    options(echo=TRUE)
+# if(!exists("arg")){
+#     arg<-commandArgs()
+#     if(interactive()) arg[3:5] <- c(paste0("www/test"),paste0("../../example-samples/Cancer_1.fa"),4)
+# }
+print(arg)
+WD <-   arg[3]
+name <- arg[4]
+file <- arg[5]
+core <- arg[6]
 
 out<- paste0("blasts/",name,".blast")
 DV <- "nt"
 blastn<- paste0("export BATCH_SIZE=50000; export BLASTDB=$HOME/data/db/blast; blastn -max_hsps 1 ")
-if(file.exists(file.path(wd,"db","meta.txids"))) blastn<- paste(blastn,"-taxidlist",file.path(wd,"db","meta.txids "))
+if(file.exists(file.path(wd,"www","db","meta.txids"))) blastn<- paste(blastn,"-taxidlist",file.path(wd,"www","db","meta.txids "))
 DB <- paste("-remote -db",DV)
 DB <- paste("-db",DV,"-num_threads",core)
 colQuery<-  "qseqid ssciname staxid scomname sskingdom evalue bitscore qlen slen length pident mismatch qcovs stitle sseqid sstart send"
@@ -208,3 +208,4 @@ warnings()
 date()
 setwd(wd)
 
+}

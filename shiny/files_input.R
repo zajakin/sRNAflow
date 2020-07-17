@@ -10,13 +10,14 @@ uploadFilePanel <- function(ns) {
 		 	placehold = "Upload files",
 		 	width = "100%",
 		 	multiple = TRUE
-		)
+		),
+		uiOutput("filesUpload")
 	)
 }
 
 serverDataPanel <- function(ns) {
 	tabPanel("Use data on server",
-		{if (!dir.exists(paste0(wd,"/data/input"))) dir.create(paste0(wd,"/data/input"))
+		{ if(!dir.exists(file.path(wd,"www","upload"))) dir.create(file.path(wd,"www","upload"))
 			DT::dataTableOutput('serverFiles')
 		} ,
 		shinyFileTree::shinyFileTreeOutput(ns('file_tree'))
@@ -25,14 +26,14 @@ serverDataPanel <- function(ns) {
 
 exampleDataPanel <- function(ns) {
 	tabPanel("Example samples",
-		{if (!dir.exists(paste0(wd,"/data/example-samples"))) dir.create(paste0(wd,"/data/example-samples"))
+		{ if(!dir.exists(file.path(wd,"example-samples"))) dir.create(file.path(wd,"example-samples"))
 			DT::dataTableOutput('examples')
 		}
 	)
 }
 
 filesUploadRow <- function(x){
-	return(c(file=gsub(" ","_",paste0("data/input/",x$name)),
+	return(c(file=gsub(" ","_",file.path("www","upload",x$name)),
 			size=humanReadable(x$size),
 	  		date=format(Sys.time(),"%d.%m.%Y %H:%M:%OS")))
 }
@@ -48,21 +49,20 @@ filesInputUI <- function(id) {
 			exampleDataPanel(ns)
 		)
 	},
-	hr(),
-	h2("Selected files:"),
-	DT::dataTableOutput("filesIn"),
-	# fluidRow(
-	# 	column(9, DT::dataTableOutput("filesIn")),
-	# 	column(3, verbatimTextOutput("filesIn_selected"))
-	# 	column(6, plotOutput('x2', height = 500))
-	# )
+		hr(),
+		h2("Selected files:"),
+		DT::dataTableOutput("filesIn")
+		# ,fluidRow(
+		# 	column(9, DT::dataTableOutput("filesIn")),
+		# 	column(3, verbatimTextOutput("filesIn_selected")),
+		# 	column(6, plotOutput('x2', height = 500))
+		# )
 	)
 }
 selectGroupsUI <- function(id) {
 	ns <- NS(id)
 	shiny::tagList(
 		hr(),
-		DT::dataTableOutput("groups"),
-		verbatimTextOutput("sel", placeholder =TRUE)
+		DT::dataTableOutput("groups")
 	)
 }

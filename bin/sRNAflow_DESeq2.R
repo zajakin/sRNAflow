@@ -9,7 +9,19 @@ library(VennDiagram)
 tmp<-futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
 
 options(echo=TRUE)
-ED<-file.path(wd,"data",Exp)
+
+tabs<-c(c("tag_unique","ambigue","unique"),paste(c("tag","ambigue","unique"),"ambigue_selected",sep = "_")) #"tag_ambigue",
+for(sample in filesIn[,"name"]){
+	p<- file.path(ED,sample,"isomiR-SEA")
+	filexlsx<- file.path(ED,paste0(sample,"_isomiR-SEA.xlsx"))
+	tab<-read.table(file.path(p,"summary.txt"), sep = " ",header = F)[,-2]
+	write.xlsx2(tab,filexlsx,sheet="Summary",row.names = FALSE,col.names = FALSE)
+	for(t in tabs){
+		tab<-read.table(file.path(p,paste0("out_result_mature_",t,".txt")), sep = "\t",header = F,skip = 1,comment.char = "",fill = T)
+		colnames(tab)<-read.table(file.path(p,paste0("out_result_mature_",t,".txt")),header = FALSE,nrows = 1,skip = 0,comment.char = "")
+		write.xlsx2(tab,filexlsx,sheet=t,row.names = FALSE,append = TRUE)
+	}	
+}
 
 figVen<-function(dat,lim,txt="",filexlsx){
 	title<-paste0(txt," >",lim)
@@ -40,9 +52,88 @@ figVen<-function(dat,lim,txt="",filexlsx){
 			main=title,cat.default.pos="outer",cat.cex=2,main.cex=2,euler.d = FALSE,scaled=FALSE),recording = F))
 		}
 		wb<-openxlsx::loadWorkbook(filexlsx)
-		openxlsx::insertPlot(wb,sheet=txt,width = 8, height = 6, dpi=600,startCol = 4)
+		openxlsx::insertPlot(wb,sheet=txt,width = 8, height = 6, dpi=150,startCol = 4)
 		saveWorkbook(wb,filexlsx, overwrite = TRUE)
 	}
+}
+
+tomieaa<-function(mirnas){
+	# https://github.com/Xethic/miEAA-API/blob/master/examples/R/example_script.R
+	# pip install mieaa;   conda install -c ccb-sb mieaa
+	library(reticulate)
+	reticulate::use_condaenv("~/conda")
+	reticulate::use_python(python = '~/conda/bin/python')
+	py = import_builtins()
+	# mieaa = import_from_path("mieaa",path = "~/conda/lib/python3.7/site-packages", convert = TRUE)
+	mieaa = import("mieaa")
+	mieaa_api = mieaa$API()
+	mirnas = mirnas[grep("^hsa-",mirnas)]
+	mature = mirnas[grep("p$",mirnas)]
+	precursors = mirnas[!grepl("p$",mirnas)]
+	# updated_mirnas = mieaa_api$convert_mirbase(initial_mirnas, '16', '22', 'mirna')
+	if(length(mature)>0) precursors = append(precursors,mieaa_api$to_precursor(paste(mature,collapse=","), conversion_type='all'))
+	# mieaa_api$run_gsea(paste(precursors,collapse=","),list('HMDD, mndr'), 'precursor', 'hsa')
+	mieaa_api$run_ora(paste(precursors,collapse=","), list('HMDD, mndr'), 'precursor', 'hsa', reference_set='')
+	print(mieaa_api$get_progress())
+	json = mieaa_api$get_results(check_progress_interval=5)
+	cols = c('category', 'subcategory', 'enrichment', 'p-value', 'p-adjusted', 'q-value', 'expected', 'observed', 'mirnas/precursors')
+	df = data.frame(matrix(unlist(json), nrow=length(json), byrow=T))
+	colnames(df) = cols
+	mieaa_api$save_enrichment_results(file.path(ED,'mieaa_results.csv'))
+	print(mieaa_api$get_enrichment_parameters())
+	mieaa_api$invalidate()
+	return(df)
+}
+
+myGO<-function(myids, minimum.population=5,deUp=c(),deDown=c()){
+	library(org.Hs.eg.db)
+	library(GOstats)
+	keyunis <- keys(org.Hs.eg.db, keytype="GOALL")
+	output <- data.frame(total=integer(0), expected=numeric(0), observed=integer(0), p.value=numeric(0),adj_pval=numeric(0), 
+						 OddsRatio=character(0),Term=character(0), ontology=character(0), All_genes=character(0), count_DE_genes=integer(0),
+						 DE_genes=character(0),count_Up=integer(0), count_Down=integer(0),genes_Up=character(0), genes_Down=character(0))
+	oName<-matrix(c('BP','biological process', 'MF','molecular function','CC','cellular component'),nrow=2)
+	for(i in 1:3){
+		params <- new('GOHyperGParams', geneIds=myids, annotation="org.Hs.eg.db", ontology=oName[1,i],
+					  pvalueCutoff=0.05, conditional=TRUE, testDirection="over")
+		go <- hyperGTest(params)
+		# gn2go <- select(org.Hs.eg.db, as.character(geneIds(go)), "GOALL")
+		gn <- select(org.Hs.eg.db, unique(as.character(geneIds(go))), "SYMBOL")
+		rownames(gn)<-gn[,1]
+		go.table <- summary(go, pvalue=2)
+		# ggo <- select(org.Hs.eg.db, rownames(go.table), "GOALL")
+		ggo <- select(org.Hs.eg.db, rownames(go.table), keys=keyunis, columns = c("GOALL","SYMBOL","ENTREZID"), keytype="GOALL")
+		# columns(org.Hs.eg.db)
+		if (nrow(go.table)>0) {
+			go.table$Pvalue <- p.adjust(go.table$Pvalue, method="none")
+			go.table$adj_pval <- p.adjust(go.table$Pvalue, method="fdr")
+			go.table <- go.table[go.table$Pvalue <= 0.05 & go.table$Size >= minimum.population,]
+			if (nrow(go.table)>0) {
+				rownames(go.table) <- go.table[,1]
+				go.table <- go.table[,c(6,4,5,2,8,3,7)]
+				go.table$ontology <- oName[1,i]
+				for(g in 1:nrow(go.table)){
+					sid<-which(ggo[,"GOALL"]==rownames(go.table)[g])
+					names<-unique(ggo[sid,"SYMBOL"])
+					# names<-gn[gn2go[sid,1],2]
+					go.table[g,"All_genes"]<-paste(names[order(names)],collapse=",")
+					names<-gn[as.character(myids[myids %in% ggo[sid,"ENTREZID"]]),2]
+					up<-gn[as.character(deUp[deUp %in% ggo[sid,"ENTREZID"]]),2]
+					down<-gn[as.character(deDown[deDown %in% ggo[sid,"ENTREZID"]]),2]
+					# names<-gn[as.character(myids[myids %in% gn[gn2go[sid,1],1]]),2]
+					go.table[g,"count_DE_genes"]<-length(names)
+					go.table[g,"DE_genes"]<-paste(names,collapse=",")
+					go.table[g,"count_Up"]<-  length(up)
+					go.table[g,"count_Down"]<-length(down)
+					go.table[g,"genes_Up"]<-  paste(up,collapse=",")
+					go.table[g,"genes_Down"]<-paste(down,collapse=",")
+				}
+				colnames(go.table) <- colnames(output)
+				output <- rbind(output, go.table)
+			}
+		}
+	}
+	return(output[order(output$p.value),])
 }
 
 # myEdgeR<-function(qlf,sheet,y,fileName){
@@ -58,26 +149,35 @@ figVen<-function(dat,lim,txt="",filexlsx){
  
 makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],filexlsx){
 	dat<-httab[!(rownames(httab) %in% servRow),sel]
-	dat<-dat[rowSums(dat>lim)!=0,]
+	dat<-as.matrix(dat[rowSums(dat>lim)!=0,])
+	mode(dat)<-"integer"
 	# group<-as.character(colData[sel,"nr"])
 	# design <- model.matrix(~group)
+	colData[,2]<-as.factor(colData[,2])
 	if(sum((rowSums((dat==0)+0)==0)+0)>1){
 		dds <- DESeqDataSetFromMatrix(countData = dat, colData = colData[sel,], design = ~ nr)
-		dds2 <- DESeq(dds)
-		res <- as.data.frame(results(dds2, cooksCutoff=FALSE))
-		counts<-as.matrix(counts(dds2,normalized=TRUE))[rownames(res),]
-		res<-cbind(res,BH=p.adjust(res[,"pvalue"],method="BH")," "=" ",baseMedian=rowMedians(counts),"  "=" ",counts,"   "=" ",dat[rownames(res),])
+		err<-try(dds2 <- DESeq(dds,quiet = T))
+		if(typeof(err)!="S4"){
+			write.xlsx2(gsub("\n"," ",as.character(err)),filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"),append=TRUE)
+			return(rbind(list(baseMean=1,log2FoldChange=1,lfcSE=1,stat=1,pvalue=1,padj=1))[-1,])
+		}
+		res <- as.data.frame(results(dds2,contrast=c("nr","test","control"),lfcThreshold=log2FoldChange, alpha=padj, cooksCutoff=TRUE))
 		res<-res[order(res[,"pvalue"]),]
-		# out<-cbind(res)
-		# rownames(out)<-rownames(res)
-		write.xlsx2(res,filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"),append=TRUE)
-		out<-res[,c("log2FoldChange","pvalue","padj","baseMean")]
-		colnames(out)[1:(ncol(out)-2)]<-paste(cat1,cat2,colnames(out)[1:(ncol(out)-2)])
-		# res<-res[!is.na(res[,"padj"]) & res[,"padj"]<0.1,]
-		# if(nrow(res)>0) write.xlsx2(as.data.frame(rbind(res,NA)),filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2","signif"),append=TRUE)
-		# res<-res[!is.na(res[,"log2FoldChange"]) & abs(res[,"log2FoldChange"])>2,]
-		# if(nrow(res)>0) write.xlsx2(as.data.frame(rbind(res,NA)),filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2","signif and Fold>2"),append=TRUE)
-	} else { out<-matrix(NA,ncol=2,nrow=2); colnames(out)<-paste(paste(cat1,cat2),c("log2FoldChange","padj")) }
+		out<-res
+		res<-res[!is.na(res[,"padj"]) & res[,"padj"]<padj,]
+		if(nrow(res)>0){
+			counts<-as.matrix(counts(dds2,normalized=TRUE))[rownames(res),]
+			res<-cbind(res," "=" ",baseMedian=rowMedians(counts),"  "=" ",counts,"   "=" ",Raw=dat[rownames(res),])
+			write.xlsx2(as.data.frame(rbind(res,NA)),filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"),append=TRUE)
+			if(txt == "all_miRNA") try(write.xlsx2(tomieaa(sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/")))),
+												   filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"MIEAA"),append=TRUE))
+			#TODO Diff expression DESeq2  GOstats ####
+			# if(txt %in% c("Ensembl_genes","protein_coding","all_lncRNA","all_miRNA")){
+			# # 	#  https://www.bioconductor.org/packages/release/bioc/manuals/GOstats/man/GOstats.pdf
+			# 	myGO(myids=sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/"))), minimum.population=5,deUp=c(),deDown=c())
+			# }
+		} else write.xlsx2(c("No matching results found"),filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"),append=TRUE)
+	} else write.xlsx2(c("Normalisation not possible: No found features presented in all samples"),filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"),append=TRUE)
 
 	# indat <- DGEList( counts = dat, group = group)
 	# RLE <- calcNormFactors(indat,method="RLE")$samples[,"norm.factors"]
@@ -117,11 +217,25 @@ stattab<-function(tt,servRow=servRow){
 
 fileName<-file.path(ED,paste0(Exp,"_results"))
 filexlsx<-paste0(fileName,".xlsx")
+value<-c(Exp=Exp,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,sizerange =sizerange,lim =lim,log2FoldChange=log2FoldChange,padj =padj,email =email,smtpServer=smtpServer)
+value<-rbind(cbind(variable=names(value),value=value," "=" ","  "=" ")," ",c("file","size","date","group"),cbind(FilesIn,group=GroupsSel[FilesIn[,"file"]]))
+write.xlsx2(value,filexlsx,sheet="Settings",row.names = FALSE)
 stat<-read.table(file.path(ED,"stats.tsv"), sep = "\t",header = TRUE)
-write.xlsx2(stat[-c(21:50),],filexlsx,sheet="Quality",row.names = FALSE)
-write.xlsx2(stat[21:50,],filexlsx,sheet="Catalog",row.names = FALSE,append = TRUE)
+write.xlsx2(stat[1:20,],filexlsx,sheet="Quality",row.names = FALSE,append = TRUE)
+write.xlsx2(stat[21:39,],filexlsx,sheet="Catalog",row.names = FALSE,append = TRUE)
 
-deGTF<-unique(sub(".*\\.","",sub(".txt$","",dir(ED,"_mergedFeatures.txt$",recursive = TRUE))))
+samples <- rep(colnames(stat)[-1],each=(36-21))
+RNA_types <- rep(stat[22:36,1], ncol(stat)-1)
+frequency <- as.numeric(unlist(stat[22:36,-1]))
+data <- data.frame(samples,RNA_types,frequency)
+print(ggplot(data, aes(fill=RNA_types, y=frequency, x=samples)) + geom_bar(position="fill", stat="identity"))
+wb<-openxlsx::loadWorkbook(filexlsx)
+openxlsx::insertPlot(wb,sheet="Catalog",width = 6+ncol(stat), height = 8, dpi=300,startCol = 8)
+saveWorkbook(wb,filexlsx, overwrite = TRUE)
+
+# deGTF<-unique(sub(".*\\.","",sub(".txt$","",dir(ED,"_mergedFeatures.txt$",recursive = TRUE))))
+deGTF<-c("all_miRNA_mergedFeatures","GtRNAdb_mergedFeatures","rRNA_mergedFeatures","protein_coding_mergedFeatures","processed_pseudogene_mergedFeatures","snRNA_mergedFeatures","snoRNA_mergedFeatures","all_MT_mergedFeatures","all_piRNA_mergedFeatures","all_lncRNA_mergedFeatures","vaultRNA_mergedFeatures","misc_RNA_mergedFeatures","Other_types_mergedFeatures","RepeatMasker_tRNA_mergedFeatures","RepeatMasker_rRNA_mergedFeatures")
+
 prefix<-"htseq-count"
 for(gr in deGTF){
 	files<-file.path(wd,paste0(filesIn[,"wd"],"ShortStack/",prefix,"_",filesIn[,"name"],".",gr,".txt"))
@@ -143,7 +257,7 @@ for(gr in deGTF){
 	htexp<-rbind(htexp[!(rownames(htexp) %in% servRow),])
 	print(paste(gr,grep(gr,deGTF),"/",length(deGTF),"rows =",nrow(htexp)))
 	if(nrow(htexp)==0) next;
-	write.xlsx2(stattab(httab,servRow),filexlsx,sheet=paste("Identifed",sub("_mergedFeatures","",gr),sep="_"),append=TRUE)
+	write.xlsx2(stattab(httab,servRow),filexlsx,sheet=paste(sub("_mergedFeatures","",gr),"Identifed",sep="_"),append=TRUE)
 
 	# NF<-max(colSums(httab))/colSums(httab)
 	# norm2all<-httab*max(colSums(httab))/matrix(colSums(httab),byrow=TRUE,ncol=ncol(httab),nrow=nrow(httab))
@@ -151,19 +265,16 @@ for(gr in deGTF){
 	# NF2<-max(c2)/c2
 	# norm2feat<-httab*max(c2)/matrix(c2,byrow=TRUE,ncol=ncol(httab),nrow=nrow(httab))
 	# write.xlsx2(stattab(norm2feat,servRow),filexlsx,sheet="Normalised to features mapped reads",append=TRUE)
-
-# unlist(unique(GroupsSel[rownames(filesIn)]))
-	
-	sampleTable<-cbind(Sample=colnames(httab),nr=unlist(GroupsSel[rownames(filesIn)]))
+	sampleTable<-cbind(Sample=colnames(httab),nr=unlist(GroupsSel[filesIn[,"rf"]]))
 	rownames(sampleTable)<-colnames(httab)
 	colData<-as.data.frame(sampleTable) # ,stringAsFactors=FALSE
 	sets<-matrix(c("test","control"),nrow=2)
 	for(s in 1:ncol(sets)){
 		sel<-sampleTable[sampleTable[,"nr"] %in% sets[,s],"Sample"]
-		out<-makeDG(httab,sel,colData,paste(sub("_mergedFeatures","",gr),sep="_"),sets[1,s],sets[2,s],filexlsx)
+		out<-makeDG(httab,sel,colData,txt=paste(sub("_mergedFeatures","",gr),sep="_"),sets[1,s],sets[2,s],filexlsx)
 	}
 
-	if(nrow(htexp)>1) figVen(htexp,lim,paste("Vennd.",sub("_mergedFeatures","",gr)),filexlsx)
+	if(nrow(htexp)>1) figVen(htexp,lim,paste(sub("_mergedFeatures","",gr),"venn diagram"),filexlsx)
 
 	for(set in c("all", "expr.")){
 		if(set=="all"){ d<-httab[!(rownames(httab) %in% servRow),] } else d<-htexp
@@ -177,11 +288,11 @@ for(gr in deGTF){
 						filexlsx = filexlsx, sheet = paste(sub("_mergedFeatures","",gr),set,method), append = T)
 			corrplot.mixed(c, p.mat = p, number.cex = 1, sig.level = .05,title=paste(sub("_mergedFeatures","",gr),set,method),mar=c(1,1,3,1))
 			wb<-openxlsx::loadWorkbook(filexlsx)
-			openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 8, height = 6, dpi=600,startCol = 4)
-			if(sum(is.na(c))==0){
+			openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 8, height = 6, dpi=150,startCol = 4)
+			if(sum(is.na(c))==0 && length(table(c))>1){
 				heatmap.2(c,Rowv=TRUE,Colv=TRUE, dendrogram="row", revC = T, scale="none", col=greenred(75),na.rm=TRUE, key=TRUE, density.info="none", trace="none",mar=c(8,8))
 				title(paste(sub("_mergedFeatures","",gr),set,method),cex.main=0.8)
-				openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 8, height = 6, dpi=600,startCol = 15)
+				openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 8, height = 6, dpi=150,startCol = 15)
 			}
 			saveWorkbook(wb,filexlsx, overwrite = TRUE)
 		}

@@ -22,8 +22,8 @@ server <- function(input, output, session) {
     # })
     output$filesUpload <- renderText({
         req(input$file_upload)
-        if(!dir.exists(paste0(wd,"/data/input"))) dir.create(paste0(wd,"/data/input"),recursive = TRUE)
-        out<-gsub(" ","_",paste0(wd,"/data/input/",input$file_upload$name))
+        if(!dir.exists(file.path(wd,"www","upload"))) dir.create(file.path(wd,"www","upload"),recursive = TRUE)
+        out<-gsub(" ","_",file.path(wd,"www","upload",input$file_upload$name))
         file.copy(input$file_upload$datapath,out)
         file.remove(input$file_upload$datapath)
         out
@@ -60,7 +60,7 @@ server <- function(input, output, session) {
         if(nrow(filesIn)>0) colnames(filesIn)<-c("file","size","date")
         filesIn <- unique(filesIn)
         FilesIn <<- filesIn
-        save(FilesIn,file=paste0(wd,"/data/FilesIn.RData"))
+        save(FilesIn,file=file.path(wd,"www","db","FilesIn.RData"))
         filesIn
     }, server = TRUE)
 
@@ -83,7 +83,7 @@ server <- function(input, output, session) {
         Shiny.bindAll(table.table().node());")
     )
 
-    output$sel = renderPrint({
+    output$sel = renderTable({
         sel <- GroupsSel
         if(length(c(input$groups_cell_clicked,input$filesUploaded_rows_selected,input$examples_rows_selected,input$serverFiles_rows_selected,input$filesIn_rows_selected))>0){
             # browser()
@@ -97,14 +97,61 @@ server <- function(input, output, session) {
             }
             sel<-c(GroupsSel[!names(GroupsSel) %in% names(sel)],sel)
             GroupsSel <<- sel
-            save(GroupsSel,file=paste0(wd,"/data/GroupsSel.RData"))
+            save(GroupsSel,file=file.path(wd,"www","db","GroupsSel.RData"))
         }
-        sel
+        # table(unlist(sel))
+        rbind(number=table(Number=as.character(GroupsSel) )," "=c(" ") )
     })
     output$session_info<-renderPrint(sessionInfo())
-    output$Config<-renderPrint({
-        Exp<<-input$Exp
-        save(Exp,file=paste0(wd,"/data/Config.RData"))
-        list(Exp=Exp)
+    output$Config<-renderText({
+        Exp       <<-gsub(" ","_",trimws(input$Exp))
+        specie    <<-input$specie
+        tsize     <<-input$tsize
+        Rep       <<-input$Rep
+        blast     <<-input$blast
+        ad3       <<-input$ad3
+        ad5       <<-input$ad5
+        sizerange <<-input$sizerange
+        lim       <<-input$lim
+        log2FoldChange<<-input$log2FoldChange
+        padj      <<-input$padj
+        email     <<-input$email
+        smtpServer<<-input$smtpServer
+        save(Exp,specie,tsize,Rep,blast,ad3,ad5,sizerange,lim,log2FoldChange,padj,email,smtpServer,file=file.path(wd,"www","db","Config.RData"))
+        # list(wd=wd,getwd=getwd(),Exp=Exp,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,sizerange =sizerange,lim =lim,log2FoldChange=log2FoldChange,padj =padj,email =email,smtpServer=smtpServer)
+        Exp
     })
+    
+    observeEvent(input$start,{
+        ED<-file.path(wd,"www",Exp)
+        if(dir.exists(ED)){
+            showModal(modalDialog(
+                title = "Warning",
+                "Analysis with this name already started!"
+            ))
+        } else {
+            # parallel::mcfork(source("bin/batch.R"),estranged = TRUE)
+            # parallel::mcparallel(source("bin/batch.R"),detached = TRUE)
+            # parallel::mccollect(wait = F)
+            p <- parallel:::mcfork(estranged = TRUE)
+            setwd(wd)
+            if (inherits(p, "masterProcess")) {
+                source("bin/batch.R")
+                parallel:::mcexit()
+            }
+            withProgress(message = 'Starting job', {
+                for(i in 1:4){
+                    Sys.sleep(1)
+                    incProgress(1/4)
+                }
+            })
+        }
+    })
+    #         # system(paste("Rscript","bin/batch.R",Exp),wait = FALSE)
+    #         system(paste0("R -e 'Exp<-\"",Exp,"\"; source(\"bin/batch.R\")'"),wait = FALSE)
+    #         # source("bin/batch.R")
 }
+
+
+
+

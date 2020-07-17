@@ -38,3 +38,5 @@ write.xlsx2<-function(data=c(),filexlsx="Book1.xlsx",sheet="Sheet1",append=FALSE
 	saveWorkbook(wb,filexlsx,overwrite = TRUE)
 }
 
+RevCompl <- function(x) chartr("ATGCatgcUu","TACGtacgAa",sapply(lapply(strsplit(x,NULL),rev),paste,collapse=""))
+

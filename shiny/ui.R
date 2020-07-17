@@ -1,5 +1,5 @@
 library(shinydashboard)
-source(paste0(wd,"/shiny/files_input.R"))
+source(file.path(wd,"shiny","files_input.R"))
 
 header <- dashboardHeader(title = "sRNAflow" ,dropdownMenuOutput("messageMenu"))
 
@@ -7,10 +7,10 @@ sidebar <- dashboardSidebar(
     sidebarMenu(
         id = "tabs",
         menuItem("Seq Data Input", tabName="Files", icon = icon("cloud-upload"), selected = TRUE),
-        menuItem("Select groups", tabName="Groups", icon = icon("cloud-upload"), selected = TRUE),
+        menuItem("Select groups", tabName="Groups", icon = icon("cloud-upload")),
         menuItem("Configuration", tabName = "Config", icon = icon("th")),
         # The following menus are just displayed when a sample set has been loaded
-        menuItem("Report", tabName = "Report", icon = icon("asterisk"))
+        menuItem("Reports", tabName = "Reports", icon = icon("asterisk"))
     ),
     div(class="hide_when_sidebar_collapsed",
         # tags$p(class="sidebartext", style="padding-left: 10px;color: #b8c7ce; ", "To start  data, upload a dataset in the 'Seq Data Input' tab."),
@@ -46,31 +46,77 @@ body <- dashboardBody(
         ),
         tabItem("Groups",
                 h2("Select groups"),
-                selectGroupsUI("groups")
+                selectGroupsUI("groups"),
+                # box(width=12,
+                #     collapsible=TRUE,
+                #     collapsed=TRUE,
+                    tableOutput("sel")
+                # )
         ),
         tabItem(tabName = "Config",
                 h2("Configuration"),
-                textInput("Exp",  "Experiment ID:", value = Exp),
-                verbatimTextOutput("Config")
+                fluidRow(
+                    column(4,textInput("Exp",   "Experiment ID:", value = Exp, width ='100%')),
+                    column(4,selectInput('specie', 'Main specie:', species, selected = specie, width ='100%')),
+                ),
+                hr(),
+                fluidRow(
+                    column(4,
+                        h3("Trimming"),
+                        selectizeInput('ad3', "3' adapter:", choices = c('TGGAATTCTCGGGTGCCAAGG #Illumina TruSeq Small RNA','ATCACCGACTGCCCATAGAGAG # Ion Torrent',' # Not remove'),options = list(create = TRUE), selected = ad3, width ='100%')
+                    ),
+                    column(4,
+                        h3("BLAST"),
+                        sliderInput('tsize', 'Representative subset size:', min = 200,  max = 2000,  value = tsize, width ='100%')
+                    ),
+                    column(4,autoWidth = TRUE,
+                        h3("DESeq2"),
+                        sliderInput('lim', 'Reads theshold:', min = 0,  max = 100,  value = lim, width ='100%')
+                    )
+                ),
+                hr(),
+                fluidRow(
+                    column(4,selectizeInput('ad5', "5' adapter:", choices = c('GTTCAGAGTTCTACAGTCCGACGATC # Illumina TruSeq Small RNA','CCAAGGCG # Ion Torrent',' # Not remove'),options = list(create = TRUE), selected = ad5, width ='100%')),
+                    column(4,sliderInput('Rep', 'Subsets number:', min = 1,  max = 10,  value = Rep, width ='100%')),
+                    column(4,numericInput('log2FoldChange', 'log2FoldChange theshold:', log2FoldChange, min = 0, max = 100, width ='100%'))
+                ),
+                hr(),
+                fluidRow(
+                    column(4,sliderInput("sizerange", "Size range", min = 10,max = 300, value = sizerange, width ='100%')),
+                    column(4,selectInput('blast', 'BLAST to:', c("main specie & bacteria+","nr"), selected = blast, width ='100%')),
+                    column(4,numericInput('padj', 'Adjusted p-value theshold:', padj, min = 0, max = 1, width ='100%'))
+                ),
+                hr(),
+                fluidRow(
+                    column(4,textInput("email",   "Send results to (email):", value = email, width ='100%')),
+                    column(4,textInput("smtpServer",   "SMTP Server:", value = smtpServer, width ='100%')),
+                    column(4,br(),actionButton("start", "Start analysis",icon = icon("bar-chart-o"), width ='100%'))
+                ),
+                # box(width=12,
+                #     collapsible=TRUE,
+                #     collapsed=TRUE,
+                    verbatimTextOutput("Config")
+                # )
         ),
-        tabItem(tabName = "Report",
-                h2("Report")
+        tabItem(tabName = "Reports",
+                h2("Reports"),
+                hr(),
+                # verbatimTextOutput("Config"),
+                a(href="merged38_results.xlsx", "Download XXX", download=NA, target="_blank")
         ),
         tabItem(
             "About",
             box(width=12,
                 HTML(
                     "<h2>sRNAflow</h2>
-                                                     
-                                                     <p>This tool was developed by ... </p>")),
-            br(),
+                                       https://github.com/zajakin/sRNAflow              
+                                                     <p>This tool was developed by Pawel Zayakin.</p>")),
             br(),
             box(width=12,
                 title="Session Information",
                 collapsible=TRUE,
-                collapsed=FALSE,
-                verbatimTextOutput("session_info"),
-                verbatimTextOutput("session_info1")
+                collapsed=TRUE,
+                verbatimTextOutput("session_info")
             )
         )
     )
