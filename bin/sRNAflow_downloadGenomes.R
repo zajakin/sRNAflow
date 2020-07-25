@@ -28,8 +28,8 @@ for(id in species99[,"id"]){
 	#IDEA Select representative contig per specie (by clustering?)
 }
 
-if(file.size(fa)>(2^32-1)){ system(paste("bowtie2-build --threads ",core," --large-index ",fa,file.path(WD,"genomes"),">",file.path(WD,"genomes","bowtie2-build.log")))
-} else system(paste("bowtie2-build --threads ",core,fa,file.path(WD,"genomes"),">",file.path(WD,"genomes","bowtie2-build.log")))
+if(file.size(fa)>(2^32-1)){ system(paste("bowtie2-build --threads ",core," --large-index ",fa,file.path(WD,"genomes"),">",file.path(WD,"bowtie2-build.log")))
+} else system(paste("bowtie2-build --threads ",core,fa,file.path(WD,"genomes"),">",file.path(WD,"bowtie2-build.log")))
 
 # as.vector(md5sum(dir(R.home(), pattern = "^COPY", full.names = TRUE)))
 system("$HOME/conda/bin/ktUpdateTaxonomy.sh")

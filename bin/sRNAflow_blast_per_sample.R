@@ -89,6 +89,7 @@ if(!file.exists(paste0("forKrona/",name,".forKrona.txt"))){
 
 # print(date())
 pos<-read.table(out, comment.char="",quote = "", header = FALSE, sep = "\t",dec = ".", na.strings = "NA",as.is = TRUE)
+pos<-pos[!is.na(pos[,3]),]
 colnames(pos)<-colNames
 # head(pos)
 # dim(pos)

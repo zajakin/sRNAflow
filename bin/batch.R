@@ -14,7 +14,9 @@ source("bin/sRNAflow_filesIn_subsets.R")
 load(file.path(ED,"filesIn.RData"))
 
 source(file.path(wd,"bin","sRNAflow_blast_per_sample.R"))
-err<-foreach(idr=1:nrow(filesIn),.verbose = T) %dopar% for(re in 1:as.numeric(Rep)) blast_per_sample(idr,re,wd,filesIn,tsize,core)
+comb<-cbind(rep(1:nrow(filesIn),each=as.numeric(Rep)),rep(1:as.numeric(Rep),times=nrow(filesIn)))
+err<-foreach(combr=1:nrow(comb),.verbose = T) %dopar% blast_per_sample(idr=comb[combr,1],re=comb[combr,2],wd,filesIn,tsize,core)
+# err<-foreach(idr=1:nrow(filesIn),.verbose = T) %dopar% for(re in 1:as.numeric(Rep)) blast_per_sample(idr,re,wd,filesIn,tsize,core)
 
 #aggregate species  ########
 source("bin/sRNAflow_aggregate_species.R")
