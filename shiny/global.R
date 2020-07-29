@@ -21,7 +21,7 @@ if(length(examples)>0){
 				date=format(file.info(file.path("example-samples",examples))$mtime,"%d.%m.%Y %H:%M:%OS"))
 } else examples<-rbind(rep(NA,3))[-1,]
 if(!dir.exists(file.path(wd,"www","upload"))) dir.create(file.path(wd,"www","upload"),recursive = TRUE)
-serverFiles<-dir(path = file.path("www","upload"),pattern = ".(fastq|fq|fasta|fa|bam|sam|cram)$",full.names = FALSE, recursive = TRUE, include.dirs = TRUE)
+serverFiles<-dir(path = file.path("www","upload"),pattern = ".(fastq|fq|fasta|fa|bam|sam|cram)(|.(gz|bz2|xz))$",full.names = FALSE, recursive = TRUE, include.dirs = TRUE)
 if(length(serverFiles)>0){
 	serverFiles<-cbind(file=file.path("www","upload",serverFiles),
 				size=humanReadable(file.info(file.path("www","upload",serverFiles))$size),
