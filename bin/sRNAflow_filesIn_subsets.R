@@ -12,7 +12,7 @@ trimm<-function(rf,ext,s,d,ad3,ad5,sizerange,arx){
 		qc<-"--quality-cutoff=20,20"
 		mark="^@"
 	}
-	con<-file(paste0(d,"trimm.txt"),"wt")
+	con<-file(paste0(d,"logs","trimm.txt"),"wt")
 	writeLines(paste0("File\t",s),con)
 	writeLines(paste0("Raw\t",system(paste0(cat,rf," | grep -c \"",mark,"\" "),intern = TRUE)),con)
 
@@ -50,6 +50,7 @@ filesIn<-foreach(i=1:nrow(filesIn),.combine = rbind) %dopar% {
 	s<-sub(paste0(ext,arx),"",basename(rf))
 	filesIn[i,"name"]<-s
 	d<-file.path("www",Exp,s,"")
+	if(!dir.exists(paste0(d,"logs"))) dir.create(paste0(d,"logs"),recursive = T)
 	if(!dir.exists(paste0(d,"faTab"))) dir.create(paste0(d,"faTab"),recursive = T)
 	filesIn[i,"wd"]<-d
 	filesIn[i,"ft"]<-paste0(d,"faTab/",s,".faTab")

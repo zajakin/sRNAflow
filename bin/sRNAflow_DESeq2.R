@@ -13,19 +13,23 @@ options(echo=TRUE)
 tabs<-c(c("tag_unique","ambigue","unique"),paste(c("tag","ambigue","unique"),"ambigue_selected",sep = "_")) #"tag_ambigue",
 for(sample in filesIn[,"name"]){
 	p<- file.path(ED,sample,"isomiR-SEA")
-	filexlsx<- file.path(ED,paste0(sample,"_isomiR-SEA.xlsx"))
+	filexlsx<- file.path(ED,sample,paste0(sample,"_isomiR-SEA.xlsx"))
 	tab<-read.table(file.path(p,"summary.txt"), sep = " ",header = F)[,-2]
 	write.xlsx2(tab,filexlsx,sheet="Summary",row.names = FALSE,col.names = FALSE)
 	for(t in tabs){
-		tab<-read.table(file.path(p,paste0("out_result_mature_",t,".txt")), sep = "\t",header = F,skip = 1,comment.char = "",fill = T)
-		colnames(tab)<-read.table(file.path(p,paste0("out_result_mature_",t,".txt")),header = FALSE,nrows = 1,skip = 0,comment.char = "")
-		write.xlsx2(tab,filexlsx,sheet=t,row.names = FALSE,append = TRUE)
+		infile<-file.path(p,paste0("out_result_mature_",t,".txt"))
+		if(length(readLines(infile,n=2))==2){
+			tab<-read.table(infile, sep = "\t",header = F,skip = 1,comment.char = "",fill = T)
+			colnames(tab)<-read.table(infile,header = FALSE,nrows = 1,skip = 0,comment.char = "")
+			write.xlsx2(tab,filexlsx,sheet=t,row.names = FALSE,append = TRUE)
+		}
 	}	
 }
 
 figVen<-function(dat,lim,txt="",filexlsx){
 	title<-paste0(txt," >",lim)
 	vv <- list()
+	if(ncol(dat)>5 || ncol(dat)<2) return()
 	for(i in 1:ncol(dat)){
 		vv$tmp<-rownames(dat)[as.numeric(dat[,i])>lim]
 		names(vv)[length(vv)]<-paste(colnames(dat)[i])
@@ -166,8 +170,8 @@ makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],file
 		out<-res
 		res<-res[!is.na(res[,"padj"]) & res[,"padj"]<padj,]
 		if(nrow(res)>0){
-			counts<-as.matrix(counts(dds2,normalized=TRUE))[rownames(res),]
-			res<-cbind(res," "=" ",baseMedian=rowMedians(counts),"  "=" ",counts,"   "=" ",Raw=dat[rownames(res),])
+			counts<-rbind(as.matrix(counts(dds2,normalized=TRUE))[rownames(res),])
+			res<-cbind(rbind(res)," "=" ",baseMedian=rowMedians(counts),"  "=" ",counts,"   "=" ",Raw=rbind(dat[rownames(res),]))
 			write.xlsx2(as.data.frame(rbind(res,NA)),filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"),append=TRUE)
 			if(txt == "all_miRNA") try(write.xlsx2(tomieaa(sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/")))),
 												   filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"MIEAA"),append=TRUE))
@@ -228,9 +232,9 @@ samples <- rep(colnames(stat)[-1],each=(36-21))
 RNA_types <- rep(stat[22:36,1], ncol(stat)-1)
 frequency <- as.numeric(unlist(stat[22:36,-1]))
 data <- data.frame(samples,RNA_types,frequency)
-print(ggplot(data, aes(fill=RNA_types, y=frequency, x=samples)) + geom_bar(position="fill", stat="identity"))
+print(ggplot(data, aes(fill=RNA_types, y=frequency, x=samples)) + geom_bar(position="fill", stat="identity") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
 wb<-openxlsx::loadWorkbook(filexlsx)
-openxlsx::insertPlot(wb,sheet="Catalog",width = 6+ncol(stat), height = 8, dpi=300,startCol = 8)
+openxlsx::insertPlot(wb,sheet="Catalog",width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
 saveWorkbook(wb,filexlsx, overwrite = TRUE)
 
 # deGTF<-unique(sub(".*\\.","",sub(".txt$","",dir(ED,"_mergedFeatures.txt$",recursive = TRUE))))
@@ -286,15 +290,19 @@ for(gr in deGTF){
 			colnames(pv)<-colnames(c)
 			write.xlsx2(rbind(data.frame(signif(c,2),check.names = F)," "=" ","p-values"=colnames(c),pv),
 						filexlsx = filexlsx, sheet = paste(sub("_mergedFeatures","",gr),set,method), append = T)
-			corrplot.mixed(c, p.mat = p, number.cex = 1, sig.level = .05,title=paste(sub("_mergedFeatures","",gr),set,method),mar=c(1,1,3,1))
-			wb<-openxlsx::loadWorkbook(filexlsx)
-			openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 8, height = 6, dpi=150,startCol = 4)
-			if(sum(is.na(c))==0 && length(table(c))>1){
-				heatmap.2(c,Rowv=TRUE,Colv=TRUE, dendrogram="row", revC = T, scale="none", col=greenred(75),na.rm=TRUE, key=TRUE, density.info="none", trace="none",mar=c(8,8))
-				title(paste(sub("_mergedFeatures","",gr),set,method),cex.main=0.8)
-				openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 8, height = 6, dpi=150,startCol = 15)
+			if((sum(is.na(c))==0 && length(table(c))>1) || ncol(c)<20){
+				wb<-openxlsx::loadWorkbook(filexlsx)
+				if(ncol(c)<20){
+					corrplot.mixed(c, p.mat = p, number.cex = 1, sig.level = .05,title=paste(sub("_mergedFeatures","",gr),set,method),mar=c(1,1,3,1))
+					openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
+				}
+				if(sum(is.na(c))==0 && length(table(c))>1){
+					heatmap.2(c,Rowv=TRUE,Colv=TRUE, dendrogram="row", revC = T, scale="none", col=greenred(75),na.rm=TRUE, key=TRUE, density.info="none", trace="none",mar=c(8,8))
+					title(paste(sub("_mergedFeatures","",gr),set,method),cex.main=0.8)
+					openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
+				}
+				saveWorkbook(wb,filexlsx, overwrite = TRUE)
 			}
-			saveWorkbook(wb,filexlsx, overwrite = TRUE)
 		}
 	}
 }

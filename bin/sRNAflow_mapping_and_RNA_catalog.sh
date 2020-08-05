@@ -120,7 +120,7 @@ else
   # fastq_to_fasta -i $ff -o $fasta
 fi
 txtLog=$out/$f/stat.txt
-cp -f $out/$f/trimm.txt $txtLog
+cp -f $out/$f/logs/trimm.txt $txtLog
 # echo -e "File\t$f" > $txtLog
 # echo -e "Raw\t`grep -c \"$mark\" $rawfile`" >> $txtLog
 # echo -e "QC_and_adapter3\t`grep -c \"$mark\" $adremoved`" >> $txtLog
@@ -132,10 +132,10 @@ shdir="$out/$f/ShortStack"
 shfile="$out/$f/$f.bam"
 rm -rf "$shdir"
 bowtie2opt="--time --end-to-end -k 21 -p $core --mm -x $DB/$DV $inFasta --un $out/$f/Unmapped_$f.fq --no-unal"
-bowtie2 $bowtie2opt -D 20 -R 3 -N 0 -L 20 -i S,1,0.50 -U $ff -S $shdir.sam > $out/$f/bowtie2.log 2>&1
+bowtie2 $bowtie2opt -D 20 -R 3 -N 0 -L 20 -i S,1,0.50 -U $ff -S $shdir.sam > $out/$f/logs/bowtie2.log 2>&1
 $samtools view -uhS -F4 $shdir.sam | $samtools sort -@ $core - -o $shfile > /dev/null 2>&1
 rm $shdir.sam
-$shortstack --readfile $shfile --genomefile $DB/$DV.fa --outdir $shdir --bowtie_cores $core --mismatches 1 --bowtie_m 201 --ranmax 200 --keep_quals --inbam --nohp >> $out/$f/Shortstack.log 2>&1
+$shortstack --readfile $shfile --genomefile $DB/$DV.fa --outdir $shdir --bowtie_cores $core --mismatches 1 --bowtie_m 201 --ranmax 200 --keep_quals --inbam --nohp >> $out/$f/logs/Shortstack.log 2>&1
 dd=""
 if [ `echo $f | grep -c dd` == 1 ]; then
   dd="_dd"
@@ -145,16 +145,16 @@ $samtools index $shdir/$f$dd.bam
 $samtools idxstats $shdir/$f$dd.bam  > ${shdir}/mapped.txt
 $samtools sort $shdir/$f$dd.bam -o $shdir/$f.sam
 
-gawk '/reads; of these/{ print "For_mapping\t" $1 }' $out/$f/bowtie2.log >> $txtLog
-gawk '/were unpaired; of these/{ print "Unpaired\t" $1 }' $out/$f/bowtie2.log >> $txtLog
-gawk '/were unpaired; of these/{ print "Unpaired_%\t" $2 }' $out/$f/bowtie2.log >> $txtLog
-gawk '/aligned 0 times/{ print "Unmapped\t" $1 }' $out/$f/bowtie2.log >> $txtLog
-gawk '/aligned 0 times/{ print "Unmapped_%\t" $2 }' $out/$f/bowtie2.log >> $txtLog
-gawk '/aligned exactly 1 time/{ print "Uniq_mapped\t" $1 }' $out/$f/bowtie2.log >> $txtLog
-gawk '/aligned exactly 1 time/{ print "Uniq_mapped_%\t" $2 }' $out/$f/bowtie2.log >> $txtLog
-gawk '/aligned >1 times/{ print "Multimapped\t" $1 }' $out/$f/bowtie2.log >> $txtLog
-gawk '/aligned >1 times/{ print "Multimapped_%\t" $2 }' $out/$f/bowtie2.log >> $txtLog
-gawk '/overall alignment rate/{ print "Overall_alignment_rate_%\t" $1 }' $out/$f/bowtie2.log >> $txtLog
+gawk '/reads; of these/{ print "For_mapping\t" $1 }' $out/$f/logs/bowtie2.log >> $txtLog
+gawk '/were unpaired; of these/{ print "Unpaired\t" $1 }' $out/$f/logs/bowtie2.log >> $txtLog
+gawk '/were unpaired; of these/{ print "Unpaired_%\t" $2 }' $out/$f/logs/bowtie2.log >> $txtLog
+gawk '/aligned 0 times/{ print "Unmapped\t" $1 }' $out/$f/logs/bowtie2.log >> $txtLog
+gawk '/aligned 0 times/{ print "Unmapped_%\t" $2 }' $out/$f/logs/bowtie2.log >> $txtLog
+gawk '/aligned exactly 1 time/{ print "Uniq_mapped\t" $1 }' $out/$f/logs/bowtie2.log >> $txtLog
+gawk '/aligned exactly 1 time/{ print "Uniq_mapped_%\t" $2 }' $out/$f/logs/bowtie2.log >> $txtLog
+gawk '/aligned >1 times/{ print "Multimapped\t" $1 }' $out/$f/logs/bowtie2.log >> $txtLog
+gawk '/aligned >1 times/{ print "Multimapped_%\t" $2 }' $out/$f/logs/bowtie2.log >> $txtLog
+gawk '/overall alignment rate/{ print "Overall_alignment_rate_%\t" $1 }' $out/$f/logs/bowtie2.log >> $txtLog
 awk '{l+=$3; s+=$4 } END {print "mapped_reads\t" l+s "\nmapped_reads_less200\t" l "\nmapped_reads_over200\t" s}' ${shdir}/mapped.txt >> $txtLog
 mycount $shdir/$f.sam $shdir $DB/$DV.gtf $DB $DV
 mystat $shdir/$f.sam $shdir $DB/$DV.gtf $DB $DV >> $txtLog

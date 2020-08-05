@@ -31,6 +31,8 @@ system(paste("ln -fs ",file.path(wd,"www","db","gtf_biotypes"),file.path(ED,"gen
 system(paste("ln -fs ",file.path(wd,"www","db","genomes","homo_sapiens.gtf"),file.path(ED,"genomes","genomes.gtf")))
 
 #mapping o:f:r:l:a
+# registerDoMC(cores = 4)
+# for(i in 1:nrow(filesIn)){
 err<-foreach(i=1:nrow(filesIn)) %dopar% {
 	system(paste(file.path(wd,"bin","sRNAflow_mapping_and_RNA_catalog.sh"),
 				 "-n",filesIn[i,"name"],
