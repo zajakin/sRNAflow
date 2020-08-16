@@ -28,4 +28,5 @@ RUN mv /srv/shiny-server /srv/shiny-server.orig && \
 #        sortmerna bcftools gffread bedtools && \
 
 #docker build  -t srnaflow shiny
-#docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v `pwd`/shinylog/:/var/log/shiny-server/ srnaflow
+#chmod 777 .
+#docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v /tmp/shinylog/:/var/log/shiny-server/ srnaflow bash
