@@ -148,6 +148,20 @@ server <- function(input, output, session) {
             })
         }
     })
+    observeEvent(input$download_examples,{
+        p <- parallel:::mcfork(estranged = TRUE)
+        setwd(wd)
+        if (inherits(p, "masterProcess")) {
+            source("bin/sRNAflow_example_set.R")
+            parallel:::mcexit()
+        }
+        withProgress(message = 'Start examples downloading job', {
+            for(i in 1:4){
+                Sys.sleep(1)
+                incProgress(1/4)
+            }
+        })
+    })
     #         # system(paste("Rscript","bin/batch.R",Exp),wait = FALSE)
     #         system(paste0("R -e 'Exp<-\"",Exp,"\"; source(\"bin/batch.R\")'"),wait = FALSE)
     #         # source("bin/batch.R")

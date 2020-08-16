@@ -28,7 +28,8 @@ exampleDataPanel <- function(ns) {
 	tabPanel("Example samples",
 		{ if(!dir.exists(file.path(wd,"www","upload","example-samples"))) dir.create(file.path(wd,"www","upload","example-samples"))
 			DT::dataTableOutput('examples')
-		}
+		},
+		actionButton("download_examples", "Download examples",icon = icon("vials"), width ='100%')
 	)
 }
 

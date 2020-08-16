@@ -105,7 +105,7 @@ body <- dashboardBody(
                 h2("Setup"),
                 hr(),
                 fluidRow(
-                    column(4,br(),br(),actionButton("blastdb", "Start analysis",icon = icon("bar-chart-o"), width ='100%')),
+                    column(4,br(),br(),actionButton("blastdb", "Update BLAST db",icon = icon("bar-chart-o"), width ='100%')),
                     column(4,br(),br(),actionButton("aaa", "Start analysis",icon = icon("bar-chart-o"), width ='100%')),
                     column(4,br(),br(),actionButton("bbb", "Start analysis",icon = icon("bar-chart-o"), width ='100%'))
                 ),
