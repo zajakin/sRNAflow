@@ -155,12 +155,14 @@ server <- function(input, output, session) {
             source("bin/sRNAflow_example_set.R")
             parallel:::mcexit()
         }
-        withProgress(message = 'Start examples downloading job', {
-            for(i in 1:4){
-                Sys.sleep(1)
-                incProgress(1/4)
-            }
-        })
+    })
+    observeEvent(input$refresh_examples,{
+        examples<<-dir(path=examplesdir,pattern = ".(fastq|fq|fasta|fa|bam|sam|cram)(|.(gz|bz2|xz))$", full.names = FALSE, recursive = TRUE, include.dirs = TRUE)
+        if(length(examples)>0){
+            examples<-cbind(file=file.path("example-samples",examples),
+                            size=humanReadable(file.info(file.path(examplesdir,examples))$size),
+                            date=format(file.info(file.path(examplesdir,examples))$mtime,"%d.%m.%Y %H:%M:%OS"))
+        } else examples<<-rbind(rep(NA,3))[-1,]
     })
     #         # system(paste("Rscript","bin/batch.R",Exp),wait = FALSE)
     #         system(paste0("R -e 'Exp<-\"",Exp,"\"; source(\"bin/batch.R\")'"),wait = FALSE)

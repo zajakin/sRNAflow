@@ -29,7 +29,10 @@ exampleDataPanel <- function(ns) {
 		{ if(!dir.exists(file.path(wd,"www","upload","example-samples"))) dir.create(file.path(wd,"www","upload","example-samples"))
 			DT::dataTableOutput('examples')
 		},
-		actionButton("download_examples", "Download examples",icon = icon("vials"), width ='100%')
+		fluidRow(
+			column(6,actionButton("download_examples", "Download 39 EV examples",icon = icon("vials"), width ='100%')),
+			column(6,actionButton("refresh_examples", "Refresh examples list",icon = icon("vials"), width ='100%'))
+		)
 	)
 }
 

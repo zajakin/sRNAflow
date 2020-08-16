@@ -136,7 +136,7 @@ bowtie2 $bowtie2opt -D 20 -R 3 -N 0 -L 20 -i S,1,0.50 -U $ff -S $shdir.sam > $ou
 $samtools view -uhS -F4 $shdir.sam | $samtools sort -@ $core - -o $shfile > /dev/null 2>&1
 rm $shdir.sam
 $shortstack --readfile $shfile --genomefile $DB/$DV.fa --outdir $shdir --bowtie_cores $core --mismatches 1 --bowtie_m 201 --ranmax 200 --keep_quals --inbam --nohp >> $out/$f/logs/Shortstack.log 2>&1
-$samtools view -o $shfile $out/$f/$f.sam.gz
+$samtools view -o $out/$f/$f.sam.gz $shfile
 rm $shfile
 dd=""
 if [ `echo $f | grep -c dd` == 1 ]; then
