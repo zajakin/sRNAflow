@@ -26,7 +26,7 @@ serverDataPanel <- function(ns) {
 
 exampleDataPanel <- function(ns) {
 	tabPanel("Example samples",
-		{ if(!dir.exists(file.path(wd,"example-samples"))) dir.create(file.path(wd,"example-samples"))
+		{ if(!dir.exists(file.path(wd,"www","upload","example-samples"))) dir.create(file.path(wd,"www","upload","example-samples"))
 			DT::dataTableOutput('examples')
 		}
 	)

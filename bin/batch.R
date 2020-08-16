@@ -36,8 +36,8 @@ system(paste("ln -fs ",file.path(wd,"www","db","genomes","homo_sapiens.gtf"),fil
 err<-foreach(i=1:nrow(filesIn)) %dopar% {
 	system(paste(file.path(wd,"bin","sRNAflow_mapping_and_RNA_catalog.sh"),
 				 "-n",filesIn[i,"name"],
-				 "-r",file.path(wd,filesIn[i,"rf"]),
-				 "-f",file.path(wd,filesIn[i,"wf"]),
+				 "-r",filesIn[i,"rf"],
+				 "-f",filesIn[i,"wf"],
 				 "-t",filesIn[i,"type"],
 				 "-o",ED),intern = TRUE)
 }
