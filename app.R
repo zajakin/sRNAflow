@@ -6,7 +6,7 @@
 #
 #    http://shiny.rstudio.com/
 #
-
+options(shiny.maxRequestSize = 30000*1024^2)
 source("shiny/global.R")
 source("shiny/ui.R")
 source("shiny/server.R")
