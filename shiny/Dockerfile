@@ -18,7 +18,7 @@ RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
 RUN mv /srv/shiny-server /srv/shiny-server.orig && \
     git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && \
-    mkdir /home/shiny/R
+    mkdir /home/shiny/R && chmod 777 /home/shiny/R
 
 # Estj: locales sudo wget gfortran libgfortran-10-dev libopenblas-dev \
 #        libxml2-dev libjpeg-dev libcurl4-openssl-dev libssl-dev zlib1g-dev \
@@ -27,5 +27,5 @@ RUN mv /srv/shiny-server /srv/shiny-server.orig && \
 #        fastp cnvkit seqtk picard-tools cufflinks bbmap trnascan-se trimmomatic radiant \
 #        sortmerna bcftools gffread bedtools && \
 
-#docker build  -t srnaflow docker
-#docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/ -v `pwd`/shinylog/:/var/log/shiny-server/ srnaflow
+#docker build  -t srnaflow shiny
+#docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v `pwd`/shinylog/:/var/log/shiny-server/ srnaflow
