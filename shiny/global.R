@@ -13,6 +13,7 @@ wd<-sub("/shiny$","",getwd())
 setwd(wd)
 source(file.path(wd,"bin","utils.R"))
 
+if(!dir.exists(file.path(wd,"www","db"))) dir.create(file.path(wd,"www","db"),recursive = TRUE)
 examplesdir<-file.path(wd,"www","upload","example-samples")
 if(!dir.exists(examplesdir)) dir.create(examplesdir,recursive = TRUE)
 examples<-dir(path=examplesdir,pattern = ".(fastq|fq|fasta|fa|bam|sam|cram)(|.(gz|bz2|xz))$", full.names = FALSE, recursive = TRUE, include.dirs = TRUE)

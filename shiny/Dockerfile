@@ -17,7 +17,7 @@ RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot','edgeR','DESeq2','VennDiagram','GOstats','foreach','doMC','futile.logger','reticulate','remotes'), ask=FALSE); \
           remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
 RUN mv /srv/shiny-server /srv/shiny-server.orig && \
-    git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server  && \
+    git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && \
     mkdir /home/shiny/R && chmod 777 /home/shiny/R
 
 # Estj: locales sudo wget gfortran libgfortran-10-dev libopenblas-dev \
