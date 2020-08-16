@@ -23,7 +23,7 @@ server <- function(input, output, session) {
     output$filesUpload <- renderText({
         req(input$file_upload)
         if(!dir.exists(file.path(wd,"www","upload"))) dir.create(file.path(wd,"www","upload"),recursive = TRUE)
-        out<-gsub(" ","_",file.path(wd,"www","upload",input$file_upload$name))
+        out<-gsub(" ","_",input$file_upload$name)
         file.copy(input$file_upload$datapath,out)
         file.remove(input$file_upload$datapath)
         out
