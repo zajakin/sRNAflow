@@ -13,17 +13,19 @@ wd<-sub("/shiny$","",getwd())
 setwd(wd)
 source(file.path(wd,"bin","utils.R"))
 
-if(!dir.exists(file.path(wd,"example-samples"))) dir.create(file.path(wd,"example-samples"),recursive = TRUE)
-examples<-dir(path = file.path("example-samples"),full.names = FALSE, recursive = TRUE, include.dirs = TRUE)
+examplesdir<-file.path(wd,"www","upload","example-samples")
+if(!dir.exists(examplesdir)) dir.create(examplesdir,recursive = TRUE)
+examples<-dir(path=examplesdir,pattern = ".(fastq|fq|fasta|fa|bam|sam|cram)(|.(gz|bz2|xz))$", full.names = FALSE, recursive = TRUE, include.dirs = TRUE)
 if(length(examples)>0){
   examples<-cbind(file=file.path("example-samples",examples),
-				size=humanReadable(file.info(file.path("example-samples",examples))$size),
-				date=format(file.info(file.path("example-samples",examples))$mtime,"%d.%m.%Y %H:%M:%OS"))
+				size=humanReadable(file.info(file.path(examplesdir,examples))$size),
+				date=format(file.info(file.path(examplesdir,examples))$mtime,"%d.%m.%Y %H:%M:%OS"))
 } else examples<-rbind(rep(NA,3))[-1,]
 if(!dir.exists(file.path(wd,"www","upload"))) dir.create(file.path(wd,"www","upload"),recursive = TRUE)
 serverFiles<-dir(path = file.path("www","upload"),pattern = ".(fastq|fq|fasta|fa|bam|sam|cram)(|.(gz|bz2|xz))$",full.names = FALSE, recursive = TRUE, include.dirs = TRUE)
+if(length(grep("^example-samples",serverFiles))>0) serverFiles<-serverFiles[-grep("^example-samples",serverFiles)]
 if(length(serverFiles)>0){
-	serverFiles<-cbind(file=file.path("www","upload",serverFiles),
+	serverFiles<-cbind(file=serverFiles,
 				size=humanReadable(file.info(file.path("www","upload",serverFiles))$size),
 				date=format(file.info(file.path("www","upload",serverFiles))$mtime,"%d.%m.%Y %H:%M:%OS"))
 } else serverFiles<-rbind(rep(NA,3))[-1,]
@@ -46,6 +48,7 @@ if(!exists("tsize")){
 	tsize<-"2000"
 	Rep<-2
 	blast<-"nr"
+	qc<-20
 	ad3<-"TGGAATTCTCGGGTGCCAAGG # Illumina TruSeq Small RNA"  # ad3<-"ATCACCGACTGCCCATAGAGAG"  # Ion Torrent
 	ad5<-"GTTCAGAGTTCTACAGTCCGACGATC # Illumina TruSeq Small RNA" # ad5<-"CCAAGGCG"  # Ion Torrent
 	sizerange<-c(10,42)

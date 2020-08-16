@@ -1,7 +1,7 @@
 #!/usr/bin/R --no-save
 
 blast_per_sample<-function(idr,re,wd,filesIn,tsize,core=4){
-    arg <- c("sRNAflow","--no-save",file.path(wd,filesIn[idr,"wd"]),paste0(filesIn[idr,"name"],"_random",tsize,".",re),file.path(wd,filesIn[idr,paste0("ft",re)]),core)
+    arg <- c("sRNAflow","--no-save",filesIn[idr,"wd"],paste0(filesIn[idr,"name"],"_random",tsize,".",re),filesIn[idr,paste0("ft",re)],core)
     options(echo=TRUE)
 # if(!exists("arg")){
 #     arg<-commandArgs()
@@ -16,6 +16,7 @@ core <- arg[6]
 out<- paste0("blasts/",name,".blast")
 DV <- "nt"
 blastn<- paste0("export BATCH_SIZE=50000; export BLASTDB=$HOME/data/db/blast; blastn -max_hsps 1 ")
+#TODO blast option  #####
 if(file.exists(file.path(wd,"www","db","meta.txids"))) blastn<- paste(blastn,"-taxidlist",file.path(wd,"www","db","meta.txids "))
 DB <- paste("-remote -db",DV)
 DB <- paste("-db",DV,"-num_threads",core)

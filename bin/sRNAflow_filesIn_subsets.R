@@ -1,22 +1,23 @@
 #!/usr/bin/R --no-save
 filesIn<-cbind(rf=FilesIn[,"file"],gr=unlist(GroupsSel[FilesIn[,"file"]]),wd="",name="",wf="",type="",ft="",ft1="",ft2="")
+if(!dir.exists(file.path(ED,"qc"))) dir.create(file.path(ED,"qc"),recursive = T)
 
-trimm<-function(rf,ext,s,d,ad3,ad5,sizerange,arx){
+trimm<-function(rf,ext,s,d,qc,ad3,ad5,sizerange,arx){
 	if(trimws(sub("#.*","",ad3)) != "") ad3<-paste("-a",trimws(sub("#.*","",ad3)))
 	if(trimws(sub("#.*","",ad5)) != "") ad5<-paste("-g",trimws(sub("#.*","",ad5)))
 	cat <- "cat "
 	if(arx!="") cat <-"pigz -cd "
-	qc<-""
+	qcc<-""
 	mark="^>"
 	if(ext == "fastq"){ 
-		qc<-"--quality-cutoff=20,20"
+		qcc<-paste0("--quality-cutoff=",qc,",",qc)
 		mark="^@"
 	}
-	con<-file(paste0(d,"logs","trimm.txt"),"wt")
+	con<-file(file.path(d,"logs","trimm.txt"),"wt")
 	writeLines(paste0("File\t",s),con)
 	writeLines(paste0("Raw\t",system(paste0(cat,rf," | grep -c \"",mark,"\" "),intern = TRUE)),con)
 
-	system(paste("cutadapt --cores=0 --quiet",qc,ad3,ad5,"-m 1 -o ",paste0(d,s,"_r3.",ext),rf),intern = TRUE)
+	system(paste("cutadapt --cores=0 --quiet",qcc,ad3,ad5,"-m 1 -o ",paste0(d,s,"_r3.",ext),rf),intern = TRUE)
 	writeLines(paste0("QC_and_adapter3\t",system(paste0("grep -c \"",mark,"\" ",paste0(d,s,"_r3.",ext)),intern = TRUE)),con)
 
 	system(paste("cutadapt --cores=0 --quiet -M",sizerange[2],"-o",paste0(d,s,"_r4.",ext),paste0(d,s,"_r3.",ext)),intern = TRUE)
@@ -40,7 +41,7 @@ trimm<-function(rf,ext,s,d,ad3,ad5,sizerange,arx){
 }
 
 filesIn<-foreach(i=1:nrow(filesIn),.combine = rbind) %dopar% {
-	rf <- filesIn[i,"rf"]
+	rf <- file.path(wd,"www","upload",filesIn[i,"rf"])
 	ext<- tolower(sub('^.*[.$]',".",rf))
 	arx<- ""
 	if(ext %in% c(".gz",".bz2",".xz")){
@@ -49,13 +50,13 @@ filesIn<-foreach(i=1:nrow(filesIn),.combine = rbind) %dopar% {
 	}
 	s<-sub(paste0(ext,arx),"",basename(rf))
 	filesIn[i,"name"]<-s
-	d<-file.path("www",Exp,s,"")
+	d<-file.path(ED,s,"")
 	if(!dir.exists(paste0(d,"logs"))) dir.create(paste0(d,"logs"),recursive = T)
 	if(!dir.exists(paste0(d,"faTab"))) dir.create(paste0(d,"faTab"),recursive = T)
 	filesIn[i,"wd"]<-d
 	filesIn[i,"ft"]<-paste0(d,"faTab/",s,".faTab")
 	if(ext %in% c(".fa",".fasta")){
-		filesIn[i,"wf"]<-trimm(rf,"fasta",s,d,ad3,ad5,sizerange,arx)
+		filesIn[i,"wf"]<-trimm(rf,"fasta",s,d,qc,ad3,ad5,sizerange,arx)
 		filesIn[i,"type"]<-"fa"
 		# system(paste0("pigz -cd ",filesIn[i,"wf"]," | $HOME/conda/bin/fasta_formatter -t -o ",filesIn[i,"ft"]),intern = TRUE)
 	}
@@ -66,15 +67,15 @@ filesIn<-foreach(i=1:nrow(filesIn),.combine = rbind) %dopar% {
 		ext<-".fq"
 	}
 	if(ext %in% c(".fq",".fastq")){
-		filesIn[i,"wf"]<-trimm(rf,"fastq",s,d,ad3,ad5,sizerange,arx)
+		filesIn[i,"wf"]<-trimm(rf,"fastq",s,d,qc,ad3,ad5,sizerange,arx)
 		filesIn[i,"type"]<-"fq"
 		# system(paste0("pigz -cd ",filesIn[i,"wf"]," | sed -n '1~4s/^@/>/p;2~4p' | $HOME/conda/bin/fasta_formatter -t -o ",filesIn[i,"ft"]),intern = TRUE)
 	}
 	for(r in 1:as.numeric(Rep)){
-		# system(paste0("shuf -n ",tsize," ",filesIn[i,"ft"]," -o ",d,"faTab/",s,"_random",tsize,".",r,".faTab"), intern = T)
+		system(paste0("shuf -n ",tsize," ",filesIn[i,"ft"]," -o ",d,"faTab/",s,"_random",tsize,".",r,".faTab"), intern = T)
 		filesIn[i,paste0("ft",r)]<-paste0(d,"faTab/",s,"_random",tsize,".",r,".faTab")
 	}
 	file.remove(filesIn[i,"ft"])
 	filesIn[i,]
 }
-save(filesIn,file = file.path(wd,"www",Exp,"filesIn.RData"))
+save(filesIn,file = file.path(ED,"filesIn.RData"))

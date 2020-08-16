@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript --vanilla 
-WD<-file.path("www",Exp,"genomes")
+WD<-file.path(ED,"genomes")
 archive<-file.path(wd,"www","db","genomes","archive")
 if(!dir.exists(WD)) dir.create(WD,recursive = TRUE)
 if(!dir.exists(archive)) dir.create(archive,recursive = TRUE)

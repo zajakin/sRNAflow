@@ -7,10 +7,11 @@ sidebar <- dashboardSidebar(
     sidebarMenu(
         id = "tabs",
         menuItem("Seq Data Input", tabName="Files", icon = icon("cloud-upload"), selected = TRUE),
-        menuItem("Select groups", tabName="Groups", icon = icon("cloud-upload")),
-        menuItem("Configuration", tabName = "Config", icon = icon("th")),
+        menuItem("Select groups", tabName="Groups", icon = icon("tasks")),
+        menuItem("Analysis", tabName = "Config", icon = icon("sliders-h")),
         # The following menus are just displayed when a sample set has been loaded
-        menuItem("Reports", tabName = "Reports", icon = icon("asterisk"))
+        menuItem("Reports", tabName = "Reports", icon = icon("chart-bar")),
+        menuItem("Setup", tabName = "Setup", icon = icon("tools"))
     ),
     div(class="hide_when_sidebar_collapsed",
         # tags$p(class="sidebartext", style="padding-left: 10px;color: #b8c7ce; ", "To start  data, upload a dataset in the 'Seq Data Input' tab."),
@@ -23,7 +24,7 @@ sidebar <- dashboardSidebar(
     #     )
     # ),
     sidebarMenu(
-        menuItem("About", tabName = "About"), textOutput("clock")
+        menuItem("About", tabName = "About", icon = icon("info")), textOutput("clock")
     )
 )
 
@@ -57,13 +58,14 @@ body <- dashboardBody(
                 h2("Configuration"),
                 fluidRow(
                     column(4,textInput("Exp",   "Experiment ID:", value = Exp, width ='100%')),
-                    column(4,selectInput('specie', 'Main specie:', species, selected = specie, width ='100%')),
+                    column(4,textInput("email",   "Send results to (email):", value = email, width ='100%')),
+                    column(4,textInput("smtpServer",   "SMTP Server:", value = smtpServer, width ='100%'))
                 ),
                 hr(),
                 fluidRow(
                     column(4,
                         h3("Trimming"),
-                        selectizeInput('ad3', "3' adapter:", choices = c('TGGAATTCTCGGGTGCCAAGG #Illumina TruSeq Small RNA','ATCACCGACTGCCCATAGAGAG # Ion Torrent',' # Not remove'),options = list(create = TRUE), selected = ad3, width ='100%')
+                        sliderInput('qc', 'QC trimming:', min = 1,  max = 30,  value = qc, width ='100%')
                     ),
                     column(4,
                         h3("BLAST"),
@@ -76,33 +78,38 @@ body <- dashboardBody(
                 ),
                 hr(),
                 fluidRow(
-                    column(4,selectizeInput('ad5', "5' adapter:", choices = c('GTTCAGAGTTCTACAGTCCGACGATC # Illumina TruSeq Small RNA','CCAAGGCG # Ion Torrent',' # Not remove'),options = list(create = TRUE), selected = ad5, width ='100%')),
-                    column(4,sliderInput('Rep', 'Subsets number:', min = 1,  max = 10,  value = Rep, width ='100%')),
+                    column(4,selectizeInput('ad3', "3' adapter:", choices = c('TGGAATTCTCGGGTGCCAAGG #Illumina TruSeq Small RNA','ATCACCGACTGCCCATAGAGAG # Ion Torrent',' # Not remove'),options = list(create = TRUE), selected = ad3, width ='100%')),
+                    column(4,autoWidth = TRUE,sliderInput('Rep', 'Subsets number:', min = 1,  max = 10,  value = Rep, width ='100%')),
                     column(4,numericInput('log2FoldChange', 'log2FoldChange theshold:', log2FoldChange, min = 0, max = 100, width ='100%'))
+                ),
+                hr(),
+                fluidRow(
+                    column(4,selectizeInput('ad5', "5' adapter:", choices = c('GTTCAGAGTTCTACAGTCCGACGATC # Illumina TruSeq Small RNA','CCAAGGCG # Ion Torrent',' # Not remove'),options = list(create = TRUE), selected = ad5, width ='100%')),
+                    column(4,selectInput('specie', 'Main specie:', species, selected = specie, width ='100%')),
+                    column(4,numericInput('padj', 'Adjusted p-value theshold:', padj, min = 0, max = 1, width ='100%'))
                 ),
                 hr(),
                 fluidRow(
                     column(4,sliderInput("sizerange", "Size range", min = 10,max = 300, value = sizerange, width ='100%')),
                     column(4,selectInput('blast', 'BLAST to:', c("main specie & bacteria+","nr"), selected = blast, width ='100%')),
-                    column(4,numericInput('padj', 'Adjusted p-value theshold:', padj, min = 0, max = 1, width ='100%'))
+                    column(4,br(),br(),actionButton("start", "Start analysis",icon = icon("bar-chart-o"), width ='100%'))
                 ),
-                hr(),
-                fluidRow(
-                    column(4,textInput("email",   "Send results to (email):", value = email, width ='100%')),
-                    column(4,textInput("smtpServer",   "SMTP Server:", value = smtpServer, width ='100%')),
-                    column(4,br(),actionButton("start", "Start analysis",icon = icon("bar-chart-o"), width ='100%'))
-                ),
-                # box(width=12,
-                #     collapsible=TRUE,
-                #     collapsed=TRUE,
-                    verbatimTextOutput("Config")
-                # )
+                verbatimTextOutput("Config")
         ),
         tabItem(tabName = "Reports",
                 h2("Reports"),
                 hr(),
-                # verbatimTextOutput("Config"),
                 a(href="merged38_results.xlsx", "Download XXX", download=NA, target="_blank")
+        ),
+        tabItem(tabName = "Setup",
+                h2("Setup"),
+                hr(),
+                fluidRow(
+                    column(4,br(),br(),actionButton("blastdb", "Start analysis",icon = icon("bar-chart-o"), width ='100%')),
+                    column(4,br(),br(),actionButton("aaa", "Start analysis",icon = icon("bar-chart-o"), width ='100%')),
+                    column(4,br(),br(),actionButton("bbb", "Start analysis",icon = icon("bar-chart-o"), width ='100%'))
+                ),
+                verbatimTextOutput("Setup")
         ),
         tabItem(
             "About",
