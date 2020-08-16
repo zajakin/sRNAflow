@@ -14,7 +14,7 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
 RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           if (!requireNamespace('BiocManager')) install.packages('BiocManager'); \
           chooseBioCmirror(graphics =FALSE,ind=1); \
-          BiocManager::install(c('gdata','shinydashboard','foreach','doMC','remotes'), ask=FALSE); \
+          BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot','edgeR','DESeq2','VennDiagram','GOstats','foreach','doMC','futile.logger','reticulate','remotes'), ask=FALSE); \
           remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
 RUN mv /srv/shiny-server /srv/shiny-server.orig && \
     git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && \
@@ -26,6 +26,7 @@ RUN mv /srv/shiny-server /srv/shiny-server.orig && \
 #        bowtie bowtie2 cutadapt samtools fastqc ncbi-blast+ kraken2 python3-htseq rna-star \
 #        fastp cnvkit seqtk picard-tools cufflinks bbmap trnascan-se trimmomatic radiant \
 #        sortmerna bcftools gffread bedtools && \
+#library(org.Hs.eg.db)
 
 #docker build  -t srnaflow shiny
 #chmod 777 .

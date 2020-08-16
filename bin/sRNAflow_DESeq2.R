@@ -1,4 +1,3 @@
-# my::Update(c("gplots","edgeR","DESeq2","biomaRt","gridExtra","ggplot2","VennDiagram"))
 library(gplots)
 library(corrplot)
 # library(edgeR)
