@@ -22,7 +22,7 @@ server <- function(input, output, session) {
     # })
     output$filesUpload <- renderText({
         req(input$file_upload)
-        if(!dir.exists(file.path(wd,"www","upload"))) dir.create(file.path(wd,"www","upload"),recursive = TRUE)
+        if(!dir.exists(file.path(wd,"www","upload"))) dir.create(file.path(wd,"www","upload"),recursive = TRUE, mode = "0777")
         out<-gsub(" ","_",input$file_upload$name)
         file.copy(input$file_upload$datapath,out)
         file.remove(input$file_upload$datapath)
@@ -36,7 +36,7 @@ server <- function(input, output, session) {
 
     output$examples = DT::renderDataTable({
         examplesdir<-file.path(wd,"www","upload","example-samples")
-        if(!dir.exists(examplesdir)) dir.create(examplesdir,recursive = TRUE)
+        if(!dir.exists(examplesdir)) dir.create(examplesdir,recursive = TRUE, mode = "0777")
         examples<-dir(path=examplesdir,pattern = ".(fastq|fq|fasta|fa|bam|sam|cram)(|.(gz|bz2|xz))$", full.names = FALSE, recursive = TRUE, include.dirs = TRUE)
         if(length(examples)>0){
             examples<-cbind(file=file.path("example-samples",examples),
@@ -51,7 +51,7 @@ server <- function(input, output, session) {
     }, server = TRUE)
     
     output$serverFiles = DT::renderDataTable({
-        if(!dir.exists(file.path(wd,"www","upload"))) dir.create(file.path(wd,"www","upload"),recursive = TRUE)
+        if(!dir.exists(file.path(wd,"www","upload"))) dir.create(file.path(wd,"www","upload"),recursive = TRUE, mode = "0777")
         serverFiles<-dir(path = file.path("www","upload"),pattern = ".(fastq|fq|fasta|fa|bam|sam|cram)(|.(gz|bz2|xz))$",full.names = FALSE, recursive = TRUE, include.dirs = TRUE)
         if(length(grep("^example-samples",serverFiles))>0) serverFiles<-serverFiles[-grep("^example-samples",serverFiles)]
         if(length(serverFiles)>0){
@@ -59,7 +59,7 @@ server <- function(input, output, session) {
                                size=humanReadable(file.info(file.path("www","upload",serverFiles))$size),
                                date=format(file.info(file.path("www","upload",serverFiles))$mtime,"%d.%m.%Y %H:%M:%OS"))
         } else serverFiles<-rbind(rep(NA,3))[-1,]
-        length(input$refresh_examples)
+        length(input$refresh_serverFiles)
         colnames(serverFiles) <- c("file","size","date")
         if (length(input$filesIn_rows_selected)) observeEvent(input$serverFiles_rows_selected,shinyjs::reset("serverFiles_rows_selected"))
         serverFiles<<-serverFiles

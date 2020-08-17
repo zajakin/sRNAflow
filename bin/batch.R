@@ -6,7 +6,7 @@ source("shiny/global.R")
 # apt install ncbi-blast+ ncbi-entrez-direct # blastn –taxidlist meta.txids
 # system(paste("awk -F'\t' '{print $2}' bin/taxids_for_blast.tsv | xargs -l /usr/bin/get_species_taxids -t > www/db/meta.txids"))
 ED<-file.path(wd,"www","results",Exp)
-dir.create(ED,recursive = TRUE)
+dir.create(ED,recursive = TRUE, mode = "0777")
 save(FilesIn,GroupsSel,Exp,specie,tsize,Rep,blast,qc,ad3,ad5,sizerange,lim,log2FoldChange,padj,email,smtpServer,file = file.path(ED,"settings.RData"))
 load(file.path(ED,"settings.RData"))
 
