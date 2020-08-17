@@ -26,12 +26,15 @@ trimm<-function(rf,ext,s,d,qc,ad3,ad5,sizerange,arx){
 	wf<-paste0(d,s,".",ext)
 	system(paste("cutadapt --cores=0 --quiet -m",sizerange[1],"-o",wf,paste0(d,s,"_r4.",ext)),intern = TRUE)
 	# writeLines(paste0("Filter_short\t",system(paste0("grep -c \"",mark,"\" ",wf),intern = TRUE)),con)
+	fasta2tab<-" | awk '/^>/ {printf(\"%s%s\\t\",(N>0?\"\\n\":\"\"),$1);N++;next;} {printf(\"%s\",$0);} END {printf(\"\\n\");}' > "
 	if(ext == "fastq"){
 		system(paste0("fastqc -q --threads ",core," -o ",ED,"/qc ",wf),intern = TRUE)
-		system(paste0("sed -n '1~4s/^@/>/p;2~4p' ",wf," | $HOME/conda/bin/fasta_formatter -t -o ",d,'faTab/',s,'.faTab'),intern = TRUE)
-	} else system(paste0("$HOME/conda/bin/fasta_formatter -i ",wf," -t -o ",d,'faTab/',s,'.faTab'))
+		system(paste0("sed -n '1~4s/^@/>/p;2~4p' ",wf,fasta2tab,d,'faTab/',s,'.faTab'),intern = TRUE)
+#		system(paste0("sed -n '1~4s/^@/>/p;2~4p' ",wf," | $HOME/conda/bin/fasta_formatter -t -o ",d,'faTab/',s,'.faTab'),intern = TRUE)
+#	} else system(paste0("$HOME/conda/bin/fasta_formatter -i ",wf," -t -o ",d,'faTab/',s,'.faTab'))
+	} else system(paste0("cat ",wf,fasta2tab,d,'faTab/',s,'.faTab'))
 
-	mstat<-'awk \'{ i++; seq[i] = length($NF); sum += length($NF) } END { asort(seq,sorted,"@val_num_asc"); print("Filter_short\\t" i "\\nMedian_reads_length\\t" sorted[int(i/2)] "\\nMean_reads_length\\t" sum / i) }\' '
+	mstat<-'gawk \'{ i++; seq[i] = length($NF); sum += length($NF) } END { asort(seq,sorted,"@val_num_asc"); print("Filter_short\\t" i "\\nMedian_reads_length\\t" sorted[int(i/2)] "\\nMean_reads_length\\t" sum / i) }\' '
 	writeLines(system(paste0(mstat,d,'faTab/',s,'.faTab'),intern=TRUE),con)
 	close(con)
 	file.remove(paste0(d,s,"_r3.",ext),paste0(d,s,"_r4.",ext))
@@ -58,7 +61,6 @@ filesIn<-foreach(i=1:nrow(filesIn),.combine = rbind) %dopar% {
 	if(ext %in% c(".fa",".fasta")){
 		filesIn[i,"wf"]<-trimm(rf,"fasta",s,d,qc,ad3,ad5,sizerange,arx)
 		filesIn[i,"type"]<-"fa"
-		# system(paste0("pigz -cd ",filesIn[i,"wf"]," | $HOME/conda/bin/fasta_formatter -t -o ",filesIn[i,"ft"]),intern = TRUE)
 	}
 	if(ext %in% c(".bam",".sam",".cram")){
 		system(paste0("samtools fastq --threads ",core," ",rf," -o ",d,s,".fq.gz" ))
@@ -69,7 +71,6 @@ filesIn<-foreach(i=1:nrow(filesIn),.combine = rbind) %dopar% {
 	if(ext %in% c(".fq",".fastq")){
 		filesIn[i,"wf"]<-trimm(rf,"fastq",s,d,qc,ad3,ad5,sizerange,arx)
 		filesIn[i,"type"]<-"fq"
-		# system(paste0("pigz -cd ",filesIn[i,"wf"]," | sed -n '1~4s/^@/>/p;2~4p' | $HOME/conda/bin/fasta_formatter -t -o ",filesIn[i,"ft"]),intern = TRUE)
 	}
 	for(r in 1:as.numeric(Rep)){
 		system(paste0("shuf -n ",tsize," ",filesIn[i,"ft"]," -o ",d,"faTab/",s,"_random",tsize,".",r,".faTab"), intern = T)

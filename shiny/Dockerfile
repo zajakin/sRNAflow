@@ -17,7 +17,8 @@ RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot','edgeR','DESeq2','VennDiagram','GOstats','foreach','doMC','futile.logger','reticulate','shinyjs'), ask=FALSE)"
 ARG DUMMY=unknown
 RUN mv /srv/shiny-server /srv/shiny-server.orig && \
-     DUMMY=${DUMMY} git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server 
+    DUMMY=${DUMMY} git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && \
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gawk
      # && mkdir /home/shiny/R && chmod 777 /home/shiny/R
 RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); \
          BiocManager::install(c('sendmailR'), ask=FALSE)"
