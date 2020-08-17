@@ -23,8 +23,8 @@ server <- function(input, output, session) {
     output$filesUpload <- renderText({
         req(input$file_upload)
         if(!dir.exists(file.path(wd,"www","upload"))) dir.create(file.path(wd,"www","upload"),recursive = TRUE, mode = "0777")
-        out<-file.path(wd,"www","upload",gsub(" ","_",input$file_upload$name))
-        file.copy(input$file_upload$datapath,out)
+        out<-gsub(" ","_",input$file_upload$name)
+        file.copy(input$file_upload$datapath,file.path(wd,"www","upload",out))
         file.remove(input$file_upload$datapath)
         out
     })
@@ -80,8 +80,11 @@ server <- function(input, output, session) {
         observeEvent(input$serverFiles_rows_selected,shinyjs::reset("serverFiles_rows_selected"))
         if (length(s)) filesIn <- rbind(serverFiles[s,],filesIn)
         if(input$clear_filesIn){
-            filesIn <- rbind(rep(NA,3))[-1,]
-            shinyjs::reset("clear_filesIn")
+            if(!exists("clear_filesIn_counter") || clear_filesIn_counter<input$clear_filesIn){ 
+                filesIn <- rbind(rep(NA,3))[-1,]
+                clear_filesIn_counter<<-input$clear_filesIn
+                shinyjs::reset("clear_filesIn")
+            }
         }
         if(nrow(filesIn)>0) colnames(filesIn)<-c("file","size","date")
         filesIn <- unique(filesIn)
@@ -92,7 +95,7 @@ server <- function(input, output, session) {
 
     output$groups = DT::renderDataTable({
         tmp<-length(c(input$filesUploaded_rows_selected,input$examples_rows_selected,input$serverFiles_rows_selected,input$filesIn_rows_selected))>0
-        groups <- cbind(rbind(FilesIn),test="",control="",ignore="")
+        groups <- cbind(rbind(FilesIn),test=c(""),control=c(""),ignore=c(""))
         choices <- c("test","control","ignore")
         colnames(groups)<-c("file","size","date",choices)
         if(nrow(groups)>0) groups[,4:6]<-paste0('<input type="radio" name="',groups[,"file"],'" value="',rep(choices,each=nrow(groups)),'"/>')

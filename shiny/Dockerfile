@@ -20,7 +20,8 @@ RUN mv /srv/shiny-server /srv/shiny-server.orig && \
      DUMMY=${DUMMY} git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server 
      # && mkdir /home/shiny/R && chmod 777 /home/shiny/R
 RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); \
-         BiocManager::install(c('sendmailR'), ask=FALSE);           remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
+         BiocManager::install(c('sendmailR'), ask=FALSE)"
+#                    remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
 
 # Estj: locales sudo wget gfortran libgfortran-10-dev libopenblas-dev \
 #        libxml2-dev libjpeg-dev libcurl4-openssl-dev libssl-dev zlib1g-dev \
