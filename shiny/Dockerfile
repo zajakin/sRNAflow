@@ -14,14 +14,13 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
 RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           if (!requireNamespace('BiocManager')) install.packages('BiocManager'); \
           chooseBioCmirror(graphics =FALSE,ind=1); \
-          BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot','edgeR','DESeq2','VennDiagram','GOstats','foreach','doMC','futile.logger','reticulate','remotes'), ask=FALSE); \
-          remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
+          BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot','edgeR','DESeq2','VennDiagram','GOstats','foreach','doMC','futile.logger','reticulate','shinyjs'), ask=FALSE)"
 ARG DUMMY=unknown
 RUN mv /srv/shiny-server /srv/shiny-server.orig && \
-     DUMMY=${DUMMY} git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && \
-    mkdir /home/shiny/R && chmod 777 /home/shiny/R
-RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); \
-          BiocManager::install(c('shinyjs'), ask=FALSE)"
+     DUMMY=${DUMMY} git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server 
+     # && mkdir /home/shiny/R && chmod 777 /home/shiny/R
+# RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); \
+#           BiocManager::install(c(''), ask=FALSE);           remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
 
 # Estj: locales sudo wget gfortran libgfortran-10-dev libopenblas-dev \
 #        libxml2-dev libjpeg-dev libcurl4-openssl-dev libssl-dev zlib1g-dev \

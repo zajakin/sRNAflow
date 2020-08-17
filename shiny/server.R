@@ -44,7 +44,7 @@ server <- function(input, output, session) {
                             date=format(file.info(file.path(examplesdir,examples))$mtime,"%d.%m.%Y %H:%M:%OS"))
         } else examples<-rbind(rep(NA,3))[-1,]
         if (length(input$filesIn_rows_selected)) observeEvent(input$examples_rows_selected,shinyjs::reset("examples_rows_selected"))
-        length(input$refresh_examples)
+        input$refresh_examples
         colnames(examples) <- c("file","size","date")
         examples<<-examples
         examples
@@ -59,9 +59,9 @@ server <- function(input, output, session) {
                                size=humanReadable(file.info(file.path("www","upload",serverFiles))$size),
                                date=format(file.info(file.path("www","upload",serverFiles))$mtime,"%d.%m.%Y %H:%M:%OS"))
         } else serverFiles<-rbind(rep(NA,3))[-1,]
+        if (length(input$filesIn_rows_selected)) observeEvent(input$serverFiles_rows_selected,shinyjs::reset("serverFiles_rows_selected"))
         length(input$refresh_serverFiles)
         colnames(serverFiles) <- c("file","size","date")
-        if (length(input$filesIn_rows_selected)) observeEvent(input$serverFiles_rows_selected,shinyjs::reset("serverFiles_rows_selected"))
         serverFiles<<-serverFiles
         serverFiles
     }, server = TRUE)
@@ -79,6 +79,10 @@ server <- function(input, output, session) {
         s = input$serverFiles_rows_selected
         observeEvent(input$serverFiles_rows_selected,shinyjs::reset("serverFiles_rows_selected"))
         if (length(s)) filesIn <- rbind(serverFiles[s,],filesIn)
+        if(input$clear_filesIn){
+            filesIn <- rbind(rep(NA,3))[-1,]
+            shinyjs::reset("clear_filesIn")
+        }
         if(nrow(filesIn)>0) colnames(filesIn)<-c("file","size","date")
         filesIn <- unique(filesIn)
         FilesIn <<- filesIn

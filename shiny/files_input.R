@@ -56,7 +56,8 @@ filesInputUI <- function(id) {
 	},
 		hr(),
 		h2("Selected files:"),
-		DT::dataTableOutput("filesIn")
+		DT::dataTableOutput("filesIn"),
+	    actionButton("clear_filesIn", "Clear list of selected files",icon = icon("trash"), width ='100%')
 		# ,fluidRow(
 		# 	column(9, DT::dataTableOutput("filesIn")),
 		# 	column(3, verbatimTextOutput("filesIn_selected")),
