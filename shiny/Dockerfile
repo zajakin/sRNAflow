@@ -18,7 +18,8 @@ RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
 ARG DUMMY=unknown
 RUN mv /srv/shiny-server /srv/shiny-server.orig && \
     DUMMY=${DUMMY} git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && \
-    env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gawk
+    git clone https://github.com/marbl/Krona.git /Krona && /Krona/install.pl && \
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gawk radiant trnascan-se bowtie
      # && mkdir /home/shiny/R && chmod 777 /home/shiny/R
 RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); \
          BiocManager::install(c('sendmailR'), ask=FALSE)"
@@ -26,10 +27,7 @@ RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FA
 
 # Estj: locales sudo wget gfortran libgfortran-10-dev libopenblas-dev \
 #        libxml2-dev libjpeg-dev libcurl4-openssl-dev libssl-dev zlib1g-dev \
-#        r-base-core git jupyter-notebook python3-pip \
-#        bowtie bowtie2 cutadapt samtools fastqc ncbi-blast+ kraken2 python3-htseq rna-star \
-#        fastp cnvkit seqtk picard-tools cufflinks bbmap trnascan-se trimmomatic radiant \
-#        sortmerna bcftools gffread bedtools && \
+#        python3-pip kraken2 rna-star fastp cnvkit seqtk picard-tools trnascan-se sortmerna bcftools gffread bedtools
 #library(org.Hs.eg.db)
 
 #docker build  -t srnaflow shiny

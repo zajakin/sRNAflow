@@ -59,3 +59,6 @@ save(ensemblgenomes,genbank,refseq,file="www/db/genomes/genomesdb.RData")
 system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' www/db/genomes/homo_sapiens.gtf"),intern = TRUE)
 # system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' www/db/gtf_biotypes/*.gtf"),intern = TRUE)
 
+system(paste("ln -fs ",file.path(wd,"www","db","gtf_biotypes"),file.path(ED,"genomes","gtf_biotypes")))
+system(paste("ln -fs ",file.path(wd,"www","db","genomes","homo_sapiens.gtf"),file.path(ED,"genomes","genomes.gtf")))
+

@@ -131,7 +131,9 @@ server <- function(input, output, session) {
         # table(unlist(sel))
         rbind(number=table(Number=as.character(GroupsSel) )," "=c(" ") )
     })
+
     output$session_info<-renderPrint(sessionInfo())
+
     output$Config<-renderText({
         Exp       <<-gsub(" ","_",trimws(input$Exp))
         specie    <<-input$specie
@@ -182,6 +184,30 @@ server <- function(input, output, session) {
         setwd(wd)
         if (inherits(p, "masterProcess")) {
             source("bin/sRNAflow_example_set.R")
+            parallel:::mcexit()
+        }
+    })
+
+    output$blastdb<-renderText({
+        blastdb<-"No local BLAST database. Press 'Update local BLAST db' button to upload."
+        if(file.exists(file.path(wd,"www","db","blast","db.done"))) blastdb<-"Local BLAST database exist and will be used in analysis."
+        blastdb
+    })
+
+    observeEvent(input$blastdb,{
+        p <- parallel:::mcfork(estranged = TRUE)
+        setwd(wd)
+        if (inherits(p, "masterProcess")) {
+            source("bin/sRNAflow_local_blast_db.R")
+            parallel:::mcexit()
+        }
+    })
+
+    observeEvent(input$gtfdb,{
+        p <- parallel:::mcfork(estranged = TRUE)
+        setwd(wd)
+        if (inherits(p, "masterProcess")) {
+            source("bin/sRNAflow_gtf_annotations.R")
             parallel:::mcexit()
         }
     })

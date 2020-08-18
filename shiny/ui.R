@@ -104,11 +104,12 @@ body <- dashboardBody(
         tabItem(tabName = "Setup",
                 h2("Setup"),
                 hr(),
-                fluidRow(
-                    column(4,br(),br(),actionButton("blastdb", "Update BLAST db",icon = icon("bar-chart-o"), width ='100%')),
-                    column(4,br(),br(),actionButton("aaa", "Start analysis",icon = icon("bar-chart-o"), width ='100%')),
-                    column(4,br(),br(),actionButton("bbb", "Start analysis",icon = icon("bar-chart-o"), width ='100%'))
-                ),
+                actionButton("blastdb", "Update local BLAST db",icon = icon("sync"), width ='100%'),
+                verbatimTextOutput("blastdb"),
+                br(),hr(),
+                actionButton("gtfdb", "Update GTF files",icon = icon("sync"), width ='100%'),
+                verbatimTextOutput("gtfdb"),
+                br(),hr(),
                 verbatimTextOutput("Setup")
         ),
         tabItem(

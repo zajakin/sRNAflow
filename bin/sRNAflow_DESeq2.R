@@ -241,7 +241,7 @@ deGTF<-c("all_miRNA_mergedFeatures","GtRNAdb_mergedFeatures","rRNA_mergedFeature
 
 prefix<-"htseq-count"
 for(gr in deGTF){
-	files<-file.path(wd,paste0(filesIn[,"wd"],"ShortStack/",prefix,"_",filesIn[,"name"],".",gr,".txt"))
+	files<-paste0(filesIn[,"wd"],"ShortStack/",prefix,"_",filesIn[,"name"],".",gr,".txt")
 	# DESeq2::DESeqDataSetFromHTSeqCount(files)
 	httab<-cbind(read.table(files[1], sep = "\t",as.is = TRUE)[,1])
 	rownames(httab)<-httab[,1]

@@ -27,9 +27,6 @@ load(file.path("www","db","genomes","genomesdb.RData"))
 #download genomes  index generation   #####
 source("bin/sRNAflow_downloadGenomes.R")
 
-system(paste("ln -fs ",file.path(wd,"www","db","gtf_biotypes"),file.path(ED,"genomes","gtf_biotypes")))
-system(paste("ln -fs ",file.path(wd,"www","db","genomes","homo_sapiens.gtf"),file.path(ED,"genomes","genomes.gtf")))
-
 #mapping o:f:r:l:a
 # registerDoMC(cores = 4)
 # for(i in 1:nrow(filesIn)){

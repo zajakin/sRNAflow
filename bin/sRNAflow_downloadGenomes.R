@@ -32,5 +32,6 @@ if(file.size(fa)>(2^32-1)){ system(paste("bowtie2-build --threads ",core," --lar
 } else system(paste("bowtie2-build --threads ",core,fa,file.path(WD,"genomes"),">",file.path(WD,"bowtie2-build.log")))
 
 # as.vector(md5sum(dir(R.home(), pattern = "^COPY", full.names = TRUE)))
-system("$HOME/conda/bin/ktUpdateTaxonomy.sh")
+# system("$HOME/conda/bin/ktUpdateTaxonomy.sh")
+system("kronatools_updateTaxonomy")
 
