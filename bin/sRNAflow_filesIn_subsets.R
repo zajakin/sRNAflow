@@ -26,7 +26,7 @@ trimm<-function(rf,ext,s,d,qc,ad3,ad5,sizerange,arx){
 	wf<-paste0(d,s,".",ext)
 	system(paste("cutadapt --cores=0 --quiet -m",sizerange[1],"-o",wf,paste0(d,s,"_r4.",ext)),intern = TRUE)
 	# writeLines(paste0("Filter_short\t",system(paste0("grep -c \"",mark,"\" ",wf),intern = TRUE)),con)
-	fasta2tab<-" | awk '/^>/ {printf(\"%s%s\\t\",(N>0?\"\\n\":\"\"),$1);N++;next;} {printf(\"%s\",$0);} END {printf(\"\\n\");}' > "
+	fasta2tab<-" | gawk '/^>/ {printf(\"%s%s\\t\",(N>0?\"\\n\":\"\"),$1);N++;next;} {printf(\"%s\",$0);} END {printf(\"\\n\");}' > "
 	if(ext == "fastq"){
 		system(paste0("fastqc -q --threads ",core," -o ",ED,"/qc ",wf),intern = TRUE)
 		system(paste0("sed -n '1~4s/^@/>/p;2~4p' ",wf,fasta2tab,d,'faTab/',s,'.faTab'),intern = TRUE)

@@ -1,5 +1,8 @@
 #!/usr/bin/R --no-save
 
+if(!file.exists(file.path(wd,"www","db","meta.txids")))
+    system(paste("gawk -F'\t' '{print $2}'",file.path(wd,"bin","taxids_for_blast.tsv"),"| xargs -l get_species_taxids -t >",file.path(wd,"www","db","meta.txids")))
+
 blast_per_sample<-function(idr,re,wd,filesIn,tsize,core=4){
     arg <- c("sRNAflow","--no-save",filesIn[idr,"wd"],paste0(filesIn[idr,"name"],"_random",tsize,".",re),filesIn[idr,paste0("ft",re)],core)
     options(echo=TRUE)
@@ -30,7 +33,7 @@ for(i in c("forKrona","faTab","blasts","logs","blasts.tmp")) if(!dir.exists(past
 setwd(WD)
 getwd()
 if(length(grep(".faTab",file))==0){
-    fasta2tab<-" | awk '/^>/ {printf(\"%s%s\\t\",(N>0?\"\\n\":\"\"),$1);N++;next;} {printf(\"%s\",$0);} END {printf(\"\\n\");}' > "
+    fasta2tab<-" | gawk '/^>/ {printf(\"%s%s\\t\",(N>0?\"\\n\":\"\"),$1);N++;next;} {printf(\"%s\",$0);} END {printf(\"\\n\");}' > "
     system(paste0("cat ",file,fasta2tab,"faTab/",name,".faTab"),intern = TRUE)
     fileT<-paste0("faTab/",name,".faTab")
 } else fileT<-file
@@ -39,7 +42,7 @@ print(date())
 if(!file.exists(paste0("forKrona/",name,".forKrona.txt"))){
     bname<-paste0("blasts.tmp/",name,".short.blast")
     if(!file.exists(paste0("blasts.tmp/",name,".short.blast.done"))){
-        system(paste0("cat ",fileT," | awk -F '\\t' '{if (length($2)<20) print $1 \"\\n\" $2}' > ",fileT,".short"),intern = TRUE)
+        system(paste0("cat ",fileT," | gawk -F '\\t' '{if (length($2)<20) print $1 \"\\n\" $2}' > ",fileT,".short"),intern = TRUE)
         blastopt<-paste(DB, "-evalue 1e+6 -word_size 10 -reward 2 -penalty -3 -ungapped -perc_identity 100")
         if(file.size(paste0(fileT,".short"))>1)
             if(system(paste0(blastn,blastopt,' -outfmt \"6 ',colQuery,'\" -task blastn-short -query ',fileT,".short -out ",bname," >> logs/",name,".txt 2>&1 "),intern = FALSE)==0)
@@ -54,7 +57,7 @@ if(!file.exists(paste0("forKrona/",name,".forKrona.txt"))){
     }
     bname<-paste0("blasts.tmp/",name,".mid.blast")
     if(!file.exists(paste0("blasts.tmp/",name,".mid.blast.done"))){
-        system(paste0("cat ",fileT," | awk -F '\\t' '{if (length($2)>19 && length($2)<31) print $1 \"\\n\" $2}' > ",fileT,".mid"),intern = TRUE)
+        system(paste0("cat ",fileT," | gawk -F '\\t' '{if (length($2)>19 && length($2)<31) print $1 \"\\n\" $2}' > ",fileT,".mid"),intern = TRUE)
         blastopt<-paste(DB, "-evalue 10 -word_size 7 -reward 2 -penalty -3 -gapopen 5 -gapextend 2")
         if(file.size(paste0(fileT,".mid"))>1)
             if(system(paste0(blastn,blastopt,' -outfmt \"6 ',colQuery,'\" -task blastn-short -query ',fileT,".mid -out ",bname," >> logs/",name,".txt 2>&1 "),intern = FALSE)==0)
@@ -71,7 +74,7 @@ if(!file.exists(paste0("forKrona/",name,".forKrona.txt"))){
     # }
     bname<-paste0("blasts.tmp/",name,".long.blast")
     if(!file.exists(paste0("blasts.tmp/",name,".long.blast.done"))){
-        system(paste0("cat ",fileT," | awk -F '\\t' '{if (length($2)>30) print $1 \"\\n\" $2}' > ",fileT,".long"),intern = TRUE)
+        system(paste0("cat ",fileT," | gawk -F '\\t' '{if (length($2)>30) print $1 \"\\n\" $2}' > ",fileT,".long"),intern = TRUE)
         blastopt<-paste(DB, "-evalue 0.01 -word_size 11 -reward 2 -penalty -3 -gapopen 5 -gapextend 2")
         if(file.size(paste0(fileT,".long"))>1)
             if(system(paste0(blastn,blastopt,' -outfmt \"6 ',colQuery,'\" -query ',fileT,".long -out ",bname," >> logs/",name,".txt 2>&1 "),intern = FALSE)==0)
@@ -85,7 +88,7 @@ if(!file.exists(paste0("forKrona/",name,".forKrona.txt"))){
     # system(paste(blastn,blastopt,' -outfmt \"6 qseqid ssciname staxid scomname sskingdom evalue bitscore qlen slen length pident mismatch qcovs stitle\" -query ',file," -out ",out),intern = TRUE )
 
 # megablast -d nt -a $core -i $out/$i/Unmapped_$i.fasta -o $out/$i/Unmapped_$i.megablast
-# blast_formatter -rid `grep -m 1 ^RID $out/$i/Unmapped_$i.blastn | awk '{print $2}'` -out $out/$i/Unmapped_$i.tab -outfmt 7 
+# blast_formatter -rid `grep -m 1 ^RID $out/$i/Unmapped_$i.blastn | gawk '{print $2}'` -out $out/$i/Unmapped_$i.tab -outfmt 7 
 # system("cat out.blast | sort | uniq > out_filtred.blast; $HOME/bin/parse_blast_output out_filtred.blast | sort -rn > top.txt",intern = TRUE)
 
 # print(date())
@@ -205,7 +208,7 @@ if(!dir.exists("reads")) dir.create("reads")
 write.table(reads,file=paste0("reads/",name,".reads.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
 write.table(reads[,1:2],file=paste0("forKrona/",name,".forKrona.txt"),quote=FALSE,row.names=FALSE,col.names=FALSE,sep="\t")
 if(!dir.exists("output")) dir.create("output")
-system(paste0("$HOME/conda/bin/ktImportTaxonomy forKrona/",name,".forKrona.txt -o output/",name,".report.htm"),intern = TRUE)
+system(paste0("ktImportTaxonomy -tax ",file.path(wd,"www","db","taxonomy")," forKrona/",name,".forKrona.txt -o output/",name,".report.htm"),intern = TRUE)
 warnings()
 date()
 setwd(wd)

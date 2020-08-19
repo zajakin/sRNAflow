@@ -4,11 +4,11 @@ DD<-file.path(wd,"www","db/")
 archiveDir<-paste0(DD,"archive/")
 main_specie_short<-paste0(substr(main_specie,1,1),substr(strsplit(main_specie,"_")[[1]][2],1,2))
 
-# head -n 100000  $DV.gtf | grep "_biotype" | awk -F "_biotype" '{print $2}' | awk -F ";" '{print $1}' | sort | uniq -c | sort -n
+# head -n 100000  $DV.gtf | grep "_biotype" | gawk -F "_biotype" '{print $2}' | gawk -F ";" '{print $1}' | sort | uniq -c | sort -n
 faFile="piRBase_hsa.fa"; type="piRBase"
 fa2gtf<-function(archiveDir,faFile="hg19-tRNAs.fa",outDir="gtf_biotypes/",type="GtRNAdb"){
 	faTab<-paste0(archiveDir,faFile,".faTab")
-	fasta2tab<-" | awk '/^>/ {printf(\"%s%s\\t\",(N>0?\"\\n\":\"\"),$1);N++;next;} {printf(\"%s\",$0);} END {printf(\"\\n\");}' > "
+	fasta2tab<-" | gawk '/^>/ {printf(\"%s%s\\t\",(N>0?\"\\n\":\"\"),$1);N++;next;} {printf(\"%s\",$0);} END {printf(\"\\n\");}' > "
 	system(paste0("cat ",archiveDir,faFile,fasta2tab,faTab))
 	fa<-read.table(faTab,colClasses = "character",quote = "")
 	for(d in fa[duplicated(fa[,ncol(fa)]),ncol(fa)]){
@@ -212,7 +212,7 @@ system(paste0("cat ",archiveDir,"lncipedia_hc_",main_specie_short,".gtf | grep -
 gtfQuote("gtf_biotypes/lncipedia_hc.gtf")
 gtfMergeFeatures("gtf_biotypes/lncipedia_hc.gtf")
 
-system(paste0("cat ",DD,main_specie,"/",main_specie,".gtf | grep _biotype | awk -F \"_biotype\" '{print $2}' | awk -F \";\" '{print $1}' | sort | uniq -c | sort -rn > gtf_biotypes/",main_specie,".gtf_biotypes.txt"))
+system(paste0("cat ",DD,main_specie,"/",main_specie,".gtf | grep _biotype | gawk -F \"_biotype\" '{print $2}' | gawk -F \";\" '{print $1}' | sort | uniq -c | sort -rn > gtf_biotypes/",main_specie,".gtf_biotypes.txt"))
 biotypes<-c("rRNA","snoRNA","miRNA","snRNA","misc_RNA","Mt_tRNA","Mt_rRNA","protein_coding","lncRNA","processed_pseudogene","vaultRNA")
 for(type in biotypes){
 	system(paste0("grep '_biotype \"",type,"\"' ",DD,main_specie,"/",main_specie,".gtf | grep '\texon\t' > gtf_biotypes/",type,".gtf"))
@@ -252,7 +252,7 @@ for(type in c("rRNA","tRNA")){
 
 unlink("gtf_biotypes/repeatMasker",recursive = TRUE)
 dir.create("gtf_biotypes/repeatMasker")
-chRs<-system("awk '{print $1}' gtf_biotypes/hg38_repeatmasker.gtf | sort | uniq",intern = TRUE)
+chRs<-system("gawk '{print $1}' gtf_biotypes/hg38_repeatmasker.gtf | sort | uniq",intern = TRUE)
 
 library(foreach)
 library(doMC)

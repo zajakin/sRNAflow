@@ -37,6 +37,10 @@ vignettes/*.pdf
 .nextflow
 #tutorial*.*
 www/*
+Krona
+ShortStack
+bin/isomiR-SEA
+bin/gencore
 README.html
 old
 

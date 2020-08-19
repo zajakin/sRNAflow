@@ -36,29 +36,21 @@ system(paste("pigz -d",file.path("www","db","genomes","mature.fa.gz")))
 
 download.file("ftp://ftp.ensemblgenomes.org/pub/current/species.txt",file.path("www","db","genomes","ensemblgenomes.txt"))
 system("sed -i '1 s/$/\tNA/' www/db/genomes/ensemblgenomes.txt",intern = TRUE)
-ensemblgenomes<-read.table("www/db/genomes/ensemblgenomes.txt", comment.char="",skip=0,quote = "", header = TRUE, sep = "\t",dec = ".", na.strings = "",as.is = FALSE)
-head(ensemblgenomes) # ,row.names = NULL 
-dim(ensemblgenomes)
-
 download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/assembly_summary_genbank.txt","www/db/genomes/genbank.txt")
-genbank<-read.table("www/db/genomes/genbank.txt", comment.char="",skip=1,quote = "", header = TRUE, sep = "\t",dec = ".", na.strings = "",as.is = TRUE)
-# rownames(genbank)<-genbank[,"taxid"]
-head(genbank)
-dim(genbank)
-
 download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/assembly_summary_refseq.txt","www/db/genomes/refseq.txt")
-refseq<-read.table("www/db/genomes/refseq.txt", comment.char="",skip=1,quote = "", header = TRUE, sep = "\t",dec = ".", na.strings = "",as.is = TRUE)
-# rownames(refseq)<-refseq[,"taxid"]
-head(refseq)
-dim(refseq)
-
-save(ensemblgenomes,genbank,refseq,file="www/db/genomes/genomesdb.RData")
 
 #NOTE create GTF files, remove united ####
 #NOTE download --- genomes.gtf ####
 system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' www/db/genomes/homo_sapiens.gtf"),intern = TRUE)
 # system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' www/db/gtf_biotypes/*.gtf"),intern = TRUE)
 
-system(paste("ln -fs ",file.path(wd,"www","db","gtf_biotypes"),file.path(ED,"genomes","gtf_biotypes")))
-system(paste("ln -fs ",file.path(wd,"www","db","genomes","homo_sapiens.gtf"),file.path(ED,"genomes","genomes.gtf")))
+# as.vector(md5sum(dir(R.home(), pattern = "^COPY", full.names = TRUE)))
+if(!dir.exists(file.path(wd,"www","db","taxonomy"))) dir.create(file.path(wd,"www","db","taxonomy"),recursive = TRUE, mode = "0777")
+system(paste(file.path(wd,"Krona","KronaTools","updateTaxonomy.sh"),file.path(wd,"www","db","taxonomy")))
+# system("kronatools_updateTaxonomy")
+
+if(!dir.exists(file.path(wd,"www","db","gtf_biotypes"))){
+	dir.create(file.path(wd,"www","db","gtf_biotypes"),recursive = TRUE, mode = "0777")
+	file.copy(dir(file.path(wd,"gtf_biotypes"),full.names =TRUE),file.path(wd,"www","db","gtf_biotypes"), recursive = FALSE, copy.mode = FALSE, copy.date = TRUE)
+}
 
