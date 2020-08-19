@@ -19,9 +19,11 @@ core <- arg[6]
 out<- paste0("blasts/",name,".blast")
 DV <- "nt"
 blastn<- paste0("export BATCH_SIZE=50000; export BLASTDB=",file.path(wd,"www","db","blast"),"; blastn -max_hsps 1 -db ",DV," ")
-if(file.exists(file.path(wd,"www","db","meta.txids")) && blast!="nr") blastn<- paste(blastn,"-taxidlist",file.path(wd,"www","db","meta.txids "))
 DB <- paste("-remote")
-if(file.exists(file.path(wd,"www","db","blast","db.done"))) DB <- paste("-num_threads",core)
+if(file.exists(file.path(wd,"www","db","blast","db.done"))){
+    DB <- paste("-num_threads",core)
+    if(file.exists(file.path(wd,"www","db","meta.txids")) && blast!="nr/nt") blastn<- paste(blastn,"-taxidlist",file.path(wd,"www","db","meta.txids "))
+}
 colQuery<-  "qseqid ssciname staxid scomname sskingdom evalue bitscore qlen slen length pident mismatch qcovs stitle sseqid sstart send"
 colNames<- c("read","name","taxid","nameEn","kingdom","evalue","bitscore","qlen","slen","length","pident","mismatch","qcovs","stitle","sseqid","sstart","send")
 # blastopt<-paste(DB, "-evalue 1e+6 -word_size 7 -reward 2 -penalty -3 -gapopen 5 -gapextend 2")

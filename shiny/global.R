@@ -28,9 +28,9 @@ if(!exists("GroupsSel"))
 species<-c("homo_sapiens","mus_musculus")
 if(!exists("tsize")){
 	specie<-"homo_sapiens"
-	tsize<-"2000"
+	tsize<-"200"
 	Rep<-2
-	blast<-"nr"
+	blast<-"nr/nt"
 	qc<-20
 	ad3<-"TGGAATTCTCGGGTGCCAAGG # Illumina TruSeq Small RNA"  # ad3<-"ATCACCGACTGCCCATAGAGAG"  # Ion Torrent
 	ad5<-"GTTCAGAGTTCTACAGTCCGACGATC # Illumina TruSeq Small RNA" # ad5<-"CCAAGGCG"  # Ion Torrent
