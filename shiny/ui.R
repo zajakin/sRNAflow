@@ -69,7 +69,7 @@ body <- dashboardBody(
                     ),
                     column(4,
                         h3("BLAST"),
-                        sliderInput('tsize', 'Representative subset size (use ~200 for not local db") :', min = 200,  max = 2000,  value = tsize, width ='100%')
+                        sliderInput('tsize', 'Representative subset size (use ~200 for remote db) :', min = 200,  max = 2000,  value = tsize, width ='100%')
                     ),
                     column(4,autoWidth = TRUE,
                         h3("DESeq2"),
@@ -91,7 +91,7 @@ body <- dashboardBody(
                 hr(),
                 fluidRow(
                     column(4,sliderInput("sizerange", "Size range", min = 10,max = 300, value = sizerange, width ='100%')),
-                    column(4,selectInput('blast', 'BLAST to (nr/nt will be used if not local db):', c("main specie & bacteria+","nr/nt"), selected = blast, width ='100%')),
+                    column(4,selectInput('blast', 'BLAST to (nr/nt will be used if absent local db):', c("main specie & bacteria+","nr/nt"), selected = blast, width ='100%')),
                     column(4,br(),br(),actionButton("start", "Start analysis",icon = icon("bar-chart-o"), width ='100%'))
                 ),
                 verbatimTextOutput("Config")
@@ -104,7 +104,7 @@ body <- dashboardBody(
         tabItem(tabName = "Setup",
                 h2("Setup"),
                 hr(),
-                actionButton("blastdb", "Update local BLAST db",icon = icon("sync"), width ='100%'),
+                actionButton("blastdb", "Create/Update local BLAST db",icon = icon("sync"), width ='100%'),
                 verbatimTextOutput("blastdb"),
                 br(),hr(),
                 actionButton("gtfdb", "Update GTF files",icon = icon("sync"), width ='100%'),
