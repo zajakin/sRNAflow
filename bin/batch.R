@@ -25,14 +25,8 @@ source("bin/sRNAflow_downloadMainGenomes.R")
 source("bin/sRNAflow_downloadGenomes.R")
 
 #Mapping & RNA types catalog  ####
-err<-foreach(i=1:nrow(filesIn)) %dopar% {
-	system(paste(file.path(wd,"bin","sRNAflow_mapping_and_RNA_catalog.sh"),
-				 "-n",filesIn[i,"name"],
-				 "-r",filesIn[i,"rf"],
-				 "-f",filesIn[i,"wf"],
-				 "-t",filesIn[i,"type"],
-				 "-o",ED),intern = TRUE)
-}
+err<-foreach(i=1:nrow(filesIn)) %dopar% { system(paste(file.path(wd,"bin","sRNAflow_mapping_and_RNA_catalog.sh"),
+	"-n",filesIn[i,"name"],"-r",filesIn[i,"rf"],"-f",filesIn[i,"wf"],"-t",filesIn[i,"type"],"-o",ED),intern = TRUE); }
 #United table
 system(paste0(wd,"/bin/sRNAflow_united_table_of_mapping_and_RNA_catalogs.sh ",ED),intern = TRUE)
 
@@ -57,19 +51,4 @@ source("bin/sRNAflow_DESeq2.R")
 
 #MultiQC (?) https://multiqc.info/docs/
 
-# install.packages("sendmailR")
-library(sendmailR)
-from <- sprintf("sRNAflow@biomed.lu.lv","sRNAflow")
-to <- sprintf(email)
-subject <- paste("sRNAflow",Exp)
-body <- paste("sRNAflow",Exp)
-bodyWithAttachment <- list(body)
-zip(file.path(ED,paste0(Exp,"_fastQC.zip")),files=dir(file.path(ED,"qc"),".html",full.names = T),extras="-o -j -9")
-zip(file.path(ED,paste0(Exp,"_isomiR-SEA.zip")),files=dir(ED,"_isomiR-SEA.xlsx",full.names = T,recursive = TRUE),extras="-o -j -9")
-#TODO Limit size of mail to 20MB  ####
-for(f in c(dir(Exp,"_results.xlsx"),paste0(Exp,"_fastQC.zip"),paste0(Exp,"_isomiR-SEA.zip")))
-	bodyWithAttachment<-append(bodyWithAttachment,mime_part(x=file.path(ED,f),name=f))
-sendmail(from,to,subject,bodyWithAttachment,control=list(smtpServer=smtpServer))
-
-
-
+source("bin/sRNAflow_sendmail.R")
