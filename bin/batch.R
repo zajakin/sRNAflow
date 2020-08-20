@@ -49,6 +49,4 @@ source("bin/sRNAflow_DESeq2.R")
 # https://www.bioconductor.org/packages/release/bioc/html/miRNAtap.html
 # BiocManager::install("miRNAtap")
 
-#MultiQC (?) https://multiqc.info/docs/
-
 source("bin/sRNAflow_sendmail.R")

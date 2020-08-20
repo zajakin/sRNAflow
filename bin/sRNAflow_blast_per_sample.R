@@ -106,10 +106,8 @@ colnames(pos)<-colNames
 # table(as.numeric(pos[!duplicated(pos[,"read"]),"qlen"])) #10-276000 11-70000 12-17700 14-1130 20-3.1   21-0.9   22-0.26
 # head(pos[pos[,"qlen"]==20,])
 
-# print(date())
-species<-cbind(data.frame(unique(rbind(c("9606","Homo sapiens"),c("77133","uncultured bacterium"),pos[,3:2]))),0,0,0,0,0,NA,NA)
-# species<-cbind(data.frame(cbind(unique(pos[,3]),"")),0,0,0,0)
-# species[,2]<-apply(species,1,function(x) paste(pos[pos[,3]==x[1],2][1]))
+species<-cbind(data.frame(rbind(c("9606","Homo sapiens"),c("77133","uncultured bacterium"),pos[,3:2])),0,0,0,0,0,NA,NA)
+species<-species[!duplicated(species[,1]),]
 rownames(species)<-species[,1]
 colnames(species)<-c("id","name","pass1","pass2","count","percent","top","sstart","send")
 dim(species)
