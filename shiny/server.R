@@ -115,13 +115,13 @@ server <- function(input, output, session) {
     output$reports = DT::renderDataTable({
         tmp<-length(c(input$filesUploaded_rows_selected,input$examples_rows_selected,input$serverFiles_rows_selected,input$filesIn_rows_selected))>0
         exps<-dir(file.path(wd,"www","results"))
-        reports <- cbind(xlsx=c(""),fastQC=c(""),"isomiR-SEA"=c(""))[-1,]
+        reports <- cbind(xlsx=c(""),fastQC=c(""),multiQC=c(""),"isomiR-SEA"=c(""))[-1,]
         for(i in exps){
             row<-c()
-            for(j in c("_results.xlsx","_fastQC.zip","_isomiR-SEA.zip")) 
+            for(j in c("_results.xlsx","_fastQC.zip","_multiqc.html","_isomiR-SEA.zip")) 
                 if(file.exists(file.path(wd,"www","results",i,paste0(i,j)))){
                     # row<-c(row,a(href=paste0('/results/',i,'/',paste0(i,j)),paste0(i,j), download=NA, target="_blank"))
-                    row<-c(row,paste0('<a href="/results/',i,'/',paste0(i,j),'" target="_blank">',paste0(i,j),'</a>'))
+                    row<-c(row,paste0('<a href="/results/',i,'/',paste0(i,j),'" target="_blank">',paste0("...",j),'</a>'))
                 } else row<-c(row,'<h2>-</h2>')
             reports<-rbind(reports,row)
             rownames(reports)[nrow(reports)]<-i
