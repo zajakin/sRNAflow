@@ -99,7 +99,7 @@ body <- dashboardBody(
         tabItem(tabName = "Reports",
                 h2("Reports"),
                 hr(),
-                a(href="merged38_results.xlsx", "Download XXX", download=NA, target="_blank")
+                showReports("reports")
         ),
         tabItem(tabName = "Setup",
                 h2("Setup"),

@@ -65,10 +65,19 @@ filesInputUI <- function(id) {
 		# )
 	)
 }
+
 selectGroupsUI <- function(id) {
 	ns <- NS(id)
 	shiny::tagList(
 		hr(),
 		DT::dataTableOutput("groups")
+	)
+}
+
+showReports<- function(id) {
+	ns <- NS(id)
+	shiny::tagList(
+		hr(),
+		DT::dataTableOutput("reports")
 	)
 }
