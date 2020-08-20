@@ -8,15 +8,15 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
     env DEBIAN_FRONTEND=noninteractive apt-get upgrade -y --no-install-recommends && \
     env DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y --no-install-recommends && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        git gawk unzip pigz \
-        bowtie2 cutadapt samtools fastqc ncbi-blast+ ncbi-entrez-direct python3-htseq trnascan-se && \
+        git gawk unzip pigz libjson-perl curl python3-pip \
+        bowtie bowtie2 cutadapt samtools fastqc ncbi-blast+ ncbi-entrez-direct python3-htseq trnascan-se && \
     apt-get autoremove -y && \
     apt-get autoclean -y
 RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           if (!requireNamespace('BiocManager')) install.packages('BiocManager'); \
           chooseBioCmirror(graphics =FALSE,ind=1); \
           BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot','edgeR','DESeq2', \
-          'VennDiagram','GOstats','foreach','doMC','futile.logger','reticulate','shinyjs','sendmailR'), ask=FALSE)"
+          'VennDiagram','GOstats','foreach','doMC','futile.logger','reticulate','shinyjs','sendmailR','openxlsx'), ask=FALSE)"
 ARG DUMMY=unknown
 RUN mv /srv/shiny-server /srv/shiny-server.orig && \
     DUMMY=${DUMMY} git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && \
@@ -26,11 +26,11 @@ RUN mv /srv/shiny-server /srv/shiny-server.orig && \
     wget https://eda.polito.it/isomir-sea/isomiR-SEA_1.6_webpacket.zip -O tmp.zip && \
     unzip -oj tmp.zip isomiR-SEA_1.6_webpacket/isomiR-SEA_OS/Ubuntu_14_04_2LTS_x86_64/isomiR-SEA_1_6 && \
     mv isomiR-SEA_1_6 /srv/shiny-server/bin/isomiR-SEA && rm tmp.zip && \
-    env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends bowtie libjson-perl curl python3-pip && \
     pip3 install multiqc mieaa
      # && mkdir /home/shiny/R && chmod 777 /home/shiny/R
-RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); \
-         BiocManager::install(c('openxlsx'), ask=FALSE)"
+# RUN env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends  && \
+#   R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); \
+#          BiocManager::install(c(), ask=FALSE)"
 #                    remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
 
 # Estj: locales sudo wget gfortran libgfortran-10-dev libopenblas-dev \
