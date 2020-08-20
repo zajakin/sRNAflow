@@ -9,6 +9,9 @@ dir.create(ED,recursive = TRUE, mode = "0777")
 save(FilesIn,GroupsSel,Exp,specie,tsize,Rep,blast,qc,ad3,ad5,sizerange,lim,log2FoldChange,padj,email,smtpServer,file = file.path(ED,"settings.RData"))
 load(file.path(ED,"settings.RData"))
 
+#download main genomes from Ensembl  ########
+source("bin/sRNAflow_downloadMainGenomes.R")
+
 source("bin/sRNAflow_filesIn_subsets.R")
 load(file.path(ED,"filesIn.RData"))
 
@@ -19,8 +22,6 @@ err<-foreach(combr=1:nrow(comb),.verbose = T) %dopar% blast_per_sample(idr=comb[
 #aggregate species  ########
 source("bin/sRNAflow_aggregate_species.R")
 
-#download main genomes from Ensembl  ########
-source("bin/sRNAflow_downloadMainGenomes.R")
 #download genomes and index generation   #####
 source("bin/sRNAflow_downloadGenomes.R")
 

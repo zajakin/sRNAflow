@@ -20,7 +20,7 @@ RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
 ARG DUMMY=unknown
 RUN mv /srv/shiny-server /srv/shiny-server.orig && \
     DUMMY=${DUMMY} git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && \
-    git clone https://github.com/marbl/Krona.git /srv/shiny-server/Krona && /srv/shiny-server/Krona/KronaTools/install.pl && \
+    git clone https://github.com/marbl/Krona.git /srv/shiny-server/Krona && cd /srv/shiny-server/Krona/KronaTools && ./install.pl && \
     git clone https://github.com/zajakin/ShortStack.git  /srv/shiny-server/ShortStack && \
     wget http://opengene.org/gencore/gencore -O /srv/shiny-server/bin/gencore && chmod a+x /srv/shiny-server/bin/gencore && \
     wget https://eda.polito.it/isomir-sea/isomiR-SEA_1.6_webpacket.zip -O tmp.zip && \

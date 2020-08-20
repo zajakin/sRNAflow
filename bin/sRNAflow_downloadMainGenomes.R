@@ -25,6 +25,8 @@ getDBfile<-function(base=c('http://ftp.ensembl.org/pub/current_gtf/',specie),sp=
 	}
 }
 
+if(!dir.exists(file.path(wd,"www","db","genomes"))) dir.create(file.path(wd,"www","db","genomes"),recursive = TRUE, mode = "0777")
+	
 getDBfile(c('ftp://ftp.ensembl.org/pub/current_gtf/',specie),specie,".gtf.gz")
 getDBfile(c('ftp://ftp.ensembl.org/pub/current_fasta/',specie,'/dna'),specie,".dna.primary_assembly.fa.gz")
 # system(paste0("zcat ",specie,".dna.primary_assembly.fa.gz > ",specie,".fa"))
@@ -41,6 +43,9 @@ download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/assembly_summary_refseq
 
 system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' www/db/genomes/homo_sapiens.gtf"),intern = TRUE)
 # system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' www/db/gtf_biotypes/*.gtf"),intern = TRUE)
+
+if(!file.exists(file.path(wd,"www","db","meta.txids")))
+	system(paste("gawk -F'\t' '{print $2}'",file.path(wd,"bin","taxids_for_blast.tsv"),"| xargs -l get_species_taxids -t >",file.path(wd,"www","db","meta.txids")))
 
 # as.vector(md5sum(dir(R.home(), pattern = "^COPY", full.names = TRUE)))
 if(!dir.exists(file.path(wd,"www","db","taxonomy"))) dir.create(file.path(wd,"www","db","taxonomy"),recursive = TRUE, mode = "0777")

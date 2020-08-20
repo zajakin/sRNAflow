@@ -1,8 +1,5 @@
 #!/usr/bin/R --no-save
 
-if(!file.exists(file.path(wd,"www","db","meta.txids")))
-    system(paste("gawk -F'\t' '{print $2}'",file.path(wd,"bin","taxids_for_blast.tsv"),"| xargs -l get_species_taxids -t >",file.path(wd,"www","db","meta.txids")))
-
 blast_per_sample<-function(idr,re,wd,filesIn,tsize,core=4){
     arg <- c("sRNAflow","--no-save",filesIn[idr,"wd"],paste0(filesIn[idr,"name"],"_random",tsize,".",re),filesIn[idr,paste0("ft",re)],core)
     options(echo=TRUE)
