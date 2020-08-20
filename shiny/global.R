@@ -25,7 +25,7 @@ if(!exists("GroupsSel"))
 		load(file.path(wd,"www","db","GroupsSel.RData"))
 	} else { GroupsSel <- rbind(rep(NA,6))[-1,]; colnames(GroupsSel) <- c("file","size","date","test","control","ignore"); }
 
-species<-c("homo_sapiens","mus_musculus")
+species<-c("homo_sapiens")  #,"mus_musculus")
 if(!exists("tsize")){
 	specie<-"homo_sapiens"
 	tsize<-"200"

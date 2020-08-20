@@ -60,31 +60,15 @@ figVen<-function(dat,lim,txt="",filexlsx){
 	}
 }
 
-tomieaa<-function(mirnas){
-	# https://github.com/Xethic/miEAA-API/blob/master/examples/R/example_script.R
-	# pip install mieaa;   conda install -c ccb-sb mieaa
-	library(reticulate)
-	reticulate::use_condaenv("~/conda")
-	reticulate::use_python(python = '~/conda/bin/python')
-	py = import_builtins()
-	# mieaa = import_from_path("mieaa",path = "~/conda/lib/python3.7/site-packages", convert = TRUE)
-	mieaa = import("mieaa")
-	mieaa_api = mieaa$API()
-	mirnas = mirnas[grep("^hsa-",mirnas)]
-	mature = mirnas[grep("p$",mirnas)]
-	precursors = mirnas[!grepl("p$",mirnas)]
-	# updated_mirnas = mieaa_api$convert_mirbase(initial_mirnas, '16', '22', 'mirna')
-	if(length(mature)>0) precursors = append(precursors,mieaa_api$to_precursor(paste(mature,collapse=","), conversion_type='all'))
-	# mieaa_api$run_gsea(paste(precursors,collapse=","),list('HMDD, mndr'), 'precursor', 'hsa')
-	mieaa_api$run_ora(paste(precursors,collapse=","), list('HMDD, mndr'), 'precursor', 'hsa', reference_set='')
-	print(mieaa_api$get_progress())
-	json = mieaa_api$get_results(check_progress_interval=5)
-	cols = c('category', 'subcategory', 'enrichment', 'p-value', 'p-adjusted', 'q-value', 'expected', 'observed', 'mirnas/precursors')
-	df = data.frame(matrix(unlist(json), nrow=length(json), byrow=T))
-	colnames(df) = cols
-	mieaa_api$save_enrichment_results(file.path(ED,'mieaa_results.csv'))
-	print(mieaa_api$get_enrichment_parameters())
-	mieaa_api$invalidate()
+tomieaa<-function(mirnas,ssp="hsa",analysis="ora"){
+	mirnas<-mirnas[grep(paste0("^",ssp,"-"),mirnas)]
+	mature<-mirnas[grep("p$",mirnas)]
+	precursors<-mirnas[!grepl("p$",mirnas)]
+	if(length(mature)>0) precursors<-append(precursors,strsplit(system(paste("mieaa to_precursor -m ",mature," --unique"),intern = TRUE),"'")[[1]][c(FALSE,TRUE )])
+	system(paste("mieaa",analysis,ssp,"--precursors -m ",paste(precursors,collapse=",")," -c HMDD MNDR -o ",file.path(ED,"mieaa.csv")),intern = TRUE)
+	df<-"Not found"
+	if(file.size(file.path(ED,"mieaa.csv"))>0) df<-read.csv(file.path(ED,"mieaa.csv"))
+	file.remove(file.path(ED,"mieaa.csv"))
 	return(df)
 }
 
@@ -172,8 +156,11 @@ makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],file
 			counts<-rbind(as.matrix(counts(dds2,normalized=TRUE))[rownames(res),])
 			res<-cbind(rbind(res)," "=" ",baseMedian=rowMedians(counts),"  "=" ",counts,"   "=" ",Raw=rbind(dat[rownames(res),]))
 			write.xlsx2(as.data.frame(rbind(res,NA)),filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"),append=TRUE)
-			if(txt == "all_miRNA") try(write.xlsx2(tomieaa(sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/")))),
-												   filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"MIEAA"),append=TRUE))
+			#TODO Make working for mouse etc...  ####
+			if(txt == "all_miRNA") try(write.xlsx2(tomieaa(sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/"))),analysis="ora"),
+												   filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"MIEAA_ORA"),append=TRUE))
+			if(txt == "all_miRNA") try(write.xlsx2(tomieaa(sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/"))),analysis="gsea"),
+												   filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"MIEAA_GSEA"),append=TRUE))
 			#TODO Diff expression DESeq2  GOstats ####
 			# if(txt %in% c("Ensembl_genes","protein_coding","all_lncRNA","all_miRNA")){
 			# # 	#  https://www.bioconductor.org/packages/release/bioc/manuals/GOstats/man/GOstats.pdf
