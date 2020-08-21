@@ -8,7 +8,7 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
     env DEBIAN_FRONTEND=noninteractive apt-get upgrade -y --no-install-recommends && \
     env DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y --no-install-recommends && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        git gawk unzip pigz libjson-perl curl python3-pip libxml2-dev zlib1g-dev \
+        git gawk unzip pigz libjson-perl curl python3-pip libxml2-dev zlib1g-dev libbz2-dev liblzma-dev \
         bowtie bowtie2 cutadapt samtools fastqc ncbi-blast+ ncbi-entrez-direct python3-htseq trnascan-se && \
     apt-get autoremove -y && \
     apt-get autoclean -y
