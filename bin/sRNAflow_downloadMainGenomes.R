@@ -14,28 +14,30 @@ getDBfile<-function(base=c('http://ftp.ensembl.org/pub/current_gtf/',specie),sp=
 		tmp<-sapply(filenames,nchar)
 		filenames <-filenames[tmp==min(tmp)][1]
 		download.file(paste(c(base,'/',filenames),collapse=""),file.path(path,paste0(sp,ext)),"auto",mode = "wb")
-		ext2<-gsub(".*\\.",".",sub(".gz","",ext))
-		out<-file(file.path(path,paste0(sp,ext2)),"wt")
-		zz <-gzcon(file(file.path(path,paste0(sp,ext)),"r"))
-		tmp<-readLines(zz)
-		close(zz)
-		writeLines(tmp,out,sep="\n")
-		close(out)
-		file.remove(file.path(path,paste0(sp,ext)))
+		system(paste("pigz -df",file.path(path,paste0(sp,ext))))
+		# ext2<-gsub(".*\\.",".",sub(".gz","",ext))
+		# out<-file(file.path(path,paste0(sp,ext2)),"wt")
+		# zz <-gzcon(file(file.path(path,paste0(sp,ext)),"r"))
+		# tmp<-readLines(zz)
+		# close(zz)
+		# writeLines(tmp,out,sep="\n")
+		# close(out)
+		# file.remove(file.path(path,paste0(sp,ext)))
 	}
 }
 
 if(!dir.exists(file.path(wd,"www","db","genomes"))) dir.create(file.path(wd,"www","db","genomes"),recursive = TRUE, mode = "0777")
-	
-getDBfile(c('ftp://ftp.ensembl.org/pub/current_gtf/',specie),specie,".gtf.gz")
-getDBfile(c('ftp://ftp.ensembl.org/pub/current_fasta/',specie,'/dna'),specie,".dna.primary_assembly.fa.gz")
+
+if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".gtf")))) getDBfile(c('ftp://ftp.ensembl.org/pub/current_gtf/',specie),specie,".gtf.gz")
+if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".fa")))) getDBfile(c('ftp://ftp.ensembl.org/pub/current_fasta/',specie,'/dna'),specie,".dna.primary_assembly.fa.gz")
 # system(paste0("zcat ",specie,".dna.primary_assembly.fa.gz > ",specie,".fa"))
 # system(paste0("zcat ",specie,".gtf.gz > ",specie,".gtf"))
 
-download.file("ftp://mirbase.org/pub/mirbase/CURRENT/mature.fa.gz",file.path("www","db","genomes","mature.fa.gz"))
-system(paste("pigz -d",file.path("www","db","genomes","mature.fa.gz")))
+if(!file.exists(file.path(wd,"www","db","genomes","mature.fa"))){
+	download.file("ftp://mirbase.org/pub/mirbase/CURRENT/mature.fa.gz",file.path("www","db","genomes","mature.fa.gz"))
+	system(paste("pigz -df",file.path("www","db","genomes","mature.fa.gz")))
 # pigz -cd $DV.fa.gz | fasta_formatter | sed '/^[^>]/ y/uU/tT/' > $DV.fa
-
+}
 download.file("ftp://ftp.ensemblgenomes.org/pub/current/species.txt",file.path("www","db","genomes","ensemblgenomes.txt"))
 system("sed -i '1 s/$/\tNA/' www/db/genomes/ensemblgenomes.txt",intern = TRUE)
 download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/assembly_summary_genbank.txt","www/db/genomes/genbank.txt")

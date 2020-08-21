@@ -5,8 +5,6 @@ to <- sprintf(email)
 subject <- paste("sRNAflow",Exp)
 body <- paste("sRNAflow",Exp)
 bodyWithAttachment <- list(body)
-zip(file.path(ED,paste0(Exp,"_fastQC.zip")),files=dir(file.path(ED,"qc"),".html",full.names = T),extras="-o -j -9")
-zip(file.path(ED,paste0(Exp,"_isomiR-SEA.zip")),files=dir(ED,"_isomiR-SEA.xlsx",full.names = T,recursive = TRUE),extras="-o -j -9")
 system(paste("cd ",ED,"; multiqc ."))
 file.rename(file.path(ED,"multiqc_report.html"),file.path(ED,paste0(Exp,"_multiqc.html")))
 #TODO Limit size of mail to 20MB  ####

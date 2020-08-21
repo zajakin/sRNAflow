@@ -79,4 +79,5 @@ filesIn<-foreach(i=1:nrow(filesIn),.combine = rbind) %dopar% {
 	file.remove(filesIn[i,"ft"])
 	filesIn[i,]
 }
+zip(file.path(ED,paste0(Exp,"_fastQC.zip")),files=dir(file.path(ED,"qc"),".html",full.names = T),extras="-o -j -9")
 save(filesIn,file = file.path(ED,"filesIn.RData"))

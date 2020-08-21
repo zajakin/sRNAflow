@@ -31,8 +31,9 @@ exampleDataPanel <- function(ns) {
 			DT::dataTableOutput('examples')
 		},
 		fluidRow(
-			column(6,actionButton("download_examples", "Download 39 EV examples",icon = icon("vials"), width ='100%')),
-			column(6,actionButton("refresh_examples", "Refresh examples list",icon = icon("sync"), width ='100%'))
+			column(4,actionButton("download_examples", "Download 39 EV examples",icon = icon("vials"), width ='100%')),
+			column(4,actionButton("download_examples2", "Download 40 cells examples",icon = icon("vials"), width ='100%')),
+			column(4,actionButton("refresh_examples", "Refresh examples list",icon = icon("sync"), width ='100%'))
 		)
 	)
 }

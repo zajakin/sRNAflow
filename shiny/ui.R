@@ -30,17 +30,6 @@ sidebar <- dashboardSidebar(
 
 body <- dashboardBody(
     tabItems(
-        # First tab content
-        # tabItem(tabName = "dashboard",h2("Work process..."),
-        #         fluidRow(
-        #             box(plotOutput("distPlot", height = 250)),
-        #             
-        #             box(
-        #                 title = "Controls",
-        #                 sliderInput("bins", "Number of observations:", 1, 100, 50)
-        #             )
-        #         )
-        # ),
         tabItem("Files",
                 h2("Input files"),
                 filesInputUI("datafile")
@@ -48,11 +37,7 @@ body <- dashboardBody(
         tabItem("Groups",
                 h2("Select groups"),
                 selectGroupsUI("groups"),
-                # box(width=12,
-                #     collapsible=TRUE,
-                #     collapsed=TRUE,
-                    tableOutput("sel")
-                # )
+                tableOutput("sel")
         ),
         tabItem(tabName = "Config",
                 h2("Configuration"),
@@ -99,7 +84,8 @@ body <- dashboardBody(
         tabItem(tabName = "Reports",
                 h2("Reports"),
                 hr(),
-                showReports("reports")
+                showReports("reports"),
+                actionButton("refresh_reports", "Refresh reports list",icon = icon("sync"), width ='100%')
         ),
         tabItem(tabName = "Setup",
                 h2("Setup"),
@@ -117,8 +103,8 @@ body <- dashboardBody(
             box(width=12,
                 HTML(
                     "<h2>sRNAflow</h2>
-                                       https://github.com/zajakin/sRNAflow              
-                                                     <p>This tool was developed by Pawel Zayakin.</p>")),
+                    <a href=https://github.com/zajakin/sRNAflow>https://github.com/zajakin/sRNAflow</a>
+                    <p>This tool was developed by Pawel Zayakin.</p>")),
             br(),
             box(width=12,
                 title="Session Information",

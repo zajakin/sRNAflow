@@ -29,8 +29,8 @@ RUN mv /srv/shiny-server /srv/shiny-server.orig && \
     pip3 install multiqc mieaa
      # && mkdir /home/shiny/R && chmod 777 /home/shiny/R
 # RUN env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends  && \
-#   R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); \
-#          BiocManager::install(c(), ask=FALSE)"
+RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); \
+          BiocManager::install(c('rtracklayer'), ask=FALSE)"
 #                    remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
 
 # Estj: locales sudo wget gfortran libgfortran-10-dev libopenblas-dev \

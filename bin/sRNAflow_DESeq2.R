@@ -24,6 +24,7 @@ for(sample in filesIn[,"name"]){
 		}
 	}	
 }
+zip(file.path(ED,paste0(Exp,"_isomiR-SEA.zip")),files=dir(ED,"_isomiR-SEA.xlsx",full.names = T,recursive = TRUE),extras="-o -j -9")
 
 figVen<-function(dat,lim,txt="",filexlsx){
 	title<-paste0(txt," >",lim)

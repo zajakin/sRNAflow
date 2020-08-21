@@ -113,7 +113,7 @@ server <- function(input, output, session) {
     )
 
     output$reports = DT::renderDataTable({
-        tmp<-length(c(input$filesUploaded_rows_selected,input$examples_rows_selected,input$serverFiles_rows_selected,input$filesIn_rows_selected))>0
+        input$refresh_reports
         exps<-dir(file.path(wd,"www","results"))
         reports <- cbind(xlsx=c(""),fastQC=c(""),multiQC=c(""),"isomiR-SEA"=c(""))[-1,]
         for(i in exps){
@@ -208,6 +208,17 @@ server <- function(input, output, session) {
         p <- parallel:::mcfork(estranged = TRUE)
         setwd(wd)
         if (inherits(p, "masterProcess")) {
+            examples_set<-"UF_"
+            source("bin/sRNAflow_example_set.R")
+            parallel:::mcexit()
+        }
+    })
+
+    observeEvent(input$download_examples2,{
+        p <- parallel:::mcfork(estranged = TRUE)
+        setwd(wd)
+        if (inherits(p, "masterProcess")) {
+            examples_set<-"cells_"
             source("bin/sRNAflow_example_set.R")
             parallel:::mcexit()
         }
