@@ -15,8 +15,8 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
 RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           if (!requireNamespace('BiocManager')) install.packages('BiocManager'); \
           chooseBioCmirror(graphics =FALSE,ind=1); \
-          BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot','edgeR','DESeq2', \
-          'VennDiagram','GOstats','foreach','doMC','futile.logger','reticulate','shinyjs','sendmailR','openxlsx'), ask=FALSE)"
+          BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot','edgeR','shinyjs','sendmailR','openxlsx'), ask=FALSE); \
+          BiocManager::install(c('rtracklayer','VennDiagram','GOstats','foreach','doMC','futile.logger','reticulate','DESeq2'), ask=FALSE)"
 ARG DUMMY=unknown
 RUN mv /srv/shiny-server /srv/shiny-server.orig && \
     DUMMY=${DUMMY} git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && \
@@ -29,8 +29,7 @@ RUN mv /srv/shiny-server /srv/shiny-server.orig && \
     pip3 install multiqc mieaa
      # && mkdir /home/shiny/R && chmod 777 /home/shiny/R
 # RUN env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends  && \
-RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); \
-          BiocManager::install(c('rtracklayer'), ask=FALSE)"
+# RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); BiocManager::install(c(), ask=FALSE)"
 #                    remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
 
 # Estj: locales sudo wget gfortran libgfortran-10-dev libopenblas-dev \

@@ -219,11 +219,14 @@ samples <- rep(colnames(stat)[-1],each=(36-21))
 RNA_types <- rep(stat[22:36,1], ncol(stat)-1)
 frequency <- as.numeric(unlist(stat[22:36,-1]))
 data <- data.frame(samples,RNA_types,frequency)
+png(paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, dpi=300)
 print(ggplot(data, aes(fill=RNA_types, y=frequency, x=samples)) + geom_bar(position="fill", stat="identity") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
+dev.off()
 wb<-openxlsx::loadWorkbook(filexlsx)
-openxlsx::insertPlot(wb,sheet="Catalog",width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
+# openxlsx::insertPlot(wb,sheet="Catalog",width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
+openxlsx::insertImage(wb,sheet="Catalog",file=paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
 saveWorkbook(wb,filexlsx, overwrite = TRUE)
-
+file.remove(paste0(fileName,".png"))
 # deGTF<-unique(sub(".*\\.","",sub(".txt$","",dir(ED,"_mergedFeatures.txt$",recursive = TRUE))))
 deGTF<-c("all_miRNA_mergedFeatures","GtRNAdb_mergedFeatures","rRNA_mergedFeatures","protein_coding_mergedFeatures","processed_pseudogene_mergedFeatures","snRNA_mergedFeatures","snoRNA_mergedFeatures","all_MT_mergedFeatures","all_piRNA_mergedFeatures","all_lncRNA_mergedFeatures","vaultRNA_mergedFeatures","misc_RNA_mergedFeatures","Other_types_mergedFeatures","RepeatMasker_tRNA_mergedFeatures","RepeatMasker_rRNA_mergedFeatures")
 
@@ -280,13 +283,21 @@ for(gr in deGTF){
 			if((sum(is.na(c))==0 && length(table(c))>1) || ncol(c)<20){
 				wb<-openxlsx::loadWorkbook(filexlsx)
 				if(ncol(c)<20){
-					corrplot.mixed(c, p.mat = p, number.cex = 1, sig.level = .05,title=paste(sub("_mergedFeatures","",gr),set,method),mar=c(1,1,3,1))
-					openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
+					png(paste0(fileName,".png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150)
+					print(corrplot.mixed(c, p.mat = p, number.cex = 1, sig.level = .05,title=paste(sub("_mergedFeatures","",gr),set,method),mar=c(1,1,3,1)))
+					dev.off()
+					openxlsx::insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,".png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
+					# openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
+					file.remove(paste0(fileName,".png"))
 				}
 				if(sum(is.na(c))==0 && length(table(c))>1){
-					heatmap.2(c,Rowv=TRUE,Colv=TRUE, dendrogram="row", revC = T, scale="none", col=greenred(75),na.rm=TRUE, key=TRUE, density.info="none", trace="none",mar=c(8,8))
+					png(paste0(fileName,".png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150)
+					print(heatmap.2(c,Rowv=TRUE,Colv=TRUE, dendrogram="row", revC = T, scale="none", col=greenred(75),na.rm=TRUE, key=TRUE, density.info="none", trace="none",mar=c(8,8)))
 					title(paste(sub("_mergedFeatures","",gr),set,method),cex.main=0.8)
-					openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
+					dev.off()
+					openxlsx::insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,".png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
+					# openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
+					file.remove(paste0(fileName,".png"))
 				}
 				saveWorkbook(wb,filexlsx, overwrite = TRUE)
 			}
