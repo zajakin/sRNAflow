@@ -27,6 +27,7 @@ RUN mv /srv/shiny-server /srv/shiny-server.orig && \
     unzip -oj tmp.zip isomiR-SEA_1.6_webpacket/isomiR-SEA_OS/Ubuntu_14_04_2LTS_x86_64/isomiR-SEA_1_6 && \
     mv isomiR-SEA_1_6 /srv/shiny-server/bin/isomiR-SEA && rm tmp.zip && \
     pip3 install multiqc mieaa
+EXPOSE 3838
      # && mkdir /home/shiny/R && chmod 777 /home/shiny/R
 # RUN env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends  && \
 # RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); BiocManager::install(c(), ask=FALSE)"
