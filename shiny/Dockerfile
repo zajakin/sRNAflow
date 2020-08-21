@@ -8,7 +8,7 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
     env DEBIAN_FRONTEND=noninteractive apt-get upgrade -y --no-install-recommends && \
     env DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y --no-install-recommends && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        git gawk unzip pigz libjson-perl curl python3-pip \
+        git gawk unzip pigz libjson-perl curl python3-pip libxml2-dev zlib1g-dev \
         bowtie bowtie2 cutadapt samtools fastqc ncbi-blast+ ncbi-entrez-direct python3-htseq trnascan-se && \
     apt-get autoremove -y && \
     apt-get autoclean -y
@@ -18,7 +18,8 @@ RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot','shinyjs','annotate'), ask=FALSE); \
           BiocManager::install(c('rtracklayer','VennDiagram','GOstats','foreach','doMC','futile.logger','sendmailR','openxlsx'), ask=FALSE); \
           BiocManager::install(c('XML','DESeq2'), ask=FALSE)"
-# ARG DUMMY=unknown  # DUMMY=${DUMMY} git 
+# ARG DUMMY=unknown  
+# RUN DUMMY=${DUMMY} ls
 RUN mv /srv/shiny-server /srv/shiny-server.orig && \
     git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && \
     git clone https://github.com/marbl/Krona.git /srv/shiny-server/Krona && cd /srv/shiny-server/Krona/KronaTools && ./install.pl && \
@@ -33,7 +34,7 @@ RUN mv /srv/shiny-server /srv/shiny-server.orig && \
 # RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); BiocManager::install(c('org.Hs.eg.db','edgeR','reticulate'), ask=FALSE)"
 # remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
 
-#        libxml2-dev libjpeg-dev libcurl4-openssl-dev libssl-dev zlib1g-dev kraken2 rna-star fastp cnvkit seqtk picard-tools trnascan-se sortmerna bcftools gffread bedtools radiant
+#        libjpeg-dev libcurl4-openssl-dev libssl-dev zlib1g-dev kraken2 rna-star fastp cnvkit seqtk picard-tools trnascan-se sortmerna bcftools gffread bedtools radiant
 
 #chmod 777 . && docker pull zajakin/srnaflow && docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v /tmp/shinylog/:/var/log/shiny-server/ zajakin/srnaflow
 #docker build  -t srnaflow shiny && chmod 777 . && docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v /tmp/shinylog/:/var/log/shiny-server/ srnaflow
