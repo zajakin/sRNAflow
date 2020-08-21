@@ -15,7 +15,7 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
 RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           if (!requireNamespace('BiocManager')) install.packages('BiocManager'); \
           chooseBioCmirror(graphics =FALSE,ind=1); \
-          BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot','edgeR','shinyjs','sendmailR','openxlsx'), ask=FALSE); \
+          BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot','edgeR','shinyjs','sendmailR','openxlsx','annotate'), ask=FALSE); \
           BiocManager::install(c('rtracklayer','VennDiagram','GOstats','foreach','doMC','futile.logger','reticulate','DESeq2'), ask=FALSE)"
 ARG DUMMY=unknown
 RUN mv /srv/shiny-server /srv/shiny-server.orig && \
