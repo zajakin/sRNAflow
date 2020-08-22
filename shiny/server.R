@@ -225,13 +225,13 @@ server <- function(input, output, session) {
 
     observeEvent(input$blastdb,{
         setwd(wd)
-        system(paste0('Rscript --vanilla bin/sRNAflow_local_blast_db.R "',wd), wait = FALSE)
+        system(paste0('Rscript --vanilla bin/sRNAflow_local_blast_db.R "',wd,'"'), wait = FALSE)
         showModal(modalDialog("Downloading of local BLAST database started"))
     })
 
     observeEvent(input$gtfdb,{
         setwd(wd)
-        system(paste0('Rscript --vanilla bin/sRNAflow_gtf_annotations.R "',wd), wait = FALSE)
+        system(paste0('Rscript --vanilla bin/sRNAflow_gtf_annotations.R "',wd,'"'), wait = FALSE)
         showModal(modalDialog("Downloading and merging of small RNA annotations started"))
     })
     #         # system(paste("Rscript","bin/batch.R",Exp),wait = FALSE)

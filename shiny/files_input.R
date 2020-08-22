@@ -39,7 +39,7 @@ exampleDataPanel <- function(ns) {
 }
 
 filesUploadRow <- function(x){
-	return(c(file=gsub(" ","_",file.path("www","upload",x$name)),
+	return(c(file=gsub(" ","_",x$name),
 			size=humanReadable(x$size),
 	  		date=format(Sys.time(),"%d.%m.%Y %H:%M:%OS")))
 }
