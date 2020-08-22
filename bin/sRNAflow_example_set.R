@@ -1,5 +1,7 @@
-#!/usr/bin/R --no-save
-WD<-file.path(wd,"www","upload","example-samples")
+#!/usr/local/bin/Rscript --vanilla
+arg<-commandArgs()
+examples_set<-arg[length(arg)]
+WD<-file.path(arg[length(arg)-1],"www","upload","example-samples")
 desc<-file.path(WD,"filereport_read_run_PRJNA293274.tsv")
 dir.create(WD,recursive=TRUE)
 download.file("https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA293274&result=read_run&fields=fastq_ftp,sample_title&format=tsv&download=true",desc)

@@ -95,12 +95,16 @@ server <- function(input, output, session) {
 
     output$groups = DT::renderDataTable({
         tmp<-length(c(input$filesUploaded_rows_selected,input$examples_rows_selected,input$serverFiles_rows_selected,input$filesIn_rows_selected))>0
-        groups <- cbind(rbind(FilesIn),test=c(""),control=c(""),ignore=c(""))
+        if(nrow(rbind(FilesIn))>0){
+            groups <- cbind(rbind(FilesIn),test=c(""),control=c(""),ignore=c(""))
+        } else groups <- rbind(rep(0,6))[-1,]
         choices <- c("test","control","ignore")
         colnames(groups)<-c("file","size","date",choices)
         if(nrow(groups)>0) groups[,4:6]<-paste0('<input type="radio" name="',groups[,"file"],'" value="',rep(choices,each=nrow(groups)),'"/>')
-        GroupsSel<<-GroupsSel[names(GroupsSel) %in% FilesIn[,"file"]]
-        for(s in names(GroupsSel)) if(!is.null(GroupsSel[s][[1]])) groups[groups[,"file"]==s,GroupsSel[s][[1]]]<-sub("/>"," checked/>",groups[groups[,"file"]==s,GroupsSel[s][[1]]])
+        if(nrow(rbind(FilesIn))>0){
+            GroupsSel<<-GroupsSel[names(GroupsSel) %in% FilesIn[,"file"]]
+            for(s in names(GroupsSel)) if(!is.null(GroupsSel[s][[1]])) groups[groups[,"file"]==s,GroupsSel[s][[1]]]<-sub("/>"," checked/>",groups[groups[,"file"]==s,GroupsSel[s][[1]]])
+        }
         groups
     }, server = FALSE, escape = FALSE, selection = 'none', options = list(dom = 't', paging = FALSE, ordering = FALSE), 
     callback = DT::JS("table.rows().every(function(i, tab, row) {
@@ -182,20 +186,15 @@ server <- function(input, output, session) {
     observeEvent(input$start,{
         ED<-file.path(wd,"www","results",Exp)
         if(dir.exists(ED)){
-            showModal(modalDialog(
-                title = "Warning",
-                "Analysis with this name already started!"
-            ))
+            showModal(modalDialog(title = "Warning","Analysis with this name already started!"))
         } else {
-            # parallel::mcfork(source("bin/batch.R"),estranged = TRUE)
-            # parallel::mcparallel(source("bin/batch.R"),detached = TRUE)
-            # parallel::mccollect(wait = F)
-            p <- parallel:::mcfork(estranged = TRUE)
             setwd(wd)
-            if (inherits(p, "masterProcess")) {
-                source("bin/batch.R")
-                parallel:::mcexit()
-            }
+            system(paste0('Rscript --vanilla bin/batch.R "',wd), wait = FALSE)
+            showModal(modalDialog('Analysis started. Go to "Reports" and press ""Refresh reports list"" to see generated files'))
+            # if (inherits(p, "masterProcess")) {
+            #     source("bin/batch.R")
+            #     parallel:::mcexit()
+            # }
             withProgress(message = 'Starting job', {
                 for(i in 1:4){
                     Sys.sleep(1)
@@ -205,23 +204,17 @@ server <- function(input, output, session) {
         }
     })
     observeEvent(input$download_examples,{
-        p <- parallel:::mcfork(estranged = TRUE)
         setwd(wd)
-        if (inherits(p, "masterProcess")) {
-            examples_set<-"UF_"
-            source("bin/sRNAflow_example_set.R")
-            parallel:::mcexit()
-        }
+        system(paste0('Rscript --vanilla bin/sRNAflow_example_set.R "',wd,'" "UF_"'), wait = FALSE)
+        showModal(modalDialog('Downloading of 39 EV examples started.
+                              Press "Refresh examples list" to see downloaded files'))
     })
 
     observeEvent(input$download_examples2,{
-        p <- parallel:::mcfork(estranged = TRUE)
         setwd(wd)
-        if (inherits(p, "masterProcess")) {
-            examples_set<-"cells_"
-            source("bin/sRNAflow_example_set.R")
-            parallel:::mcexit()
-        }
+        system(paste0('Rscript --vanilla bin/sRNAflow_example_set.R "',wd,'" "cells_"'), wait = FALSE)
+        showModal(modalDialog('Downloading of 40 cells examples started.
+                              Press "Refresh examples list" to see downloaded files'))
     })
 
     output$blastdb<-renderText({
@@ -231,21 +224,15 @@ server <- function(input, output, session) {
     })
 
     observeEvent(input$blastdb,{
-        p <- parallel:::mcfork(estranged = TRUE)
         setwd(wd)
-        if (inherits(p, "masterProcess")) {
-            source("bin/sRNAflow_local_blast_db.R")
-            parallel:::mcexit()
-        }
+        system(paste0('Rscript --vanilla bin/sRNAflow_local_blast_db.R "',wd), wait = FALSE)
+        showModal(modalDialog("Downloading of local BLAST database started"))
     })
 
     observeEvent(input$gtfdb,{
-        p <- parallel:::mcfork(estranged = TRUE)
         setwd(wd)
-        if (inherits(p, "masterProcess")) {
-            source("bin/sRNAflow_gtf_annotations.R")
-            parallel:::mcexit()
-        }
+        system(paste0('Rscript --vanilla bin/sRNAflow_gtf_annotations.R "',wd), wait = FALSE)
+        showModal(modalDialog("Downloading and merging of small RNA annotations started"))
     })
     #         # system(paste("Rscript","bin/batch.R",Exp),wait = FALSE)
     #         system(paste0("R -e 'Exp<-\"",Exp,"\"; source(\"bin/batch.R\")'"),wait = FALSE)

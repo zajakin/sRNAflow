@@ -1,4 +1,7 @@
-#!/usr/bin/R --no-save
+#!/usr/local/bin/Rscript --vanilla
+arg<-commandArgs()
+wd<-arg[length(arg)]
+
 library(foreach)
 library(doMC)
 registerDoMC()
@@ -123,8 +126,8 @@ gtfMergeFeatures<-function(file="gtf_biotypes/hg38_repeatmasker_2.gtf"){
 }
 
 setwd(DD)
-dir.create("gtf_biotypes")
-dir.create(archive)
+if(!dir.exists("gtf_biotypes")) dir.create("gtf_biotypes", mode = "0777")
+if(!dir.exists(archive)) dir.create(archive,recursive = TRUE, mode = "0777")
 
 download.file(paste0('http://regulatoryrna.org/database/piRNA/download/archive/v1.0/fasta/piR_human_v1.0.fa.gz'),paste0(archive,"piRBase_hsa.fa.gz"),"auto",mode = "wb")
 system(paste0("pigz -df ",archive,"piRBase_hsa.fa.gz") )
