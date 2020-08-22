@@ -189,7 +189,7 @@ server <- function(input, output, session) {
             showModal(modalDialog(title = "Warning","Analysis with this name already started!"))
         } else {
             setwd(wd)
-            system(paste0('Rscript --vanilla bin/batch.R "',wd), wait = FALSE)
+            system(paste0('Rscript --vanilla bin/batch.R "',wd,'"'), wait = FALSE)
             showModal(modalDialog('Analysis started. Go to "Reports" and press ""Refresh reports list"" to see generated files'))
             # if (inherits(p, "masterProcess")) {
             #     source("bin/batch.R")
