@@ -231,7 +231,7 @@ server <- function(input, output, session) {
 
     observeEvent(input$gtfdb,{
         setwd(wd)
-        system(paste0('Rscript --vanilla bin/sRNAflow_gtf_annotations.R "',wd,'"',specie), wait = FALSE)
+        system(paste0('Rscript --vanilla bin/sRNAflow_gtf_annotations.R "',wd,'" ',specie," ",core), wait = FALSE)
         showModal(modalDialog("Downloading and merging of small RNA annotations started"))
     })
     #         # system(paste("Rscript","bin/batch.R",Exp),wait = FALSE)

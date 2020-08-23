@@ -1,7 +1,8 @@
 #!/usr/local/bin/Rscript --vanilla
 arg<-commandArgs()
-specie <-arg[length(arg)]
-wd     <-arg[length(arg)-1]
+core   <-arg[length(arg)]
+specie <-arg[length(arg)-1]
+wd     <-arg[length(arg)-2]
 
 library(foreach)
 library(doMC)
