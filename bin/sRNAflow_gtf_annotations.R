@@ -280,7 +280,7 @@ for(type in c("rRNA","tRNA")){
 	system(paste0("grep '",type,"' gtf_biotypes/RepeatMasker.gtf | grep '\texon\t' > gtf_biotypes/RepeatMasker_",type,".gtf"))
 	gtfMergeFeatures(paste0("gtf_biotypes/RepeatMasker_",type,".gtf"))
 }
-gtfMergeFeatures(paste0("gtf_biotypes/repeatMasker/",chR,".gtf"))
+gtfMergeFeatures(paste0("gtf_biotypes/RepeatMasker.gtf"))
 # unlink("gtf_biotypes/repeatMasker",recursive = TRUE)
 # dir.create("gtf_biotypes/repeatMasker")
 # chRs<-system("gawk '{print $1}' gtf_biotypes/RepeatMasker.gtf | sort | uniq",intern = TRUE)
@@ -301,4 +301,6 @@ gtfMergeFeatures(paste0("gtf_biotypes/repeatMasker/",chR,".gtf"))
 # 	}
 # }
 
+tax<-system(paste0("gawk -F'\t' 'tolower($5) ~/^",sub("_"," ",specie),"$/{print $1}' ",DD,"taxonomy/taxonomy.tab"),intern = TRUE)
+system(paste0("sed -i -E '/(^#|^$)/!s/^/",tax,"_",specie,"_/' ",DD,"gtf_biotypes/*.gtf"),intern = TRUE)
 system("pigz -9f gtf_biotypes/*mergedFeatures.gtf")

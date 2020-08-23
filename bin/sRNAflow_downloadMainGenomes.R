@@ -25,9 +25,18 @@ getDBfile<-function(base=c('http://ftp.ensembl.org/pub/current_gtf/',specie),sp=
 	}
 }
 
+# as.vector(md5sum(dir(R.home(), pattern = "^COPY", full.names = TRUE)))
+if(!dir.exists(file.path(wd,"www","db","taxonomy"))) dir.create(file.path(wd,"www","db","taxonomy"),recursive = TRUE, mode = "0777")
+system(paste(file.path(wd,"Krona","KronaTools","updateTaxonomy.sh"),file.path(wd,"www","db","taxonomy")))
+# system("kronatools_updateTaxonomy")
+
 if(!dir.exists(file.path(wd,"www","db","genomes"))) dir.create(file.path(wd,"www","db","genomes"),recursive = TRUE, mode = "0777")
 
-if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".gtf")))) getDBfile(c('ftp://ftp.ensembl.org/pub/current_gtf/',specie),specie,".gtf.gz",".gtf.gz")
+if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".gtf")))){
+	getDBfile(c('ftp://ftp.ensembl.org/pub/current_gtf/',specie),specie,".gtf.gz",".gtf.gz")
+	tax<-system(paste0("gawk -F'\t' 'tolower($5) ~/^",sub("_"," ",specie),"$/{print $1}' www/db/taxonomy/taxonomy.tab"),intern = TRUE)
+	system(paste0("sed -i -E '/(^#|^$)/!s/^/",tax,"_",specie,"_/' www/db/genomes/",specie,".gtf"),intern = TRUE)
+}
 if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".fa")))) getDBfile(c('ftp://ftp.ensembl.org/pub/current_fasta/',specie,'/dna'),specie,".dna.primary_assembly.fa.gz",".fa.gz")
 # system(paste0("zcat ",specie,".dna.primary_assembly.fa.gz > ",specie,".fa"))
 # system(paste0("zcat ",specie,".gtf.gz > ",specie,".gtf"))
@@ -42,16 +51,8 @@ system("sed -i '1 s/$/\tNA/' www/db/genomes/ensemblgenomes.txt",intern = TRUE)
 download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/assembly_summary_genbank.txt","www/db/genomes/genbank.txt")
 download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/assembly_summary_refseq.txt","www/db/genomes/refseq.txt")
 
-system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' www/db/genomes/homo_sapiens.gtf"),intern = TRUE)
-# system(paste("sed -i -E '/(^#|^$)/!s/^/9606_homo_sapiens_/' www/db/gtf_biotypes/*.gtf"),intern = TRUE)
-
 if(!file.exists(file.path(wd,"www","db","meta.txids")))
 	system(paste("gawk -F'\t' '{print $2}'",file.path(wd,"bin","taxids_for_blast.tsv"),"| xargs -l get_species_taxids -t >",file.path(wd,"www","db","meta.txids")))
-
-# as.vector(md5sum(dir(R.home(), pattern = "^COPY", full.names = TRUE)))
-if(!dir.exists(file.path(wd,"www","db","taxonomy"))) dir.create(file.path(wd,"www","db","taxonomy"),recursive = TRUE, mode = "0777")
-system(paste(file.path(wd,"Krona","KronaTools","updateTaxonomy.sh"),file.path(wd,"www","db","taxonomy")))
-# system("kronatools_updateTaxonomy")
 
 if(!dir.exists(file.path(wd,"www","db","gtf_biotypes"))){
 	dir.create(file.path(wd,"www","db","gtf_biotypes"),recursive = TRUE, mode = "0777")
