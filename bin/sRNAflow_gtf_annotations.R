@@ -11,6 +11,8 @@ registerDoMC()
 DD<-file.path(wd,"www","db","")
 archive<-file.path(wd,"www","db","genomes","archive","")
 specie_short<-paste0(substr(specie,1,1),substr(strsplit(specie,"_")[[1]][2],1,2))
+#download main genomes from Ensembl  ########
+source("bin/sRNAflow_downloadMainGenomes.R")
 
 # head -n 100000  $DV.gtf | grep "_biotype" | gawk -F "_biotype" '{print $2}' | gawk -F ";" '{print $1}' | sort | uniq -c | sort -n
 if(!dir.exists(file.path(wd,"www","db","genomes","bowtie",specie))){
