@@ -8,14 +8,13 @@ getDir<-function(base,sep=''){
 	}
 	return(filenames)
 }
-getDBfile<-function(base=c('http://ftp.ensembl.org/pub/current_gtf/',specie),sp=specie,ext=".gtf.gz",sep='',path=file.path("www","db","genomes")){
+getDBfile<-function(base=c('http://ftp.ensembl.org/pub/current_gtf/',specie),sp=specie,ext=".gtf.gz",ext2=".gtf.gz",sep='',path=file.path("www","db","genomes")){
 	if(length(filenames<-getDir(base))>0){
 		filenames <- as.character(filenames[grep(ext,filenames)])
 		tmp<-sapply(filenames,nchar)
 		filenames <-filenames[tmp==min(tmp)][1]
-		download.file(paste(c(base,'/',filenames),collapse=""),file.path(path,paste0(sp,ext)),"auto",mode = "wb")
-		system(paste("pigz -df",file.path(path,paste0(sp,ext))))
-		# ext2<-gsub(".*\\.",".",sub(".gz","",ext))
+		download.file(paste(c(base,'/',filenames),collapse=""),file.path(path,paste0(sp,ext2)),"auto",mode = "wb")
+		system(paste("pigz -df",file.path(path,paste0(sp,ext2))))
 		# out<-file(file.path(path,paste0(sp,ext2)),"wt")
 		# zz <-gzcon(file(file.path(path,paste0(sp,ext)),"r"))
 		# tmp<-readLines(zz)
@@ -28,8 +27,8 @@ getDBfile<-function(base=c('http://ftp.ensembl.org/pub/current_gtf/',specie),sp=
 
 if(!dir.exists(file.path(wd,"www","db","genomes"))) dir.create(file.path(wd,"www","db","genomes"),recursive = TRUE, mode = "0777")
 
-if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".gtf")))) getDBfile(c('ftp://ftp.ensembl.org/pub/current_gtf/',specie),specie,".gtf.gz")
-if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".fa")))) getDBfile(c('ftp://ftp.ensembl.org/pub/current_fasta/',specie,'/dna'),specie,".dna.primary_assembly.fa.gz")
+if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".gtf")))) getDBfile(c('ftp://ftp.ensembl.org/pub/current_gtf/',specie),specie,".gtf.gz",".gtf.gz")
+if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".fa")))) getDBfile(c('ftp://ftp.ensembl.org/pub/current_fasta/',specie,'/dna'),specie,".dna.primary_assembly.fa.gz",".fa.gz")
 # system(paste0("zcat ",specie,".dna.primary_assembly.fa.gz > ",specie,".fa"))
 # system(paste0("zcat ",specie,".gtf.gz > ",specie,".gtf"))
 
