@@ -119,10 +119,10 @@ server <- function(input, output, session) {
     output$reports = DT::renderDataTable({
         input$refresh_reports
         exps<-dir(file.path(wd,"www","results"))
-        reports <- cbind(xlsx=c(""),fastQC=c(""),multiQC=c(""),"isomiR-SEA"=c(""))[-1,]
+        reports <- cbind(fastQC=c(""),"species_diagrams"=c(""),"_diagrams.zip"=c(""),"isomiR-SEA"=c(""),xlsx=c(""),multiQC=c(""))[-1,]
         for(i in exps){
             row<-c()
-            for(j in c("_results.xlsx","_fastQC.zip","_multiqc.html","_isomiR-SEA.zip")) 
+            for(j in c("_fastQC.zip","_diagrams.html","_diagrams.zip","_isomiR-SEA.zip","_results.xlsx","_multiqc.html")) 
                 if(file.exists(file.path(wd,"www","results",i,paste0(i,j)))){
                     # row<-c(row,a(href=paste0('/results/',i,'/',paste0(i,j)),paste0(i,j), download=NA, target="_blank"))
                     row<-c(row,paste0('<a href="/results/',i,'/',paste0(i,j),'" target="_blank">',paste0("...",j),'</a>'))

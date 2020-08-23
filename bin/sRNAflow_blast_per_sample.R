@@ -1,6 +1,6 @@
 #!/usr/bin/R --no-save
 
-blast_per_sample<-function(idr,re,wd,filesIn,tsize,core=4){
+blast_per_sample<-function(idr,re,wd,filesIn,tsize,core=4,ED){
     arg <- c("sRNAflow","--no-save",filesIn[idr,"wd"],paste0(filesIn[idr,"name"],"_random",tsize,".",re),filesIn[idr,paste0("ft",re)],core)
     options(echo=TRUE)
 # if(!exists("arg")){
@@ -204,8 +204,8 @@ write.table(species99,file=paste0("species/",name,".species99.tsv"),quote=FALSE,
 if(!dir.exists("reads")) dir.create("reads")
 write.table(reads,file=paste0("reads/",name,".reads.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
 write.table(reads[,1:2],file=paste0("forKrona/",name,".forKrona.txt"),quote=FALSE,row.names=FALSE,col.names=FALSE,sep="\t")
-if(!dir.exists("output")) dir.create("output")
-system(paste0("ktImportTaxonomy -tax ",file.path(wd,"www","db","taxonomy")," forKrona/",name,".forKrona.txt -o output/",name,".report.htm"),intern = TRUE)
+# if(!dir.exists("output")) dir.create("output")
+system(paste0("ktImportTaxonomy -tax ",file.path(wd,"www","db","taxonomy")," forKrona/",name,".forKrona.txt -o ",file.path(ED,"species_diagrams"),"/",name,".report.htm"),intern = TRUE)
 warnings()
 date()
 setwd(wd)

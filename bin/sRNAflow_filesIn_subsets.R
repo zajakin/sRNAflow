@@ -1,6 +1,7 @@
 #!/usr/bin/R --no-save
 filesIn<-cbind(rf=FilesIn[,"file"],gr=unlist(GroupsSel[FilesIn[,"file"]]),wd="",name="",wf="",type="",ft="",ft1="",ft2="")
-if(!dir.exists(file.path(ED,"qc"))) dir.create(file.path(ED,"qc"),recursive = T)
+if(!dir.exists(file.path(ED,"qc"))) dir.create(file.path(ED,"qc"),recursive = T, mode = "0777")
+if(!dir.exists(file.path(ED,"species_diagrams"))) dir.create(file.path(ED,"species_diagrams"),recursive = TRUE, mode = "0777")
 
 trimm<-function(rf,ext,s,d,qc,ad3,ad5,sizerange,arx){
 	if(trimws(sub("#.*","",ad3)) != "") ad3<-paste("-a",trimws(sub("#.*","",ad3)))
@@ -79,5 +80,5 @@ filesIn<-foreach(i=1:nrow(filesIn),.combine = rbind) %dopar% {
 	file.remove(filesIn[i,"ft"])
 	filesIn[i,]
 }
-zip(file.path(ED,paste0(Exp,"_fastQC.zip")),files=dir(file.path(ED,"qc"),".html",full.names = T),extras="-o -j -9")
+zip(file.path(ED,paste0(Exp,"_fastQC.zip")),files=dir(file.path(ED,"qc"),".html",full.names = T),flags="-oj9")
 save(filesIn,file = file.path(ED,"filesIn.RData"))

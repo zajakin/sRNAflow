@@ -8,11 +8,27 @@ library(VennDiagram)
 tmp<-futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
 
 options(echo=TRUE)
+setwd(file.path(ED,"species_diagrams"))
+zip(file.path(ED,paste0(Exp,"_sRNAflow_diagrams.zip")),files=dir(".",include.dirs = TRUE),flags="-ro9")
+con<-file(file.path("..",paste0(Exp,"_species_diagrams.html")),"wt")
+cat(paste0('<html><head><link rel="stylesheet" type="text/css" href="/shared/shiny.css"/></head><body><table width="100%" border="2">'),file = con)
+index<-dir(".",".htm$")
+index<-index[!grepl(paste0("_random",tsize,"."),index)]
+for(i in index){
+	cat(paste0("<tr align=center><td><a href=species_diagrams/",i,">",i,"</a></td>"),file = con)
+	for(j in 1:Rep) cat(paste0("<td><a href=species_diagrams/",sub(".report.htm",paste0("_random",tsize,".",j,".report.htm"),i),">",
+							   sub(".report.htm",paste0("_random",tsize,".",j,".report.htm"),i),"</a></td>"),file = con)
+	cat(paste("</tr>"),file = con)
+}
+cat(paste("</table></body></html>"),file = con)
+close(con)
+setwd(wd)
 
 tabs<-c(c("tag_unique","ambigue","unique"),paste(c("tag","ambigue","unique"),"ambigue_selected",sep = "_")) #"tag_ambigue",
+if(!dir.exists(file.path(ED,"isomiR-SEA"))) dir.create(file.path(ED,"isomiR-SEA"),recursive = TRUE, mode = "0777")
 for(sample in filesIn[,"name"]){
 	p<- file.path(ED,sample,"isomiR-SEA")
-	filexlsx<- file.path(ED,sample,paste0(sample,"_isomiR-SEA.xlsx"))
+	filexlsx<- file.path(ED,"isomiR-SEA",paste0(sample,"_isomiR-SEA.xlsx"))
 	tab<-read.table(file.path(p,"summary.txt"), sep = " ",header = F)[,-2]
 	write.xlsx2(tab,filexlsx,sheet="Summary",row.names = FALSE,col.names = FALSE)
 	for(t in tabs){
@@ -24,7 +40,7 @@ for(sample in filesIn[,"name"]){
 		}
 	}	
 }
-zip(file.path(ED,paste0(Exp,"_isomiR-SEA.zip")),files=dir(ED,"_isomiR-SEA.xlsx",full.names = T,recursive = TRUE),extras="-o -j -9")
+zip(file.path(ED,paste0(Exp,"_isomiR-SEA.zip")),files=dir(file.path(ED,"isomiR-SEA"),"_isomiR-SEA.xlsx",full.names = T,recursive = TRUE),flags="-oj9")
 
 figVen<-function(dat,lim,txt="",filexlsx){
 	title<-paste0(txt," >",lim)

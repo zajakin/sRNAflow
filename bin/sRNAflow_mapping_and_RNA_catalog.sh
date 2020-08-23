@@ -170,7 +170,7 @@ gawk '/^@/ {$1=gensub(/^@/,"",1,$1); print $1 "\t0"}' $out/$f/Unmapped_$f.fq >> 
 
 gawk '{print $2}' $out/$f/forKrona/$f.forKrona.txt | sort -n | uniq -c > $out/$f/forKrona/$f.counts.txt
 # rm $shdir/$f.sam
-$taxonomy $out/$f/forKrona/$f.forKrona.txt -o $out/$f/output/$f.report.htm
+$taxonomy $out/$f/forKrona/$f.forKrona.txt -o $out/species_diagrams/$f.report.htm
 popd
 
 rm -rf $out/$f/isomiR-SEA
