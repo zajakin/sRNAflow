@@ -231,9 +231,9 @@ stat<-read.table(file.path(ED,"stats.tsv"), sep = "\t",header = TRUE)
 write.xlsx2(stat[1:20,],filexlsx,sheet="Quality",row.names = FALSE,append = TRUE)
 write.xlsx2(stat[21:39,],filexlsx,sheet="Catalog",row.names = FALSE,append = TRUE)
 
-samples <- rep(colnames(stat)[-1],each=(36-21))
-RNA_types <- rep(stat[22:36,1], ncol(stat)-1)
-frequency <- as.numeric(unlist(stat[22:36,-1]))
+samples <- rep(colnames(stat)[-1],each=(36-20))
+RNA_types <- rep(stat[21:36,1], ncol(stat)-1)
+frequency <- as.numeric(unlist(stat[21:36,-1]))
 data <- data.frame(samples,RNA_types,frequency)
 png(paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, res=300, units = "in")
 print(ggplot(data, aes(fill=RNA_types, y=frequency, x=samples)) + geom_bar(position="fill", stat="identity") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
@@ -299,26 +299,26 @@ for(gr in deGTF){
 			if((sum(is.na(c))==0 && length(table(c))>1) || ncol(c)<20){
 				wb<-openxlsx::loadWorkbook(filexlsx)
 				if(ncol(c)<20){
-					png(paste0(fileName,".png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150, units = "in")
+					png(paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150, units = "in")
 					corrplot.mixed(c, p.mat = p, number.cex = 1, sig.level = .05,title=paste(sub("_mergedFeatures","",gr),set,method),mar=c(1,1,3,1))
 					dev.off()
-					openxlsx::insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,".png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
+					openxlsx::insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
 					# openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
-					file.remove(paste0(fileName,".png"))
 				}
 				if(sum(is.na(c))==0 && length(table(c))>1){
-					png(paste0(fileName,".png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150, units = "in")
+					png(paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150, units = "in")
 					heatmap.2(c,Rowv=TRUE,Colv=TRUE, dendrogram="row", revC = T, scale="none", col=greenred(75),na.rm=TRUE, key=TRUE, density.info="none", trace="none",mar=c(8,8))
 					title(paste(sub("_mergedFeatures","",gr),set,method),cex.main=0.8)
 					dev.off()
-					openxlsx::insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,".png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
+					openxlsx::insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
 					# openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
-					file.remove(paste0(fileName,".png"))
 				}
 				saveWorkbook(wb,filexlsx, overwrite = TRUE)
 			}
 		}
 	}
+	file.remove(paste0(fileName,"_corrplot.png"))
+	file.remove(paste0(fileName,"_heatmap.png"))
 }
 
 warnings()
