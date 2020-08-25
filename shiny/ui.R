@@ -57,7 +57,7 @@ body <- dashboardBody(
                         sliderInput('tsize', 'Representative subset size (use ~200 for remote db) :', min = 200,  max = 2000,  value = tsize, width ='100%')
                     ),
                     column(4,autoWidth = TRUE,
-                        h3("DESeq2"),
+                        h3("Differential expression"),
                         sliderInput('lim', 'Reads theshold:', min = 0,  max = 100,  value = lim, width ='100%')
                     )
                 ),
