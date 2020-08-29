@@ -1,5 +1,6 @@
 #!/usr/bin/R --no-save
-filesIn<-cbind(rf=FilesIn[,"file"],gr=unlist(GroupsSel[FilesIn[,"file"]]),wd="",name="",wf="",type="",ft="",ft1="",ft2="")
+filesIn<-cbind(rf=FilesIn[,"file"],gr=unlist(GroupsSel[FilesIn[,"file"]]),wd="",name="",wf="",type="",ft="")
+for(r in 1:as.numeric(Rep)){ filesIn<-cbind(filesIn,ftN=""); colnames(filesIn)[ncol(filesIn)]<-paste0("ft",r); }
 if(!dir.exists(file.path(ED,"qc"))) dir.create(file.path(ED,"qc"),recursive = T, mode = "0777")
 if(!dir.exists(file.path(ED,"species_diagrams"))) dir.create(file.path(ED,"species_diagrams"),recursive = TRUE, mode = "0777")
 
