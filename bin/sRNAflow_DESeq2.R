@@ -9,7 +9,8 @@ tmp<-futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogg
 
 options(echo=TRUE)
 setwd(file.path(ED,"species_diagrams"))
-zip(file.path(ED,paste0(Exp,"_sRNAflow_diagrams.zip")),files=dir(".",include.dirs = TRUE),flags="-ro9")
+print(paste(date(),"Compress species diagrams"))
+zip(file.path(ED,paste0(Exp,"_sRNAflow_diagrams.zip")),files=dir(".",include.dirs = TRUE),flags="-roq9")
 con<-file(file.path("..",paste0(Exp,"_species_diagrams.html")),"wt")
 cat(paste0('<html><head><link rel="stylesheet" type="text/css" href="/shared/shiny.css"/></head><body><table width="100%" border="2">'),file = con)
 index<-dir(".",".htm$")
@@ -24,6 +25,7 @@ cat(paste("</table></body></html>"),file = con)
 close(con)
 setwd(wd)
 
+print(paste(date(),"isomiR-SEA"))
 tabs<-c(c("tag_unique","ambigue","unique"),paste(c("tag","ambigue","unique"),"ambigue_selected",sep = "_")) #"tag_ambigue",
 if(!dir.exists(file.path(ED,"isomiR-SEA"))) dir.create(file.path(ED,"isomiR-SEA"),recursive = TRUE, mode = "0777")
 for(sample in filesIn[,"name"]){
@@ -40,7 +42,7 @@ for(sample in filesIn[,"name"]){
 		}
 	}	
 }
-zip(file.path(ED,paste0(Exp,"_isomiR-SEA.zip")),files=dir(file.path(ED,"isomiR-SEA"),"_isomiR-SEA.xlsx",full.names = T,recursive = TRUE),flags="-oj9")
+zip(file.path(ED,paste0(Exp,"_isomiR-SEA.zip")),files=dir(file.path(ED,"isomiR-SEA"),"_isomiR-SEA.xlsx",full.names = T,recursive = TRUE),flags="-joq9")
 
 figVen<-function(dat,lim,txt="",filexlsx){
 	title<-paste0(txt," >",lim)
@@ -222,6 +224,7 @@ stattab<-function(tt,servRow=servRow){
 	return(stat)
 }
 
+print(paste(date(),"Differencial expressions tables"))
 fileName<-file.path(ED,paste0(Exp,"_results"))
 filexlsx<-paste0(fileName,".xlsx")
 value<-c(Exp=Exp,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,sizerange =sizerange,lim =lim,log2FoldChange=log2FoldChange,padj =padj,email =email,smtpServer=smtpServer)

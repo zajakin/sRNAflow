@@ -17,4 +17,5 @@ for(f in c(paste0(Exp,"_results.xlsx"),paste0(Exp,"_fastQC.zip"),paste0(Exp,"_mu
 sendmail(from,to,subject,bodyWithAttachment,control=list(smtpServer=smtpServer))
 }
 
+print(paste(date(),"Send results"))
 sendresults()
