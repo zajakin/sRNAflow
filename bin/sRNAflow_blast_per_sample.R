@@ -1,5 +1,6 @@
 #!/usr/bin/R --no-save
 
+print(paste(date(),"Start BLAST of subsets"))
 blast_per_sample<-function(idr,re,wd,filesIn,tsize,core=4,ED){
     arg <- c("sRNAflow","--no-save",filesIn[idr,"wd"],paste0(filesIn[idr,"name"],"_random",tsize,".",re),filesIn[idr,paste0("ft",re)],core)
     options(echo=TRUE)
@@ -13,7 +14,7 @@ name <- arg[4]
 file <- arg[5]
 core <- arg[6]
 
-out<- paste0("blasts/",name,".blast")
+# out<- paste0("blasts/",name,".blast")
 DV <- "nt"
 blastn<- paste0("export BATCH_SIZE=50000; export BLASTDB=",file.path(wd,"www","db","blast"),"; blastn -max_hsps 1 -db ",DV," ")
 DB <- paste("-remote")
@@ -79,8 +80,8 @@ if(!file.exists(paste0("forKrona/",name,".forKrona.txt"))){
             if(system(paste0(blastn,blastopt,' -outfmt \"6 ',colQuery,'\" -query ',fileT,".long -out ",bname," >> logs/",name,".txt 2>&1 "),intern = FALSE)==0)
                 file.create(paste0("blasts.tmp/",name,".long.blast.done"))
     }
-    if(file.exists(out)) file.remove(out)
-    file.append(out,paste0("blasts.tmp/",name,c(".short",".mid",".long"),".blast"))
+    # if(file.exists(out)) file.remove(out)
+    # file.append(out,paste0("blasts.tmp/",name,c(".short",".mid",".long"),".blast"))
 }
 # system(paste(blastn,blastopt,' -outfmt \"6 qseqid ssciname staxid scomname sskingdom evalue bitscore qlen slen length pident mismatch qcovs stitle\" -task blastn-short -query ',file," -out ",out," 2>&1 > ",paste0(file,".blast.log  ")),intern = TRUE)    
 # bsub  -Is -M 94000 -n 4 -R "rusage[mem=94000,numcpus=4.00] span[ptile=4]" bash
@@ -89,28 +90,18 @@ if(!file.exists(paste0("forKrona/",name,".forKrona.txt"))){
 # megablast -d nt -a $core -i $out/$i/Unmapped_$i.fasta -o $out/$i/Unmapped_$i.megablast
 # blast_formatter -rid `grep -m 1 ^RID $out/$i/Unmapped_$i.blastn | gawk '{print $2}'` -out $out/$i/Unmapped_$i.tab -outfmt 7 
 # system("cat out.blast | sort | uniq > out_filtred.blast; $HOME/bin/parse_blast_output out_filtred.blast | sort -rn > top.txt",intern = TRUE)
-
-# print(date())
-pos<-read.table(out, comment.char="",quote = "", header = FALSE, sep = "\t",dec = ".", na.strings = "NA",as.is = TRUE)
+pos<-rbind(rep(0,length(colNames)))[-1,]
+for(out in paste0("blasts.tmp/",name,c(".short",".mid",".long"),".blast"))
+    pos<-rbind(pos,read.table(out, comment.char="",quote = "", header = FALSE, sep = "\t",dec = ".", na.strings = "NA",as.is = TRUE))
 pos<-pos[!is.na(pos[,3]),]
 colnames(pos)<-colNames
-# head(pos)
-# dim(pos)
-
-# max(as.numeric(pos[,"evalue"]))
-# pos[pos[,"evalue"]==max(pos[,"evalue"]),1:12]
-# length(unique(pos[,"read"]))
-# table(as.numeric(pos[!duplicated(pos[,"read"]),"qlen"])) #10-276000 11-70000 12-17700 14-1130 20-3.1   21-0.9   22-0.26
-# head(pos[pos[,"qlen"]==20,])
 
 species<-cbind(data.frame(rbind(c("9606","Homo sapiens"),c("77133","uncultured bacterium"),pos[,3:2])),0,0,0,0,0,NA,NA)
 species<-species[!duplicated(species[,1]),]
 rownames(species)<-species[,1]
 colnames(species)<-c("id","name","pass1","pass2","count","percent","top","sstart","send")
 dim(species)
-# print(date())
 reads<-cbind(unique(pos[,1]),0,"")
-r<-reads[1,1]
 for(r in reads[,1]){
     d<-pos[pos[,1]==r,]
     d<-d[as.numeric(d[,"evalue"])==min(as.numeric(d[,"evalue"])),]
@@ -124,7 +115,6 @@ species<-species[order(-as.numeric(species[,"pass1"])),]
 species["9606","pass1"]<- as.numeric(species["9606","pass1"])-1e+6
 species["77133","pass1"]<- as.numeric(species["77133","pass1"])+1e+6
 head(species)
-# print(date())
 for(r in reads[,1]){
     b<-pos[pos[,1]==r,]
     d<-b[as.numeric(b[,"evalue"])==min(as.numeric(b[,"evalue"])) & !grepl("uncultured",b[,"name"]),]
@@ -146,7 +136,6 @@ species2[,"count"]<-0
 head(species2)
 
 reads<-cbind(unique(pos2[,1]),0,"")
-r<-reads[1,1]
 for(r in reads[,1]){
     d<-pos2[pos2[,1]==r,]
     d<-d[as.numeric(d[,"evalue"])==min(as.numeric(d[,"evalue"])),]
@@ -171,13 +160,7 @@ for(r in reads[,1]){
 }
 
 # hist(species2[species2[,"count"]>1,"count"],breaks=120)
-
-# reads[reads[,3]=="Esox lucius",]
-# species[species[,"name"]=="Esox lucius",]
-# dim(reads)
 species2<-species2[order(-as.numeric(species2[,"count"])),]
-head(species2)
-head(reads)
 species2[,"percent"]<- as.numeric(species2[,"count"])/sum(as.numeric(species2[,"count"]))*100
 thr<-round(0.99*sum(as.numeric(species2[,"count"]),na.rm=TRUE))
 s<-0
@@ -186,25 +169,20 @@ for(i in 1:nrow(species2))
     } else s<- s+as.numeric(species2[i,"count"])
 species2[1:(i-1),"top"]<- 1
 species99<-species2[as.numeric(species2[,"count"])>=min(as.numeric(species2[species2[,"top"]==1,"count"])),c("id","name")]
-# print(date())
 
 fa<-read.table(fileT, comment.char="",quote = "", header = FALSE, sep = "\t",dec = ".", na.strings = "NA",as.is = TRUE)[,1]
-# fa <- readLines(file)
-# fa <- fa[grep("^>",fa)]
-# fa <- sub("^>","",fa)
+fa <- sub("^>","",fa)
 fa <- sub(" .*","",fa,perl=TRUE)
 length(fa)
 if(length(fa[!(fa %in% reads[,1])])>0)
     reads <- rbind(reads,cbind(fa[!(fa %in% reads[,1])],0,""))
 
-print(date())
 if(!dir.exists("species")) dir.create("species")
 write.table(species2,file=paste0("species/",name,".species.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
 write.table(species99,file=paste0("species/",name,".species99.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
 if(!dir.exists("reads")) dir.create("reads")
 write.table(reads,file=paste0("reads/",name,".reads.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
 write.table(reads[,1:2],file=paste0("forKrona/",name,".forKrona.txt"),quote=FALSE,row.names=FALSE,col.names=FALSE,sep="\t")
-# if(!dir.exists("output")) dir.create("output")
 system(paste0("ktImportTaxonomy -tax ",file.path(wd,"www","db","taxonomy")," forKrona/",name,".forKrona.txt -o ",file.path(ED,"species_diagrams"),"/",name,".report.htm"),intern = TRUE)
 warnings()
 date()
