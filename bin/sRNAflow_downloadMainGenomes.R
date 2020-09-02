@@ -32,28 +32,32 @@ system(paste(file.path(wd,"Krona","KronaTools","updateTaxonomy.sh"),file.path(wd
 
 if(!dir.exists(file.path(wd,"www","db","genomes"))) dir.create(file.path(wd,"www","db","genomes"),recursive = TRUE, mode = "0777")
 
-if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".gtf")))){
+if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".gtf"))) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes",paste0(specie,".gtf"))),units = "days")>30){
 	getDBfile(c('ftp://ftp.ensembl.org/pub/current_gtf/',specie),specie,".gtf.gz",".gtf.gz")
 	tax<-system(paste0("gawk -F'\t' 'tolower($5) ~/^",sub("_"," ",specie),"$/{print $1}' www/db/taxonomy/taxonomy.tab"),intern = TRUE)
 	system(paste0("sed -i -E '/(^#|^$)/!s/^/",tax,"_",specie,"_/' www/db/genomes/",specie,".gtf"),intern = TRUE)
 }
-if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".fa")))) getDBfile(c('ftp://ftp.ensembl.org/pub/current_fasta/',specie,'/dna'),specie,".dna.primary_assembly.fa.gz",".fa.gz")
+
+if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".fa"))) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes",paste0(specie,".fa"))),units = "days")>30)
+	getDBfile(c('ftp://ftp.ensembl.org/pub/current_fasta/',specie,'/dna'),specie,".dna.primary_assembly.fa.gz",".fa.gz")
 # system(paste0("zcat ",specie,".dna.primary_assembly.fa.gz > ",specie,".fa"))
 # system(paste0("zcat ",specie,".gtf.gz > ",specie,".gtf"))
 
-if(!file.exists(file.path(wd,"www","db","genomes","mature.fa"))){
+if(!file.exists(file.path(wd,"www","db","genomes","mature.fa")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","mature.fa")),units = "days")>30){
 	download.file("ftp://mirbase.org/pub/mirbase/CURRENT/mature.fa.gz",file.path("www","db","genomes","mature.fa.gz"))
 	system(paste("pigz -df",file.path("www","db","genomes","mature.fa.gz")))
 # pigz -cd $DV.fa.gz | fasta_formatter | sed '/^[^>]/ y/uU/tT/' > $DV.fa
 }
-if(!file.exists(file.path(wd,"www","db","genomes","ensemblgenomes.txt"))){
+if(!file.exists(file.path(wd,"www","db","genomes","ensemblgenomes.txt")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","ensemblgenomes.txt")),units = "days")>30){
 	download.file("ftp://ftp.ensemblgenomes.org/pub/current/species.txt",file.path("www","db","genomes","ensemblgenomes.txt"))
 	system("sed -i '1 s/$/\tNA/' www/db/genomes/ensemblgenomes.txt",intern = TRUE)
 }
-if(!file.exists(file.path(wd,"www","db","genomes","genbank.txt"))) download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/assembly_summary_genbank.txt","www/db/genomes/genbank.txt")
-if(!file.exists(file.path(wd,"www","db","genomes","refseq.txt"))) download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/assembly_summary_refseq.txt","www/db/genomes/refseq.txt")
+if(!file.exists(file.path(wd,"www","db","genomes","genbank.txt")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","genbank.txt")),units = "days")>30)
+	download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/assembly_summary_genbank.txt","www/db/genomes/genbank.txt")
+if(!file.exists(file.path(wd,"www","db","genomes","refseq.txt")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","refseq.txt")),units = "days")>30)
+	download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/assembly_summary_refseq.txt","www/db/genomes/refseq.txt")
 
-if(!file.exists(file.path(wd,"www","db","meta.txids")))
+if(!file.exists(file.path(wd,"www","db","meta.txids")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","meta.txids")),units = "days")>30 || difftime(file.mtime(file.path(wd,"bin","taxids_for_blast.tsv")),file.mtime(file.path(wd,"www","db","meta.txids")),units="secs")>0)
 	system(paste("gawk -F'\t' '{print $2}'",file.path(wd,"bin","taxids_for_blast.tsv"),"| xargs -l get_species_taxids -t >",file.path(wd,"www","db","meta.txids")))
 
 if(!dir.exists(file.path(wd,"www","db","gtf_biotypes"))){
