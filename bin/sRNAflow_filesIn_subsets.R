@@ -45,6 +45,7 @@ trimm<-function(rf,ext,s,d,qc,ad3,ad5,sizerange,arx){
 	return(wf)
 }
 
+print(paste(date(),"Trimming and QC checking"))
 filesIn<-foreach(i=1:nrow(filesIn),.combine = rbind) %dopar% {
 	rf <- file.path(wd,"www","upload",filesIn[i,"rf"])
 	ext<- tolower(sub('^.*[.$]',".",rf))
@@ -81,5 +82,5 @@ filesIn<-foreach(i=1:nrow(filesIn),.combine = rbind) %dopar% {
 	file.remove(filesIn[i,"ft"])
 	filesIn[i,]
 }
-zip(file.path(ED,paste0(Exp,"_fastQC.zip")),files=dir(file.path(ED,"qc"),".html",full.names = T),flags="-oj9")
+zip(file.path(ED,paste0(Exp,"_fastQC.zip")),files=dir(file.path(ED,"qc"),".html",full.names = T),flags="-joq9")
 save(filesIn,file = file.path(ED,"filesIn.RData"))

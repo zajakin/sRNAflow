@@ -24,7 +24,7 @@ getDBfile<-function(base=c('http://ftp.ensembl.org/pub/current_gtf/',specie),sp=
 		# file.remove(file.path(path,paste0(sp,ext)))
 	}
 }
-
+print(paste(date(),"Download main genome files"))
 # as.vector(md5sum(dir(R.home(), pattern = "^COPY", full.names = TRUE)))
 if(!dir.exists(file.path(wd,"www","db","taxonomy"))) dir.create(file.path(wd,"www","db","taxonomy"),recursive = TRUE, mode = "0777")
 system(paste(file.path(wd,"Krona","KronaTools","updateTaxonomy.sh"),file.path(wd,"www","db","taxonomy")))
