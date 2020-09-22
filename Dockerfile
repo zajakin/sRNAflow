@@ -28,6 +28,8 @@ RUN mv /srv/shiny-server /srv/shiny-server.orig && mkdir -p /srv/shiny-server/bi
     unzip -oj tmp.zip isomiR-SEA_1.6_webpacket/isomiR-SEA_OS/Ubuntu_14_04_2LTS_x86_64/isomiR-SEA_1_6 && \
     mv isomiR-SEA_1_6 /srv/shiny-server/bin/isomiR-SEA && rm tmp.zip && \
     pip3 install multiqc mieaa
+RUN pip3 install tensorflow keras && git clone https://github.com/tjgu/miTAR.git /srv/shiny-server/miTAR && \
+    sed -i 's/tf.set_random_seed(sdnum)/tf.random.set_seed(sdnum)/p' /srv/shiny-server/miTAR/predict_multimiRmultimRNA.py
 COPY app.R /srv/shiny-server/app.R
 COPY LICENSE /srv/shiny-server/LICENSE
 COPY README.md /srv/shiny-server/README.md
@@ -35,6 +37,8 @@ COPY bin /srv/shiny-server/bin/
 COPY shiny /srv/shiny-server/shiny/
     # git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && \
      # && mkdir -m 777 /home/shiny/R
+# RUN wget http://cbio.mskcc.org/miRNA2003/src1.9/binaries/miRanda-1.9-i686-linux-gnu.tar.gz
+# RUN wget https://github.com/cbiagii/target-prediction/blob/master/miRanda-aug2010.tar.gz?raw=true -O miRanda-aug2010.tar.gz && tar zxvf miRanda-aug2010.tar.gz && cd miRanda-3.3a && ./configure && make
 # RUN env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends  && \
 # RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); BiocManager::install(c('org.Hs.eg.db','edgeR','reticulate'), ask=FALSE)"
 # remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"

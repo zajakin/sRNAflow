@@ -39,6 +39,7 @@ vignettes/*.pdf
 www/*
 Krona
 ShortStack
+miTAR
 bin/isomiR-SEA
 bin/gencore
 README.html

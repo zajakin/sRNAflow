@@ -79,11 +79,10 @@ function mystat {
 
 function countOver {
   htseq_opt="htseq-count -f sam -a 0 -s no --secondary-alignments score -q"
-  for type in {"miRBase_mature_mergedFeatures","miRBase_hairpin_mergedFeatures","miRNA_mergedFeatures","piRNAdb_mergedFeatures","piRNAbank_mergedFeatures","piRBase_mergedFeatures","YRNA(misc_RNA)_mergedFeatures","snRNA_mergedFeatures","snoRNA_mergedFeatures","tRF_mergedFeatures","tRNAhalves_mergedFeatures","GtRNAdb_mergedFeatures","rRNA_mergedFeatures","MT_mergedFeatures","Mt_rRNA_mergedFeatures","Mt_tRNA_mergedFeatures","other(MT)_mergedFeatures","vaultRNA_mergedFeatures","lncRNA_mergedFeatures","lncipedia_hc_mergedFeatures","lncipedia_mergedFeatures","noYorPiwi(misc_RNA)_mergedFeatures","protein_coding_mergedFeatures","processed_pseudogene_mergedFeatures","Other_types_mergedFeatures","RepeatMasker_tRNA_mergedFeatures","RepeatMasker_rRNA_mergedFeatures","RepeatMasker_mergedFeatures","Ensembl_genes_mergedFeatures"}
+  for type in {"miRBase_mature_mergedFeatures","miRBase_hairpin_mergedFeatures","miRNA_mergedFeatures","piRNAdb_mergedFeatures","piRNAbank_mergedFeatures","piRBase_mergedFeatures","YRNA(misc_RNA)_mergedFeatures","snRNA_mergedFeatures","snoRNA_mergedFeatures","tRF_mergedFeatures","tRNAhalves_mergedFeatures","GtRNAdb_mergedFeatures","rRNA_mergedFeatures","MT_mergedFeatures","Mt_rRNA_mergedFeatures","Mt_tRNA_mergedFeatures","other(MT)_mergedFeatures","vaultRNA_mergedFeatures","lncRNA_mergedFeatures","lncipedia_hc_mergedFeatures","lncipedia_mergedFeatures","noYorPiwi(misc_RNA)_mergedFeatures","protein_coding_mergedFeatures","processed_pseudogene_mergedFeatures","Other_types_mergedFeatures","RepeatMasker_tRNA_mergedFeatures","RepeatMasker_rRNA_mergedFeatures","RepeatMasker_mergedFeatures","Ensembl_genes_mergedFeatures","miRBase_mature","miRBase_hairpin","miRNA","piRNAdb","piRNAbank","piRBase","YRNA(misc_RNA)","snRNA","snoRNA","tRF","tRNAhalves","GtRNAdb","rRNA","MT","Mt_rRNA","Mt_tRNA","other(MT)","vaultRNA","lncRNA","lncipedia_hc","lncipedia","noYorPiwi(misc_RNA)","protein_coding","processed_pseudogene","Other_types","RepeatMasker_tRNA","RepeatMasker_rRNA","RepeatMasker","Ensembl_genes"}
   do
     ann=$DB/gtf_biotypes/$type.gtf.gz
-    if [ ! -e $ann ]; then ann="$DB/gtf_biotypes/$type.gff.gz"; fi
-    # if [ "$type" == "miRBase" ]; then ann="$ann --type miRNA --idattr Name"; fi
+    if [ ! -e $ann ]; then ann="$DB/gtf_biotypes/$type.gtf"; fi
     # $htseq_opt --nonunique all -q $a1 $ann -o $a2/tmp.a.sam > $a2/htseq-nopriority_$f.$type.a.txt
     $htseq_opt $shdir/$f.sam $ann -o $shdir/tmp.sam > $shdir/htseq-nopriority_$f.$type.txt
     grep -v __no_feature $shdir/tmp.sam | grep -v __not_aligned  > $shdir/htseq_$type.sam
@@ -182,5 +181,15 @@ pushd $out/$f/isomiR-SEA
   | sort | uniq -c | sort -nr | gawk '{print $2 "\t" $1}' > $out/$f/isomiR-SEA/$f.txt
 $isomiRSEA -s hsa -l 16 -b 4 -i $out/$f/isomiR-SEA/ -p $out/$f/isomiR-SEA -ss 6 -h 11 -m mature -t $f > summary.txt
 popd
-rm $shdir/*.sam $shdir/mapped.txt
 
+rm -rf $out/$f/miTAR
+mkdir -p $out/$f/miTAR
+(cat $out/$f/ShortStack/priority_$f.miR*.sam | \
+  gawk '{$2=gensub(".*_hsa-","hsa-",1,$NF); $2=gensub(/\[.*[-+.]\]/,"","g",$2); $2=gensub("]$","",1,$2); $2=gensub(/\+.*/,"",1,$2); $2=gensub(".*_mergedFeatures_","",1,$2); print ">"$2"\n"$10}'; \
+  cat $out/$f/isomiR-SEA/out_result_mature_tag_unique.txt | gawk -F'\t' '!/^tag_index/{$2=gensub("U","T","g",$2); print $6"\n"$2}') | \
+  gawk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$1);N++;next;} {printf("%s",$0);} END {printf("\n");}' | sort | uniq | gawk '{print $1"\n"$2}' > $out/$f/miTAR/$f.fa
+# export PYTHONPATH=~/.local/lib/python3.8/site-packages:/usr/local/lib/python3.8/dist-packages:$PYTHONPATH
+# sudo pip install --upgrade numpy
+# sed -i 's/tf.set_random_seed(sdnum)/tf.random.set_seed(sdnum)/p' $(pwd)/miTAR/predict_multimiRmultimRNA.py
+/usr/bin/python3 $(pwd)/miTAR/predict_multimiRmultimRNA.py -i1 $out/$f/miTAR/$f.fa -i2 $DB/$DV.fa -o $out/$f/miTAR/$f\_predictedTar.fa -s 22 -p 0.8 -ns 1
+rm $shdir/*.sam $shdir/mapped.txt
