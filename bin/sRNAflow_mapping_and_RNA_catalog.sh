@@ -182,14 +182,17 @@ pushd $out/$f/isomiR-SEA
 $isomiRSEA -s hsa -l 16 -b 4 -i $out/$f/isomiR-SEA/ -p $out/$f/isomiR-SEA -ss 6 -h 11 -m mature -t $f > summary.txt
 popd
 
-rm -rf $out/$f/miTAR
-mkdir -p $out/$f/miTAR
-(cat $out/$f/ShortStack/priority_$f.miR*.sam | \
-  gawk '{$2=gensub(".*_hsa-","hsa-",1,$NF); $2=gensub(/\[.*[-+.]\]/,"","g",$2); $2=gensub("]$","",1,$2); $2=gensub(/\+.*/,"",1,$2); $2=gensub(".*_mergedFeatures_","",1,$2); print ">"$2"\n"$10}'; \
-  cat $out/$f/isomiR-SEA/out_result_mature_tag_unique.txt | gawk -F'\t' '!/^tag_index/{$2=gensub("U","T","g",$2); print $6"\n"$2}') | \
-  gawk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$1);N++;next;} {printf("%s",$0);} END {printf("\n");}' | sort | uniq | gawk '{print $1"\n"$2}' > $out/$f/miTAR/$f.fa
-# export PYTHONPATH=~/.local/lib/python3.8/site-packages:/usr/local/lib/python3.8/dist-packages:$PYTHONPATH
-# sudo pip install --upgrade numpy
-# sed -i 's/tf.set_random_seed(sdnum)/tf.random.set_seed(sdnum)/p' $(pwd)/miTAR/predict_multimiRmultimRNA.py
-/usr/bin/python3 $(pwd)/miTAR/predict_multimiRmultimRNA.py -i1 $out/$f/miTAR/$f.fa -i2 $DB/$DV.fa -o $out/$f/miTAR/$f\_predictedTar.fa -s 22 -p 0.8 -ns 1
+# rm -rf $out/$f/miTAR
+# mkdir -p $out/$f/miTAR
+# (cat $out/$f/ShortStack/priority_$f.miR*.sam | \
+#   gawk '{$2=gensub(".*_hsa-","hsa-",1,$NF); $2=gensub(/\[.*[-+.]\]/,"","g",$2); $2=gensub("]$","",1,$2); $2=gensub(/\+.*/,"",1,$2); $2=gensub(".*_mergedFeatures_","",1,$2); print ">"$2"\n"$10}'; \
+#   cat $out/$f/isomiR-SEA/out_result_mature_tag_unique.txt | gawk -F'\t' '!/^tag_index/{$2=gensub("U","T","g",$2); print $6"\n"$2}') | \
+#   gawk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$1);N++;next;} {printf("%s",$0);} END {printf("\n");}' | sort | uniq | gawk '{print $1"\n"$2}' > $out/$f/miTAR/$f.fa
+# # export PYTHONPATH=~/.local/lib/python3.8/site-packages:/usr/local/lib/python3.8/dist-packages:$PYTHONPATH
+# # sudo pip install --upgrade numpy
+# # sed -i 's/tf.set_random_seed(sdnum)/tf.random.set_seed(sdnum)/p' $(pwd)/miTAR/predict_multimiRmultimRNA.py
+# # /usr/bin/python3 $(pwd)/miTAR/predict_multimiRmultimRNA.py -i1 $out/$f/miTAR/$f.fa -i2 $DB/$DV.fa -o $out/$f/miTAR/$f\_predictedTar.fa -s 22 -p 0.8 -ns 1
+# /usr/bin/python3 $(pwd)/miTAR/predict_multimiRmultimRNA.py -i1 $out/$f/miTAR/$f.fa -i2 $(pwd)/www/db/genomes/homo_sapiens.fa -o $out/$f/miTAR/$f\_predictedTar.fa -s 22 -p 0.8 -ns 1
+# $(pwd)/bin/miranda $out/$f/miTAR/$f.fa www/db/genomes/homo_sapiens.fa -out $out/$f/miTAR/$f\_predicted_miRanda.txt
+# head $(pwd)/www/db/genomes/homo_sapiens.fa
 rm $shdir/*.sam $shdir/mapped.txt

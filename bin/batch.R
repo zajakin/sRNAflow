@@ -48,6 +48,7 @@ source("bin/sRNAflow_DESeq2.R")
 
 #TODO miRanda,TarBase, MiRtaget2 (?)
 # https://www.bioconductor.org/packages/release/bioc/html/miRNAtap.html
+# BiocManager::install("gsubfn")
 # BiocManager::install("miRNAtap")
 
 source("bin/sRNAflow_sendmail.R")
