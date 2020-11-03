@@ -17,7 +17,7 @@ uploadFilePanel <- function(ns) {
 
 serverDataPanel <- function(ns) {
 	tabPanel("Use data on server",
-		{ if(!dir.exists(file.path(wd,"www","upload"))) dir.create(file.path(wd,"www","upload"),recursive = TRUE, mode = "0777")
+		{	if(!dir.exists(file.path(wd,"www","upload"))) dir.create(file.path(wd,"www","upload"),recursive = TRUE, mode = "0777")
 			DT::dataTableOutput('serverFiles')
 		},
 		actionButton("refresh_serverFiles", "Refresh files list",icon = icon("sync"), width ='100%')

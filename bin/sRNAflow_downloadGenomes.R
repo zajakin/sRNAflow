@@ -14,6 +14,8 @@ i<-0
 ext<-"_genomic.fna.gz"
 fa<-file.path(WD,"genomes.fa")
 file.create(fa)
+timeout<-getOption('timeout')
+options(timeout=999999)
 for(id in species99[,"id"]){
 	print(paste(i<-i+1,id,species99[as.character(id),2],date()))
 	spname<-sub(" .*","",sub(" ","_",species99[as.character(id),2]))
@@ -28,13 +30,14 @@ for(id in species99[,"id"]){
 	if(length(urls)==0) urls<-ensemblgenomes[ensemblgenomes[,"taxonomy_id"]==id,"ftp_path"]
 	dir.create(file.path(archive,id))
 	for(url in urls[1]){
-		if(!file.exists(file.path(archive,id,paste0(basename(url),ext))))
+		if(!file.exists(file.path(archive,id,paste0(basename(url),ext)))){
 			download.file(paste0(url,"/",basename(url),ext),file.path(archive,id,paste0(basename(url),ext)))
+		}
 		system(paste0("pigz -cd ",file.path(archive,id,paste0(basename(url),ext))," | sed 's/^>/>",id,"_",spname,"_/g' >> ",fa)  )
 	}
 	#IDEA Select representative contig per specie (by clustering?)
 }
-
+options(timeout=timeout)
 rm(ensemblgenomes,genbank,refseq)
 
 if(file.size(fa)>(2^32-1)){ system(paste("bowtie2-build --threads ",core," --large-index ",fa,file.path(WD,"genomes"),">",file.path(WD,"bowtie2-build.log")))

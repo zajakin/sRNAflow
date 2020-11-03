@@ -14,6 +14,7 @@ getDBfile<-function(base=c('http://ftp.ensembl.org/pub/current_gtf/',specie),sp=
 		tmp<-sapply(filenames,nchar)
 		filenames <-filenames[tmp==min(tmp)][1]
 		download.file(paste(c(base,'/',filenames),collapse=""),file.path(path,paste0(sp,ext2)),"auto",mode = "wb")
+		# system(paste("wget",paste(c(base,'/',filenames),collapse=""),"-O",file.path(path,paste0(sp,ext2))))
 		system(paste("pigz -df",file.path(path,paste0(sp,ext2))))
 		# out<-file(file.path(path,paste0(sp,ext2)),"wt")
 		# zz <-gzcon(file(file.path(path,paste0(sp,ext)),"r"))
@@ -25,6 +26,8 @@ getDBfile<-function(base=c('http://ftp.ensembl.org/pub/current_gtf/',specie),sp=
 	}
 }
 print(paste(date(),"Download main genome files"))
+timeout<-getOption('timeout')
+options(timeout=999999)
 # as.vector(md5sum(dir(R.home(), pattern = "^COPY", full.names = TRUE)))
 if(!dir.exists(file.path(wd,"www","db","taxonomy"))) dir.create(file.path(wd,"www","db","taxonomy"),recursive = TRUE, mode = "0777")
 system(paste(file.path(wd,"Krona","KronaTools","updateTaxonomy.sh"),file.path(wd,"www","db","taxonomy")))
@@ -38,11 +41,18 @@ if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".gtf"))) || dif
 	system(paste0("sed -i -E '/(^#|^$)/!s/^/",tax,"_",specie,"_/' www/db/genomes/",specie,".gtf"),intern = TRUE)
 }
 
-if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".fa"))) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes",paste0(specie,".fa"))),units = "days")>30)
+if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".fa"))) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes",paste0(specie,".fa"))),units = "days")>30){
 	getDBfile(c('ftp://ftp.ensembl.org/pub/current_fasta/',specie,'/dna'),specie,".dna.primary_assembly.fa.gz",".fa.gz")
+	dir.create(file.path(wd,"www","db","genomes","bowtie",specie),recursive = TRUE, mode = "0777")
+	system(paste0("bowtie2-build --threads ",core," ",file.path(wd,"www","db","genomes",specie),".fa ",file.path(wd,"www","db","genomes","bowtie",specie,specie)," > ",file.path(wd,"www","db","genomes","bowtie",specie,"bowtie2-build.log")))
 # system(paste0("zcat ",specie,".dna.primary_assembly.fa.gz > ",specie,".fa"))
 # system(paste0("zcat ",specie,".gtf.gz > ",specie,".gtf"))
-
+}
+if(!file.exists(file.path(wd,"www","db","genomes","univec.fa")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","univec.fa")),units = "days")>30){
+	download.file("https://ftp.ncbi.nlm.nih.gov/pub/UniVec/UniVec",file.path("www","db","genomes","univec.fa"))
+	dir.create(file.path(wd,"www","db","genomes","bowtie","univec"),recursive = TRUE, mode = "0777")
+	system(paste("bowtie2-build --threads",core,file.path(wd,"www","db","genomes","univec.fa"),file.path(wd,"www","db","genomes","bowtie","univec","univec"),">",file.path(wd,"www","db","genomes","bowtie","univec","bowtie2-build.log")))
+}
 if(!file.exists(file.path(wd,"www","db","genomes","mature.fa")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","mature.fa")),units = "days")>30){
 	download.file("ftp://mirbase.org/pub/mirbase/CURRENT/mature.fa.gz",file.path("www","db","genomes","mature.fa.gz"))
 	system(paste("pigz -df",file.path("www","db","genomes","mature.fa.gz")))
@@ -58,10 +68,12 @@ if(!file.exists(file.path(wd,"www","db","genomes","refseq.txt")) || difftime(Sys
 	download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/assembly_summary_refseq.txt","www/db/genomes/refseq.txt")
 
 if(!file.exists(file.path(wd,"www","db","meta.txids")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","meta.txids")),units = "days")>30 || difftime(file.mtime(file.path(wd,"bin","taxids_for_blast.tsv")),file.mtime(file.path(wd,"www","db","meta.txids")),units="secs")>0)
-	system(paste("gawk -F'\t' '{print $2}'",file.path(wd,"bin","taxids_for_blast.tsv"),"| xargs -l get_species_taxids -t >",file.path(wd,"www","db","meta.txids")))
+	system(paste("gawk -F'\t' '{print $2}'",file.path(wd,"bin","taxids_for_blast.tsv"),"| xargs --max-procs=1 -l get_species_taxids -t >",file.path(wd,"www","db","meta.txids")))
 
 if(!dir.exists(file.path(wd,"www","db","gtf_biotypes"))){
 	dir.create(file.path(wd,"www","db","gtf_biotypes"),recursive = TRUE, mode = "0777")
 	file.copy(dir(file.path(wd,"gtf_biotypes"),full.names =TRUE),file.path(wd,"www","db","gtf_biotypes"), recursive = FALSE, copy.mode = FALSE, copy.date = TRUE)
 }
+
+options(timeout=timeout)
 

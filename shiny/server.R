@@ -52,15 +52,15 @@ server <- function(input, output, session) {
     
     output$serverFiles = DT::renderDataTable({
         if(!dir.exists(file.path(wd,"www","upload"))) dir.create(file.path(wd,"www","upload"),recursive = TRUE, mode = "0777")
-        serverFiles<-dir(path = file.path("www","upload"),pattern = ".(fastq|fq|fasta|fa|bam|sam|cram)(|.(gz|bz2|xz))$",full.names = FALSE, recursive = TRUE, include.dirs = TRUE)
-        if(length(grep("^example-samples",serverFiles))>0) serverFiles<-serverFiles[-grep("^example-samples",serverFiles)]
+        serverFiles<-dir(path = file.path(wd,"www","upload"),pattern = ".(fastq|fq|fasta|fa|bam|sam|cram)(|.(gz|bz2|xz))$",full.names = FALSE, recursive = TRUE, include.dirs = TRUE)
+        serverFiles<-serverFiles[!grepl("^example-samples",serverFiles)]
         if(length(serverFiles)>0){
             serverFiles<-cbind(file=serverFiles,
-                               size=humanReadable(file.info(file.path("www","upload",serverFiles))$size),
-                               date=format(file.info(file.path("www","upload",serverFiles))$mtime,"%d.%m.%Y %H:%M:%OS"))
+                               size=humanReadable(file.info(file.path(wd,"www","upload",serverFiles))$size),
+                               date=format(file.info(file.path(wd,"www","upload",serverFiles))$mtime,"%d.%m.%Y %H:%M:%OS"))
         } else serverFiles<-rbind(rep(NA,3))[-1,]
         if (length(input$filesIn_rows_selected)) observeEvent(input$serverFiles_rows_selected,shinyjs::reset("serverFiles_rows_selected"))
-        length(input$refresh_serverFiles)
+        input$refresh_serverFiles
         colnames(serverFiles) <- c("file","size","date")
         serverFiles<<-serverFiles
         serverFiles
