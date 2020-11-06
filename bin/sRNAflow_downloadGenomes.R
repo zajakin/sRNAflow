@@ -8,6 +8,12 @@ refseq<-read.table("www/db/genomes/refseq.txt", comment.char="",skip=1,quote = "
 # rownames(refseq)<-refseq[,"taxid"]
 # save(ensemblgenomes,genbank,refseq,file="www/db/genomes/genomesdb.RData")
 # load(file.path("www","db","genomes","genomesdb.RData"))
+# head(ensemblgenomes)
+####TODO ensemblgenomes
+# ensemblgenomes<-ensemblgenomes[ensemblgenomes[,"ftp_path"]!="na",]
+genbank<-genbank[genbank[,"ftp_path"]!="na",]
+refseq<-refseq[refseq[,"ftp_path"]!="na",]
+
 if(!dir.exists(WD)) dir.create(WD,recursive = TRUE)
 if(!dir.exists(archive)) dir.create(archive,recursive = TRUE)
 i<-0
