@@ -49,7 +49,7 @@ if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".fa"))) || diff
 # system(paste0("zcat ",specie,".gtf.gz > ",specie,".gtf"))
 }
 if(!file.exists(file.path(wd,"www","db","genomes","univec.fa")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","univec.fa")),units = "days")>30){
-	download.file("https://ftp.ncbi.nlm.nih.gov/pub/UniVec/UniVec",file.path("www","db","genomes","univec.fa"))
+	download.file("https://ftp.ncbi.nlm.nih.gov/pub/UniVec/UniVec_Core",file.path("www","db","genomes","univec.fa"))
 	dir.create(file.path(wd,"www","db","genomes","bowtie","univec"),recursive = TRUE, mode = "0777")
 	system(paste("bowtie2-build --threads",core,file.path(wd,"www","db","genomes","univec.fa"),file.path(wd,"www","db","genomes","bowtie","univec","univec"),">",file.path(wd,"www","db","genomes","bowtie","univec","bowtie2-build.log")))
 }

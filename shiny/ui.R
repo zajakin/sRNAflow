@@ -42,9 +42,10 @@ body <- dashboardBody(
         tabItem(tabName = "Config",
                 h2("Configuration"),
                 fluidRow(
-                    column(4,textInput("Exp",   "Experiment ID:", value = Exp, width ='100%')),
-                    column(4,textInput("email",   "Send results to (email):", value = email, width ='100%')),
-                    column(4,textInput("smtpServer",   "SMTP Server:", value = smtpServer, width ='100%'))
+                    column(3,textInput("Exp",   "Experiment ID:", value = Exp, width ='100%')),
+                    column(3,selectInput('strategy', 'Strategy:', c("successively","metagenome"), selected = strategy, width ='100%')),
+                    column(3,textInput("email",   "Send results to (email):", value = email, width ='100%')),
+                    column(3,textInput("smtpServer",   "SMTP Server:", value = smtpServer, width ='100%'))
                 ),
                 hr(),
                 fluidRow(

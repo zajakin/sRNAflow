@@ -169,6 +169,7 @@ server <- function(input, output, session) {
     output$Config<-renderText({
         Exp       <<-gsub(" ","_",trimws(input$Exp))
         specie    <<-input$specie
+        strategy  <<-input$strategy
         tsize     <<-input$tsize
         Rep       <<-input$Rep
         blast     <<-input$blast
@@ -181,7 +182,7 @@ server <- function(input, output, session) {
         padj      <<-input$padj
         email     <<-input$email
         smtpServer<<-input$smtpServer
-        save(Exp,specie,tsize,Rep,blast,qc,ad3,ad5,sizerange,lim,log2FoldChange,padj,email,smtpServer,file=file.path(wd,"www","db","Config.RData"))
+        save(Exp,specie,strategy,tsize,Rep,blast,qc,ad3,ad5,sizerange,lim,log2FoldChange,padj,email,smtpServer,file=file.path(wd,"www","db","Config.RData"))
         # list(wd=wd,getwd=getwd(),Exp=Exp,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,sizerange =sizerange,lim =lim,log2FoldChange=log2FoldChange,padj =padj,email =email,smtpServer=smtpServer)
         Exp
     })

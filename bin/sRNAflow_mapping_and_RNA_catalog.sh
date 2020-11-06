@@ -1,6 +1,10 @@
 #!/bin/bash
-while getopts ":n:r:f:t:o:" opt; do
+while getopts ":s:v:n:r:f:t:o:" opt; do
   case $opt in
+    s) strategy="$OPTARG"
+    ;;
+    v) specie="$OPTARG"
+    ;;
     n) f="$OPTARG"
     ;;
     r) rawfile="$OPTARG"
@@ -96,6 +100,8 @@ core=`nproc`
 export PATH=$HOME/bin:$HOME/conda/bin:$HOME/.local/bin:$PATH
 DV="genomes"
 DB="$out/$DV"
+DFA="$(pwd)/www/db/genomes/${specie}.fa"
+DBW="$(pwd)/www/db/genomes/bowtie/${specie}/${specie}"
 samtools="samtools "
 gencore="$(pwd)/bin/gencore "
 shortstack="$(pwd)/ShortStack/ShortStack "
@@ -132,14 +138,47 @@ cp -f $out/$f/logs/trimm.txt $txtLog
 shdir="$out/$f/ShortStack"
 shfile="$out/$f/$f.bam"
 rm -rf "$shdir"
-bowtie2opt="--time --end-to-end -k 21 -p $core --mm -x $DB/$DV $inFasta --un $out/$f/Unmapped_$f.fq --no-unal"
-bowtie2 $bowtie2opt -D 20 -R 3 -N 0 -L 20 -i S,1,0.50 -U $ff -S $shdir.sam > $out/$f/logs/bowtie2.log 2>&1
-$samtools view -uhS -F4 $shdir.sam | $samtools sort -@ $core - -o $shfile > /dev/null 2>&1
-rm $shdir.sam
-$shortstack --readfile $shfile --genomefile $DB/$DV.fa --outdir $shdir --bowtie_cores $core --mismatches 1 --bowtie_m 201 --ranmax 200 --keep_quals --inbam --nohp >> $out/$f/logs/Shortstack.log 2>&1
-$samtools view -o $out/$f/$f.sam.gz $shfile
-rm $shfile
 dd=""
+bowtie2opt="--time --end-to-end -p $core --mm $inFasta --no-unal -D 20 -R 3 -N 0 -L 20 -i S,1,0.50"
+if [ "${strategy}" == "successively" ]; then
+  bowtie2 $bowtie2opt -k 21 -x $DBW --un $out/$f/Unmapped_2main_$f.fq -U $ff -S $shdir.sam > $out/$f/logs/bowtie2main.log 2>&1
+  $samtools view -uhS -F4 $shdir.sam | $samtools sort -@ $core - -o $shfile > /dev/null 2>&1
+  rm $shdir.sam
+  $shortstack --readfile $shfile --genomefile $DFA --outdir $shdir --bowtie_cores $core --mismatches 1 --bowtie_m 201 --ranmax 200 --keep_quals --inbam --nohp >> $out/$f/logs/Shortstack_2main.log 2>&1
+  rm $shfile
+  if [ `echo $f | grep -c dd` == 1 ]; then
+    dd="_dd"
+    $gencore -i $shdir/$f.bam -h $shdir/${f}_dd.html -o $shdir/$f$dd.bam -r $DFA -s 1 >> $txtLog
+  fi # if  UMI
+  $samtools index $shdir/$f$dd.bam
+  $samtools idxstats $shdir/$f$dd.bam  > ${shdir}/mapped.txt
+  $samtools sort $shdir/$f$dd.bam -o $shdir/$f.sam
+  
+  gawk '/reads; of these/{ print "For_mapping\t" $1 }' $out/$f/logs/bowtie2.log >> $txtLog
+  gawk '/were unpaired; of these/{ print "Unpaired\t" $1 }' $out/$f/logs/bowtie2.log >> $txtLog
+  gawk '/were unpaired; of these/{ print "Unpaired_%\t" $2 }' $out/$f/logs/bowtie2.log >> $txtLog
+  gawk '/aligned 0 times/{ print "Unmapped\t" $1 }' $out/$f/logs/bowtie2.log >> $txtLog
+  gawk '/aligned 0 times/{ print "Unmapped_%\t" $2 }' $out/$f/logs/bowtie2.log >> $txtLog
+  gawk '/aligned exactly 1 time/{ print "Uniq_mapped\t" $1 }' $out/$f/logs/bowtie2.log >> $txtLog
+  gawk '/aligned exactly 1 time/{ print "Uniq_mapped_%\t" $2 }' $out/$f/logs/bowtie2.log >> $txtLog
+  gawk '/aligned >1 times/{ print "Multimapped\t" $1 }' $out/$f/logs/bowtie2.log >> $txtLog
+  gawk '/aligned >1 times/{ print "Multimapped_%\t" $2 }' $out/$f/logs/bowtie2.log >> $txtLog
+  gawk '/overall alignment rate/{ print "Overall_alignment_rate_%\t" $1 }' $out/$f/logs/bowtie2.log >> $txtLog
+  gawk '{l+=$3; s+=$4 } END {print "mapped_reads\t" l+s "\nmapped_reads_less200\t" l "\nmapped_reads_over200\t" s}' ${shdir}/mapped.txt >> $txtLog
+
+  bowtie2 $bowtie2opt -k 201 -x $DB/$DV --un $out/$f/Unmapped_$f.fq -U $out/$f/Unmapped_2main_$f.fq -S $shdir.sam > $out/$f/logs/bowtie2.log 2>&1
+  $samtools view -uhS -F4 $shdir.sam | $samtools sort -@ $core - -o $shfile > /dev/null 2>&1
+  rm $shdir.sam
+  $shortstack --readfile $shfile --genomefile $DFA --outdir $shdir --bowtie_cores $core --mismatches 1 --bowtie_m 201 --ranmax 200 --keep_quals --inbam --nohp >> $out/$f/logs/Shortstack.log 2>&1
+  $samtools view -o $out/$f/$f.sam.gz $shfile
+else
+  bowtie2 $bowtie2opt -k 201 -x $DB/$DV --un $out/$f/Unmapped_$f.fq -U $ff -S $shdir.sam > $out/$f/logs/bowtie2.log 2>&1
+  $samtools view -uhS -F4 $shdir.sam | $samtools sort -@ $core - -o $shfile > /dev/null 2>&1
+  rm $shdir.sam
+  $shortstack --readfile $shfile --genomefile $DB/$DV.fa --outdir $shdir --bowtie_cores $core --mismatches 1 --bowtie_m 201 --ranmax 200 --keep_quals --inbam --nohp >> $out/$f/logs/Shortstack.log 2>&1
+  $samtools view -o $out/$f/$f.sam.gz $shfile
+fi
+rm $shfile
 if [ `echo $f | grep -c dd` == 1 ]; then
   dd="_dd"
   $gencore -i $shdir/$f.bam -h $shdir/${f}_dd.html -o $shdir/$f$dd.bam -r $DB/$DV.fa -s 1 >> $txtLog

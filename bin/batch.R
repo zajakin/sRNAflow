@@ -6,7 +6,7 @@ source("shiny/global.R")
 
 ED<-file.path(wd,"www","results",Exp)
 dir.create(ED,recursive = TRUE, mode = "0777")
-save(FilesIn,GroupsSel,Exp,specie,tsize,Rep,blast,qc,ad3,ad5,sizerange,lim,log2FoldChange,padj,email,smtpServer,file = file.path(ED,"settings.RData"))
+save(FilesIn,GroupsSel,Exp,specie,tsize,Rep,blast,qc,ad3,ad5,sizerange,lim,log2FoldChange,padj,email,smtpServer,strategy,file = file.path(ED,"settings.RData"))
 load(file.path(ED,"settings.RData"))
 
 #download main genomes from Ensembl  ########
@@ -27,7 +27,7 @@ source("bin/sRNAflow_downloadGenomes.R")
 
 #Mapping & RNA types catalog  ####
 err<-foreach(i=1:nrow(filesIn)) %dopar% { system(paste(file.path(wd,"bin","sRNAflow_mapping_and_RNA_catalog.sh"),
-	"-n",filesIn[i,"name"],"-r",filesIn[i,"rf"],"-f",filesIn[i,"wf"],"-t",filesIn[i,"type"],"-o",ED),intern = TRUE); }
+	"-s",strategy,"-v",specie,"-n",filesIn[i,"name"],"-r",filesIn[i,"rf"],"-f",filesIn[i,"wf"],"-t",filesIn[i,"type"],"-o",ED),intern = TRUE); }
 #United table
 system(paste0(wd,"/bin/sRNAflow_united_table_of_mapping_and_RNA_catalogs.sh ",ED),intern = TRUE)
 

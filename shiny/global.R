@@ -28,13 +28,14 @@ if(!exists("GroupsSel"))
 species<-c("homo_sapiens")  #,"mus_musculus")
 if(!exists("tsize")){
 	specie<-"homo_sapiens"
+	strategy<-"metagenome"
 	tsize<-"200"
 	Rep<-2
 	blast<-"nr/nt"
 	qc<-20
 	ad3<-"TGGAATTCTCGGGTGCCAAGG # Illumina TruSeq Small RNA"  # ad3<-"ATCACCGACTGCCCATAGAGAG"  # Ion Torrent
 	ad5<-"GTTCAGAGTTCTACAGTCCGACGATC # Illumina TruSeq Small RNA" # ad5<-"CCAAGGCG"  # Ion Torrent
-	sizerange<-c(10,42)
+	sizerange<-c(18,50)
 	lim<-2
 	log2FoldChange<-1
 	padj<-0.05
