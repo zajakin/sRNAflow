@@ -50,4 +50,5 @@ if(file.size(fa)>(2^32-1)){ system(paste("bowtie2-build --threads ",core," --lar
 } else system(paste("bowtie2-build --threads ",core,fa,file.path(WD,"genomes"),">",file.path(WD,"bowtie2-build.log")))
 
 system(paste("ln -fs ",file.path(wd,"www","db","gtf_biotypes"),WD))
-system(paste("ln -fs ",file.path(wd,"www","db","genomes","homo_sapiens.gtf"),file.path(WD,"genomes.gtf")))
+system(paste("ln -fs ",file.path(wd,"www","db","genomes","homo_sapiens.gtf.gz"),file.path(WD,"genomes.gtf.gz")))
+system(paste("ln -fs ",file.path(wd,"www","db","genomes","homo_sapiens_tax.gtf.gz"),file.path(WD,"genomes_tax.gtf.gz")))

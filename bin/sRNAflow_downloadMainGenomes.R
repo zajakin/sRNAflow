@@ -35,16 +35,20 @@ system(paste(file.path(wd,"Krona","KronaTools","updateTaxonomy.sh"),file.path(wd
 
 if(!dir.exists(file.path(wd,"www","db","genomes"))) dir.create(file.path(wd,"www","db","genomes"),recursive = TRUE, mode = "0777")
 
-if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".gtf"))) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes",paste0(specie,".gtf"))),units = "days")>30){
+i<-file.path(wd,"www","db","genomes",paste0(specie,".gtf"))
+if(!file.exists(i) || difftime(Sys.time(),file.mtime(i),units = "days")>30){
 	getDBfile(c('ftp://ftp.ensembl.org/pub/current_gtf/',specie),specie,".gtf.gz",".gtf.gz")
 	tax<-system(paste0("gawk -F'\t' 'tolower($5) ~/^",sub("_"," ",specie),"$/{print $1}' www/db/taxonomy/taxonomy.tab"),intern = TRUE)
-	system(paste0("sed -i -E '/(^#|^$)/!s/^/",tax,"_",specie,"_/' www/db/genomes/",specie,".gtf"),intern = TRUE)
+	system(paste0("cat ",i," | sed -E '/(^#|^$)/!s/^/",tax,"_",specie,"_/' > ",sub(".gtf","_tax.gtf",i)),intern = TRUE)
+	system(paste("pigz -9f",i,sub(".gtf","_tax.gtf",i)))
 }
 
 if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".fa"))) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes",paste0(specie,".fa"))),units = "days")>30){
 	getDBfile(c('ftp://ftp.ensembl.org/pub/current_fasta/',specie,'/dna'),specie,".dna.primary_assembly.fa.gz",".fa.gz")
-	dir.create(file.path(wd,"www","db","genomes","bowtie",specie),recursive = TRUE, mode = "0777")
-	system(paste0("bowtie2-build --threads ",core," ",file.path(wd,"www","db","genomes",specie),".fa ",file.path(wd,"www","db","genomes","bowtie",specie,specie)," > ",file.path(wd,"www","db","genomes","bowtie",specie,"bowtie2-build.log")))
+	dir.create(file.path(wd,"www","db","genomes","bowtie2",specie),recursive = TRUE, mode = "0777")
+	# tax<-system(paste0("gawk -F'\t' 'tolower($5) ~/^",sub("_"," ",specie),"$/{print $1}' ",file.path(wd,"www","db","genomes","taxonomy.tab")),intern = TRUE)
+	# system(paste0("cat www/db/genomes/",specie,".fa | sed 's/^>/>",tax,"_",specie,"_/g' >> ",fa))
+	system(paste0("bowtie2-build --threads ",core," ",file.path(wd,"www","db","genomes",specie),".fa ",file.path(wd,"www","db","genomes","bowtie2",specie,specie)," > ",file.path(wd,"www","db","genomes","bowtie2",specie,"bowtie2-build.log")))
 # system(paste0("zcat ",specie,".dna.primary_assembly.fa.gz > ",specie,".fa"))
 # system(paste0("zcat ",specie,".gtf.gz > ",specie,".gtf"))
 }

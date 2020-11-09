@@ -15,10 +15,10 @@ specie_short<-paste0(substr(specie,1,1),substr(strsplit(specie,"_")[[1]][2],1,2)
 source("bin/sRNAflow_downloadMainGenomes.R")
 
 # head -n 100000  $DV.gtf | grep "_biotype" | gawk -F "_biotype" '{print $2}' | gawk -F ";" '{print $1}' | sort | uniq -c | sort -n
-if(!dir.exists(file.path(wd,"www","db","genomes","bowtie",specie))){
+if(!dir.exists(file.path(wd,"www","db","genomes","bowtie",specie)))
 	dir.create(file.path(wd,"www","db","genomes","bowtie",specie),recursive = TRUE, mode = "0777")
+if(!file.exists(file.path(wd,"www","db","genomes","bowtie",specie,paste0(specie,".1.ebwt"))) || difftime(file.mtime(file.path(wd,"www","db","genomes","bowtie",specie,paste0(specie,".1.ebwt"))),file.mtime(file.path(wd,"www","db","genomes",paste0(specie,".fa"))),units = "days")<0)
 	system(paste0("bowtie-build --threads ",core," ",file.path(wd,"www","db","genomes",specie),".fa ",file.path(wd,"www","db","genomes","bowtie",specie,specie)))
-}
 
 fa2gtf<-function(archive,faFile="hg19-tRNAs.fa",outDir="gtf_biotypes/",type="GtRNAdb"){
 	faTab<-paste0(archive,faFile,".faTab")
@@ -304,5 +304,7 @@ gtfMergeFeatures(paste0("gtf_biotypes/RepeatMasker.gtf"))
 # }
 
 tax<-system(paste0("gawk -F'\t' 'tolower($5) ~/^",sub("_"," ",specie),"$/{print $1}' ",DD,"taxonomy/taxonomy.tab"),intern = TRUE)
-system(paste0("sed -i -E '/(^#|^$)/!s/^/",tax,"_",specie,"_/' ",DD,"gtf_biotypes/*.gtf"),intern = TRUE)
-system("pigz -9f gtf_biotypes/*mergedFeatures.gtf")
+for(i in dir("gtf_biotypes", "mergedFeatures.gtf",full.names = T))
+	system(paste0("cat \"",i,"\" | sed -E '/(^#|^$)/!s/^/",tax,"_",specie,"_/' > \"",sub("mergedFeatures.gtf","mergedFeatures_tax.gtf\"",i)),intern = TRUE)
+system("pigz -9f gtf_biotypes/*mergedFeatures.gtf gtf_biotypes/*mergedFeatures_tax.gtf")
+file.remove(dir("gtf_biotypes", ".gtf$",full.names = T))
