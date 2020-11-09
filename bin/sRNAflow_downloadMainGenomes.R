@@ -29,9 +29,35 @@ print(paste(date(),"Download main genome files"))
 timeout<-getOption('timeout')
 options(timeout=999999)
 # as.vector(md5sum(dir(R.home(), pattern = "^COPY", full.names = TRUE)))
+
+#### Pull taxonomy from BLAST
+if(!file.exists(file.path(wd,"www","db","blast.txids")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","blast.txids")),units = "days")>30 || 
+   difftime(file.mtime(file.path(wd,"bin","taxids_for_blast.tsv")),file.mtime(file.path(wd,"www","db","blast.txids")),units="secs")>0)
+	system(paste("gawk -F'\t' '{print $2}'",file.path(wd,"bin","taxids_for_blast.tsv"),"| xargs --max-procs=1 -l get_species_taxids -t >",
+				 file.path(wd,"www","db","blast.txids")))
+blasttaxids<-read.table(file.path(wd,"www","db","blast.txids"))[,1]
+
+#### Pull taxonomy from Krona  # system("kronatools_updateTaxonomy")
 if(!dir.exists(file.path(wd,"www","db","taxonomy"))) dir.create(file.path(wd,"www","db","taxonomy"),recursive = TRUE, mode = "0777")
 system(paste(file.path(wd,"Krona","KronaTools","updateTaxonomy.sh"),file.path(wd,"www","db","taxonomy")))
-# system("kronatools_updateTaxonomy")
+
+#### Make meta.txids from taxonomy.tab
+if(!file.exists(file.path(wd,"www","db","meta.txids")) 
+   || difftime(file.mtime(file.path(wd,"bin","taxids_for_blast.tsv")),file.mtime(file.path(wd,"www","db","meta.txids")),units="secs")>0
+   || difftime(file.mtime(file.path(wd,"www","db","blast.txids")),file.mtime(file.path(wd,"www","db","meta.txids")),units="secs")>0
+   || difftime(file.mtime(file.path(wd,"www","db","taxonomy","taxonomy.tab")),file.mtime(file.path(wd,"www","db","meta.txids")),units="secs")>0){
+		taxids<-read.table(file.path(wd,"bin","taxids_for_blast.tsv"),sep = "\t")
+		taxtab<-read.table(file.path(wd,"www","db","taxonomy","taxonomy.tab"),sep = "\t",quote = "")
+		taxout<-unique(taxids[,2])
+		j<-taxtab[taxtab[,3] %in% taxout,1]
+		while(length(j)>0){
+			taxout<-c(taxout,j)
+			j<-taxtab[taxtab[,3] %in% j,1]
+		}
+		taxout<-unique(c(taxids[,2],blasttaxids))
+		taxout<-taxout[order(taxout)]
+		cat(taxout[order(taxout)],file=file.path(wd,"www","db","meta.txids"),sep="\n")
+}
 
 if(!dir.exists(file.path(wd,"www","db","genomes"))) dir.create(file.path(wd,"www","db","genomes"),recursive = TRUE, mode = "0777")
 
@@ -70,9 +96,6 @@ if(!file.exists(file.path(wd,"www","db","genomes","genbank.txt")) || difftime(Sy
 	download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/assembly_summary_genbank.txt","www/db/genomes/genbank.txt")
 if(!file.exists(file.path(wd,"www","db","genomes","refseq.txt")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","refseq.txt")),units = "days")>30)
 	download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/assembly_summary_refseq.txt","www/db/genomes/refseq.txt")
-
-if(!file.exists(file.path(wd,"www","db","meta.txids")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","meta.txids")),units = "days")>30 || difftime(file.mtime(file.path(wd,"bin","taxids_for_blast.tsv")),file.mtime(file.path(wd,"www","db","meta.txids")),units="secs")>0)
-	system(paste("gawk -F'\t' '{print $2}'",file.path(wd,"bin","taxids_for_blast.tsv"),"| xargs --max-procs=1 -l get_species_taxids -t >",file.path(wd,"www","db","meta.txids")))
 
 if(!dir.exists(file.path(wd,"www","db","gtf_biotypes"))){
 	dir.create(file.path(wd,"www","db","gtf_biotypes"),recursive = TRUE, mode = "0777")
