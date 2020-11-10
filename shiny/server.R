@@ -125,7 +125,7 @@ server <- function(input, output, session) {
         reports <- cbind(fastQC=c(""),"species_diagrams"=c(""),"_diagrams.zip"=c(""),"isomiR-SEA"=c(""),xlsx=c(""),multiQC=c(""))[-1,]
         for(i in exps){
             row<-c()
-            for(j in c("_fastQC.zip","_species_diagrams.html","_sRNAflow_diagrams.zip","_isomiR-SEA.zip","_results.xlsx","_multiqc.html")) 
+            for(j in c("_fastQC.html","_fastQC.zip","_species_diagrams.html","_sRNAflow_diagrams.zip","_isomiR-SEA.zip","_results.xlsx","_multiqc.html")) 
                 if(file.exists(file.path(wd,"www","results",i,paste0(i,j)))){
                     # row<-c(row,a(href=paste0('/results/',i,'/',paste0(i,j)),paste0(i,j), download=NA, target="_blank"))
                     row<-c(row,paste0('<a href="/results/',i,'/',paste0(i,j),'" target="_blank">',paste0("...",j),'</a>'))

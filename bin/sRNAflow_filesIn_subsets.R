@@ -90,4 +90,15 @@ filesIn<-foreach(i=1:nrow(filesIn),.combine = rbind) %dopar% {
 	filesIn[i,]
 }
 zip(file.path(ED,paste0(Exp,"_fastQC.zip")),files=dir(file.path(ED,"qc"),".html",full.names = T),flags="-joq9")
+
+setwd(file.path(ED,"qc"))
+con<-file(file.path("..",paste0(Exp,"_fastQC.html")),"wt")
+cat(paste0('<html><head><link rel="stylesheet" type="text/css" href="/shared/shiny.css"/></head><body><table width="100%" border="2">',
+		'<tr><td width="10%">File</td><td rowspan="',length(index),' width="90%""><iframe srcdoc="" name="QC" width="100%" height="',length(index)*40,'px"> </iframe></td></tr>'),file = con)
+index<-dir(".",".html$")
+for(i in index) cat(paste0("<tr align=center><td><a href=qc/",i," target='QC'>",i,"</a></td></tr>"),file = con)
+cat(paste("</table></body></html>"),file = con)
+close(con)
+setwd(wd)
+
 save(filesIn,file = file.path(ED,"filesIn.RData"))
