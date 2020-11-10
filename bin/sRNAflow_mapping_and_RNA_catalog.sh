@@ -176,6 +176,7 @@ else
 fi
 $samtools view -uhS -F4 $shdir.sam | $samtools sort -@ $core - -o $shfile > /dev/null 2>&1
 rm $shdir.sam
+rm -rf ${shdir}${tax}
 $shortstack --readfile $shfile --genomefile $DB/$DV.fa --outdir ${shdir}${tax} --bowtie_cores $core --mismatches 1 --bowtie_m 201 --ranmax 200 --keep_quals --inbam --nohp >> $out/$f/logs/Shortstack.log 2>&1
 $samtools view -o $out/$f/$f.sam.gz $shfile && rm $shfile
 if [ `echo $f | grep -c dd` == 1 ]; then
