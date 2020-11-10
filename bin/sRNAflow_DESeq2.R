@@ -231,12 +231,14 @@ value<-c(Exp=Exp,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,s
 value<-rbind(cbind(variable=names(value),value=value," "=" ","  "=" ")," ",c("file","size","date","group"),cbind(FilesIn,group=GroupsSel[FilesIn[,"file"]]))
 write.xlsx2(value,filexlsx,sheet="Settings",row.names = FALSE)
 stat<-read.table(file.path(ED,"stats.tsv"), sep = "\t",header = TRUE)
-write.xlsx2(stat[1:20,],filexlsx,sheet="Quality",row.names = FALSE,append = TRUE)
-write.xlsx2(stat[21:39,],filexlsx,sheet="Catalog",row.names = FALSE,append = TRUE)
+enrow<-grep("all_Ensembl",stat[,1])
+write.xlsx2(stat[1:enrow,],filexlsx,sheet="Quality",row.names = FALSE,append = TRUE)
+write.xlsx2(stat[(enrow+1):nrow(stat),],filexlsx,sheet="Catalog",row.names = FALSE,append = TRUE)
 
-samples <- rep(colnames(stat)[-1],each=(36-20))
-RNA_types <- rep(stat[21:36,1], ncol(stat)-1)
-frequency <- as.numeric(unlist(stat[21:36,-1]))
+endrow<- grep("Ensembl_genes_mergedFeatures",stat[,1])-1
+samples <- rep(colnames(stat)[-1],each=(endrow-enrow))
+RNA_types <- rep(stat[(enrow+1):endrow,1], ncol(stat)-1)
+frequency <- as.numeric(unlist(stat[(enrow+1):endrow,-1]))
 data <- data.frame(samples,RNA_types,frequency)
 png(paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, res=300, units = "in")
 print(ggplot(data, aes(fill=RNA_types, y=frequency, x=samples)) + geom_bar(position="fill", stat="identity") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
@@ -326,3 +328,5 @@ for(gr in deGTF){
 
 warnings()
 date()
+
+
