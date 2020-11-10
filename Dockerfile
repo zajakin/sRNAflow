@@ -35,6 +35,7 @@ COPY LICENSE /srv/shiny-server/LICENSE
 COPY README.md /srv/shiny-server/README.md
 COPY bin /srv/shiny-server/bin/
 COPY shiny /srv/shiny-server/shiny/
+COPY gtf_biotypes /srv/shiny-server/gtf_biotypes/
     # git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && \
      # && mkdir -m 777 /home/shiny/R
 # RUN wget http://cbio.mskcc.org/miRNA2003/src1.9/binaries/miRanda-1.9-i686-linux-gnu.tar.gz
