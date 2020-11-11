@@ -8,7 +8,7 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
     env DEBIAN_FRONTEND=noninteractive apt-get upgrade -y --no-install-recommends && \
     env DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y --no-install-recommends && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        git gawk unzip pigz libjson-perl curl python3-pip libxml2-dev zlib1g-dev libbz2-dev liblzma-dev \
+        git gawk unzip pigz libjson-perl curl python3-pip libxml2-dev zlib1g-dev libbz2-dev liblzma-dev libssl-dev \
         bowtie bowtie2 cutadapt samtools fastqc ncbi-blast+ ncbi-entrez-direct python3-htseq trnascan-se && \
     apt-get autoremove -y && \
     apt-get autoclean -y
@@ -44,7 +44,7 @@ COPY gtf_biotypes /srv/shiny-server/gtf_biotypes/
 # RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); BiocManager::install(c('org.Hs.eg.db','edgeR','reticulate'), ask=FALSE)"
 # remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
 
-#        libjpeg-dev libcurl4-openssl-dev libssl-dev kraken2 rna-star fastp cnvkit seqtk picard-tools sortmerna bcftools gffread bedtools radiant
+#        libjpeg-dev libcurl4-openssl-dev kraken2 rna-star fastp cnvkit seqtk picard-tools sortmerna bcftools gffread bedtools radiant
 
 #chmod 777 . && docker pull zajakin/srnaflow && docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v /tmp/shinylog/:/var/log/shiny-server/ zajakin/srnaflow
 #docker build  -t srnaflow . && chmod 777 . && docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v /tmp/shinylog/:/var/log/shiny-server/ srnaflow
