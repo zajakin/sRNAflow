@@ -62,7 +62,7 @@ if(!file.exists(file.path(wd,"www","db","meta.txids"))
 if(!dir.exists(file.path(wd,"www","db","genomes"))) dir.create(file.path(wd,"www","db","genomes"),recursive = TRUE, mode = "0777")
 
 i<-file.path(wd,"www","db","genomes",paste0(specie,".gtf"))
-if(!file.exists(i) || difftime(Sys.time(),file.mtime(i),units = "days")>30){
+if(!file.exists(paste0(i,".gz")) || difftime(Sys.time(),file.mtime(paste0(i,".gz")),units = "days")>30){
 	getDBfile(c('ftp://ftp.ensembl.org/pub/current_gtf/',specie),specie,".gtf.gz",".gtf.gz")
 	tax<-system(paste0("gawk -F'\t' 'tolower($5) ~/^",sub("_"," ",specie),"$/{print $1}' www/db/taxonomy/taxonomy.tab"),intern = TRUE)
 	system(paste0("cat ",i," | sed -E '/(^#|^$)/!s/^/",tax,"_",specie,"_/' > ",sub(".gtf","_tax.gtf",i)),intern = TRUE)
