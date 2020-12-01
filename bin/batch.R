@@ -8,6 +8,7 @@ ED<-file.path(wd,"www","results",Exp)
 dir.create(ED,recursive = TRUE, mode = "0777")
 save(FilesIn,GroupsSel,Exp,specie,tsize,Rep,blast,qc,ad3,ad5,sizerange,lim,log2FoldChange,padj,email,smtpServer,strategy,file = file.path(ED,"settings.RData"))
 load(file.path(ED,"settings.RData"))
+# FilesIn<-serverFiles[grep("-2.fq.gz",serverFiles[,"file"]),]; GroupsSel<-rep("ignore",nrow(FilesIn)); names(GroupsSel)<-FilesIn[,"file"]
 
 #download main genomes from Ensembl  ########
 source("bin/sRNAflow_downloadMainGenomes.R")

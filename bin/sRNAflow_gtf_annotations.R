@@ -122,7 +122,7 @@ gtfMergeFeatures<-function(file="gtf_biotypes/hg38_repeatmasker_2.gtf"){
 	# chRs[!(chRs %in% done)]
 	file.create(sub(".gtf","_mergedFeatures.gtf",file))
 	for(chR in chRs){
-		if(file.exists(paste0("gtf_biotypes/file/",chR,".done"))){
+		if(file.exists(paste0("gtf_biotypes/tmp/",chR,".done"))){
 			system(paste0("grep '^",chR,"\t' gtf_biotypes/tmp/",chR,"_mergedFeatures.gtf >> ",sub(".gtf","_mergedFeatures.gtf",file)),intern = TRUE)
 		}
 	}
@@ -162,7 +162,7 @@ GtRNAfa<-GtRNAfa[!duplicated(GtRNAfa[,ncol(GtRNAfa)]),]
 tRNAhalves<-tRF<-c()
 i<-191
 for(i in 1:nrow(GtRNAfa)){
-	name<-GtRNAfa[i,1]
+	name<-sub("^>","",GtRNAfa[i,1])
 	str<-system(paste0("grep -A 5 -P \"",name,"[/.]\" ",archive,"GtRNAdb.ss | grep ^Str | sed 's/^Str: //'"),intern=TRUE)
 	len<-nchar(GtRNAfa[i,ncol(GtRNAfa)])
 	tRFs<-as.numeric(gregexpr("..>\\.\\.\\.\\.\\.",str,fixed=FALSE)[[1]])+1
