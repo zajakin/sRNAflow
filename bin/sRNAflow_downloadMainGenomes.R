@@ -48,14 +48,13 @@ if(!file.exists(file.path(wd,"www","db","meta.txids"))
    || difftime(file.mtime(file.path(wd,"www","db","taxonomy","taxonomy.tab")),file.mtime(file.path(wd,"www","db","meta.txids")),units="secs")>0){
 		taxids<-read.table(file.path(wd,"bin","taxids_for_blast.tsv"),sep = "\t")
 		taxtab<-read.table(file.path(wd,"www","db","taxonomy","taxonomy.tab"),sep = "\t",quote = "")
-		taxout<-unique(taxids[,2])
-		j<-taxtab[taxtab[,3] %in% taxout,1]
+		taxout<-as.character(unique(taxids[,2]))
+		j<-as.character(taxtab[as.character(taxtab[,3]) %in% taxout,1])
 		while(length(j)>0){
 			taxout<-c(taxout,j)
-			j<-taxtab[taxtab[,3] %in% j,1]
+			j<-as.character(taxtab[as.character(taxtab[,3]) %in% j,1])
 		}
-		taxout<-unique(c(taxids[,2],blasttaxids))
-		taxout<-taxout[order(taxout)]
+		taxout<-unique(c(taxout,blasttaxids))
 		cat(taxout[order(taxout)],file=file.path(wd,"www","db","meta.txids"),sep="\n")
 }
 
