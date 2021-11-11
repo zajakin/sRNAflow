@@ -79,11 +79,11 @@ if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".fa"))) || diff
 }
 if(!file.exists(file.path(wd,"www","db","genomes","univec.fa")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","univec.fa")),units = "days")>30){
 	download.file("https://ftp.ncbi.nlm.nih.gov/pub/UniVec/UniVec_Core",file.path("www","db","genomes","univec.fa"))
-	dir.create(file.path(wd,"www","db","genomes","bowtie","univec"),recursive = TRUE, mode = "0777")
-	system(paste("bowtie2-build --threads",core,file.path(wd,"www","db","genomes","univec.fa"),file.path(wd,"www","db","genomes","bowtie","univec","univec"),">",file.path(wd,"www","db","genomes","bowtie","univec","bowtie2-build.log")))
+	dir.create(file.path(wd,"www","db","genomes","bowtie2","univec"),recursive = TRUE, mode = "0777")
+	system(paste("bowtie2-build --threads",core,file.path(wd,"www","db","genomes","univec.fa"),file.path(wd,"www","db","genomes","bowtie2","univec","univec"),">",file.path(wd,"www","db","genomes","bowtie2","univec","bowtie2-build.log")))
 }
 if(!file.exists(file.path(wd,"www","db","genomes","mature.fa")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","mature.fa")),units = "days")>30){
-	download.file("ftp://mirbase.org/pub/mirbase/CURRENT/mature.fa.gz",file.path("www","db","genomes","mature.fa.gz"))
+	download.file("https://mirbase.org/ftp/CURRENT/mature.fa.gz",file.path("www","db","genomes","mature.fa.gz"))
 	system(paste("pigz -df",file.path("www","db","genomes","mature.fa.gz")))
 # pigz -cd $DV.fa.gz | fasta_formatter | sed '/^[^>]/ y/uU/tT/' > $DV.fa
 }
@@ -92,9 +92,9 @@ if(!file.exists(file.path(wd,"www","db","genomes","ensemblgenomes.txt")) || diff
 	system("sed -i '1 s/$/\tNA/' www/db/genomes/ensemblgenomes.txt",intern = TRUE)
 }
 if(!file.exists(file.path(wd,"www","db","genomes","genbank.txt")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","genbank.txt")),units = "days")>30)
-	download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/assembly_summary_genbank.txt","www/db/genomes/genbank.txt")
+	download.file("https://ftp.ncbi.nlm.nih.gov/genomes/genbank/assembly_summary_genbank.txt","www/db/genomes/genbank.txt")
 if(!file.exists(file.path(wd,"www","db","genomes","refseq.txt")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","refseq.txt")),units = "days")>30)
-	download.file("ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/assembly_summary_refseq.txt","www/db/genomes/refseq.txt")
+	download.file("https://ftp.ncbi.nlm.nih.gov/genomes/refseq/assembly_summary_refseq.txt","www/db/genomes/refseq.txt")
 
 if(!dir.exists(file.path(wd,"www","db","gtf_biotypes"))){
 	dir.create(file.path(wd,"www","db","gtf_biotypes"),recursive = TRUE, mode = "0777")

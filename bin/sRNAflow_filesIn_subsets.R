@@ -39,7 +39,7 @@ trimm<-function(rf,ext,s,d,qc,ad3,ad5,sizerange,arx){
 	# bowtie2opt="bowtie2 --time --end-to-end -k 21 -p $core --mm -x $DB/$DV $inFasta --un $out/$f/Unmapped_$f.fq --no-unal"
 	# $bowtie2opt -D 20 -R 3 -N 0 -L 20 -i S,1,0.50 -U $ff -S $shdir.sam > $out/$f/logs/bowtie2.log 2>&1
 	
-	system(paste0("bowtie2 --time --end-to-end -k 201 -p ",core," --mm -x ",file.path(wd,"www","db","genomes","bowtie","univec","univec"),
+	system(paste0("bowtie2 --time --end-to-end -k 201 -p ",core," --mm -x ",file.path(wd,"www","db","genomes","bowtie2","univec","univec"),
 		  " --un /dev/null --no-unal -D 20 -R 3 -N 0 -L 20 -i S,1,0.50 -U ",wf," -S ",d,"univec.sam > ",d,"logs/univec.log 2>&1"))
 	writeLines(paste0("UniVec\t",system(paste0("grep \"overall alignment rate\" ",d,"logs/univec.log | gawk '{print $1}'"),intern = TRUE)),con)
 	

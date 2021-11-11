@@ -110,10 +110,10 @@ gtfMergeFeaturesCh<-function(file="gtf_biotypes/tmp/22.gtf"){
 gtfMergeFeatures<-function(file="gtf_biotypes/hg38_repeatmasker_2.gtf"){
 	unlink("gtf_biotypes/tmp",recursive = TRUE)
 	dir.create("gtf_biotypes/tmp")
-	chRs<-system(paste("gawk '{print $1}'",file,"| sort | uniq"),intern = TRUE)
+	chRs<-system(paste0("gawk '{print $1}' '",file,"' | sort | uniq"),intern = TRUE)
 	err<-foreach(chR=chRs[order(chRs,decreasing = TRUE)]) %dopar% {
 		if(!file.exists(paste0("gtf_biotypes/tmp/",chR,".done"))){
-			system(paste0("grep '^",chR,"\t' ",file," > gtf_biotypes/tmp/",chR,".gtf"),intern = TRUE)
+			system(paste0("grep '^",chR,"\t' '",file,"' > gtf_biotypes/tmp/",chR,".gtf"),intern = TRUE)
 			gtfMergeFeaturesCh(paste0("gtf_biotypes/tmp/",chR,".gtf"))
 			file.create(paste0("gtf_biotypes/tmp/",chR,".done"))
 		}
@@ -123,7 +123,7 @@ gtfMergeFeatures<-function(file="gtf_biotypes/hg38_repeatmasker_2.gtf"){
 	file.create(sub(".gtf","_mergedFeatures.gtf",file))
 	for(chR in chRs){
 		if(file.exists(paste0("gtf_biotypes/tmp/",chR,".done"))){
-			system(paste0("grep '^",chR,"\t' gtf_biotypes/tmp/",chR,"_mergedFeatures.gtf >> ",sub(".gtf","_mergedFeatures.gtf",file)),intern = TRUE)
+			system(paste0("grep '^",chR,"\t' gtf_biotypes/tmp/",chR,"_mergedFeatures.gtf >> '",sub(".gtf","_mergedFeatures.gtf'",file)),intern = TRUE)
 		}
 	}
 	unlink("gtf_biotypes/tmp",recursive = TRUE)
@@ -230,7 +230,7 @@ tRNAhalves<-tRNAhalves[order(as.numeric(ch),as.numeric(tRNAhalves[,4])),]
 write.table(tRNAhalves,"gtf_biotypes/tRNAhalves.gtf",sep="\t",col.names=FALSE,row.names=FALSE,quote=FALSE)
 gtfMergeFeatures("gtf_biotypes/tRNAhalves.gtf")
 
-download.file(paste0('ftp://mirbase.org/pub/mirbase/CURRENT/genomes/',specie_short,".gff3"),paste0(archive,"miRBase_",specie_short,".gff"),"auto",mode = "wb")
+download.file(paste0('https://mirbase.org/ftp/CURRENT/genomes/',specie_short,".gff3"),paste0(archive,"miRBase_",specie_short,".gff"),"auto",mode = "wb")
 library("rtracklayer")
 tmp<-import.gff3(paste0(archive,"miRBase_",specie_short,".gff"))
 export.gff2(tmp,paste0(archive,"miRBase_",specie_short,".gtf"))
@@ -248,13 +248,13 @@ system(paste0("cat ",archive,"lncipedia_hc_",specie_short,".gtf | grep -v '^trac
 gtfQuote("gtf_biotypes/lncipedia_hc.gtf")
 gtfMergeFeatures("gtf_biotypes/lncipedia_hc.gtf")
 
-system(paste0("cat ",DD,specie,"/",specie,".gtf | grep _biotype | gawk -F \"_biotype\" '{print $2}' | gawk -F \";\" '{print $1}' | sort | uniq -c | sort -rn > gtf_biotypes/",specie,".gtf_biotypes.txt"))
-biotypes<-c("rRNA","snoRNA","miRNA","snRNA","misc_RNA","Mt_tRNA","Mt_rRNA","protein_coding","lncRNA","processed_pseudogene","vaultRNA")
+system(paste0("zcat ",DD,"genomes/",specie,".gtf.gz | grep _biotype | gawk -F \"_biotype\" '{print $2}' | gawk -F \";\" '{print $1}' | sort | uniq -c | sort -rn > gtf_biotypes/",specie,".gtf_biotypes.txt"))
+biotypes<-c("rRNA","snoRNA","miRNA","snRNA","misc_RNA","Mt_tRNA","Mt_rRNA","protein_coding","lncRNA","processed_pseudogene","vault_RNA")
 for(type in biotypes){
-	system(paste0("grep '_biotype \"",type,"\"' ",DD,specie,"/",specie,".gtf | grep '\texon\t' > gtf_biotypes/",type,".gtf"))
+	system(paste0("zcat ",DD,"genomes/",specie,".gtf.gz | grep '_biotype \"",type,"\"' | grep '\texon\t' > gtf_biotypes/",type,".gtf"))
 	gtfMergeFeatures(paste0("gtf_biotypes/",type,".gtf"))
 }
-system(paste0("grep ^MT ",DD,specie,"/",specie,".gtf | grep '\texon\t' > gtf_biotypes/MT.gtf"))
+system(paste0("zcat ",DD,"genomes/",specie,".gtf.gz | grep ^MT | grep '\texon\t' > gtf_biotypes/MT.gtf"))
 gtfMergeFeatures("gtf_biotypes/MT.gtf")
 system(paste0("grep -v \"Mt_tRNA\\|Mt_rRNA\" gtf_biotypes/MT.gtf | grep '\texon\t' > \"gtf_biotypes/other(MT).gtf\""))
 gtfMergeFeatures("gtf_biotypes/other(MT).gtf")
@@ -264,7 +264,7 @@ system(paste0("grep pRNA gtf_biotypes/misc_RNA.gtf | grep '\texon\t' > \"gtf_bio
 gtfMergeFeatures("gtf_biotypes/pRNA(misc_RNA).gtf")
 system(paste0("grep -v \"Y_RNA\\|RNY\\|pRNA\" gtf_biotypes/misc_RNA.gtf | grep '\texon\t' > \"gtf_biotypes/noYorPiwi(misc_RNA).gtf\""))
 gtfMergeFeatures("gtf_biotypes/noYorPiwi(misc_RNA).gtf")
-system(paste0("grep '\tgene\t' ",DD,specie,"/",specie,".gtf | sed 's/\tgene_id \"/\tgene_id \"intron_/' | sed 's/\tgene\t/\texon\t/' > gtf_biotypes/Ensembl_genes.gtf"))
+system(paste0("zcat ",DD,"genomes/",specie,".gtf.gz | grep '\tgene\t' | sed 's/\tgene_id \"/\tgene_id \"intron_/' | sed 's/\tgene\t/\texon\t/' > gtf_biotypes/Ensembl_genes.gtf"))
 gtfMergeFeatures("gtf_biotypes/Ensembl_genes.gtf")
 
 file.create("gtf_biotypes/All_catalogue_types.gtf")
@@ -272,7 +272,7 @@ for(type in c(biotypes,"MT")){
 	system(paste0("cat gtf_biotypes/",type,".gtf >> gtf_biotypes/All_catalogue_types.gtf"))
 }
 system(paste0("cat gtf_biotypes/All_catalogue_types.gtf | sort | uniq > gtf_biotypes/All_catalogue_types_sorted.gtf"))
-system(paste0("grep '\texon\t' ",DD,specie,"/",specie,".gtf | grep -v -xFf gtf_biotypes/All_catalogue_types_sorted.gtf > gtf_biotypes/Other_types.gtf"))
+system(paste0("zcat ",DD,"genomes/",specie,".gtf.gz | grep '\texon\t' | grep -v -xFf gtf_biotypes/All_catalogue_types_sorted.gtf > gtf_biotypes/Other_types.gtf"))
 gtfMergeFeatures("gtf_biotypes/Other_types.gtf")
 
 download.file("https://genome.ucsc.edu/cgi-bin/hgTables?clade=mammal&org=Human&db=hg38&hgta_group=rep&hgta_track=rmsk&hgta_table=rmsk&hgta_regionType=genome&hgta_outputType=gff&hgta_outFileName=hg38_RepeatMasker_UCSC.gtf.gz&hgta_compressType=gzip&hgta_doTopSubmit=get",paste0(archive,"hg38_RepeatMasker_UCSC.gtf.gz"),"auto",mode = "wb")
@@ -304,7 +304,7 @@ gtfMergeFeatures(paste0("gtf_biotypes/RepeatMasker.gtf"))
 # }
 
 tax<-system(paste0("gawk -F'\t' 'tolower($5) ~/^",sub("_"," ",specie),"$/{print $1}' ",DD,"taxonomy/taxonomy.tab"),intern = TRUE)
-for(i in dir("gtf_biotypes", "mergedFeatures.gtf",full.names = T))
+for(i in dir("gtf_biotypes", "mergedFeatures.gtf$",full.names = T))
 	system(paste0("cat \"",i,"\" | sed -E '/(^#|^$)/!s/^/",tax,"_",specie,"_/' > \"",sub("mergedFeatures.gtf","mergedFeatures_tax.gtf\"",i)),intern = TRUE)
 system("pigz -9f gtf_biotypes/*mergedFeatures.gtf gtf_biotypes/*mergedFeatures_tax.gtf")
 file.remove(dir("gtf_biotypes", ".gtf$",full.names = T))
