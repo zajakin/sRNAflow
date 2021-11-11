@@ -20,20 +20,24 @@ while getopts ":s:v:n:r:f:t:o:" opt; do
   esac
 done
 
+# strategy="successively"; specie="homo_sapiens"; f="07NS-v1"; rawfile="Cristina_202005/data/07NS-v1.fastq.gz"; ff="/home/pawel/Desktop/sRNAflow/www/results/Prostate/07NS-v1/07NS-v1.fastq.gz"; ftype="fq"; out="/home/pawel/Desktop/sRNAflow/www/results/Prostate"
+
 function mycount {
   htseq_opt="htseq-count -f sam -a 0 -s no --secondary-alignments score -q" #--additional-attr=gene_name
   # htseq_opt="featureCounts -s no"
-  $htseq_opt $shdir/$f.sam $DB/$DV$ext > $shdir/htseq-count_$f.txt  #  -s reverse
+  # $htseq_opt $shdir/$f.sam $DB/$DV$ext > $shdir/htseq-count_$f.txt  #  -s reverse
+  Rscript --vanilla $rsubread $shdir $shdir/$f.sam $DB/$DV$ext $shdir/htseq-count_$f.txt -
   # printf '%s\t%i\n' $DV `cat $shdir/htseq-count_$f.txt | grep -v "^__" | gawk '{s+=$2} END {print s}'`
   stLog="$shdir/htseq_${f}__no_feature.txt $shdir/htseq_${f}__ambiguous.txt $shdir/htseq_${f}__too_low_aQual.txt $shdir/htseq_${f}__not_aligned.txt $shdir/htseq_${f}__alignment_not_unique.txt"
   rm $shdir/testedID.txt $shdir/tmp.gtf $shdir/htseq-count_$f.priority.txt $stLog $shdir/testedReads.txt > /dev/null 2>&1
   touch $shdir/testedID.txt $shdir/tmp.gtf $shdir/htseq-count_$f.priority.txt $stLog $shdir/testedReads.txt
   type="miRBase_hairpin_mergedFeatures"
-  for type in {"miRBase_hairpin_mergedFeatures","miRNA_mergedFeatures","miRBase_mature_mergedFeatures","GtRNAdb_mergedFeatures","rRNA_mergedFeatures","protein_coding_mergedFeatures","processed_pseudogene_mergedFeatures","snRNA_mergedFeatures","snoRNA_mergedFeatures","MT_mergedFeatures","Mt_rRNA_mergedFeatures","Mt_tRNA_mergedFeatures","other(MT)_mergedFeatures","piRNAdb_mergedFeatures","piRNAbank_mergedFeatures","piRBase_mergedFeatures","lncRNA_mergedFeatures","lncipedia_hc_mergedFeatures","lncipedia_mergedFeatures","vaultRNA_mergedFeatures","YRNA(misc_RNA)_mergedFeatures","noYorPiwi(misc_RNA)_mergedFeatures","Other_types_mergedFeatures","RepeatMasker_tRNA_mergedFeatures","RepeatMasker_rRNA_mergedFeatures","RepeatMasker_mergedFeatures","Ensembl_genes_mergedFeatures"} # ,"tRF","tRNAhalves"
+  for type in {"miRBase_hairpin_mergedFeatures","miRNA_mergedFeatures","miRBase_mature_mergedFeatures","GtRNAdb_mergedFeatures","rRNA_mergedFeatures","protein_coding_mergedFeatures","processed_pseudogene_mergedFeatures","snRNA_mergedFeatures","snoRNA_mergedFeatures","MT_mergedFeatures","Mt_rRNA_mergedFeatures","Mt_tRNA_mergedFeatures","other(MT)_mergedFeatures","piRNAdb_mergedFeatures","piRNAbank_mergedFeatures","piRBase_mergedFeatures","lncRNA_mergedFeatures","lncipedia_hc_mergedFeatures","lncipedia_mergedFeatures","vault_RNA_mergedFeatures","YRNA(misc_RNA)_mergedFeatures","noYorPiwi(misc_RNA)_mergedFeatures","Other_types_mergedFeatures","RepeatMasker_tRNA_mergedFeatures","RepeatMasker_rRNA_mergedFeatures","RepeatMasker_mergedFeatures","Ensembl_genes_mergedFeatures"} # ,"tRF","tRNAhalves"
   do
     pigz -cd $DB/gtf_biotypes/$type$ext | sed "s/gene_id \"/gene_id \"${type}_/" >> $shdir/tmp.gtf
     # (grep "^#" file.gtf; grep -v "^#" file.gtf | sort -k1,1 -k4,4n) > file_sorted.gtf
-    $htseq_opt $shdir/$f.sam $shdir/tmp.gtf --samout=$shdir/priority.sam > $shdir/tmp.txt  #  -s reverse
+    # $htseq_opt $shdir/$f.sam $shdir/tmp.gtf --samout=$shdir/priority.sam > $shdir/tmp.txt  #  -s reverse
+    Rscript --vanilla $rsubread $shdir $shdir/$f.sam $shdir/tmp.gtf $shdir/tmp.txt $shdir/priority.sam
     grep -v "XF:Z:__no_feature" $shdir/priority.sam | grep -v "XF:Z:__not_aligned" > $shdir/priority_$f.$type.sam
     grep -v "XF:Z:__no_feature" $shdir/priority.sam | grep -v "XF:Z:__not_aligned" | grep -v "^@" | gawk '{print $1}' > $shdir/tmpReads.txt
     # egrep -v -f $shdir/testedID.txt $shdir/tmp.txt > $shdir/htseq-count_$f.$type.txt # | sed '$ s/\n//' | tr '\n' '|'
@@ -68,7 +72,7 @@ function mycount {
 
 function mystat {
   printf 'all_Ensembl\t%i\n' `cat $shdir/htseq-count_$f.txt | grep -v "^__" | gawk '{s+=$2} END {print s}'`
-  for type in {"all_miRNA_mergedFeatures","GtRNAdb_mergedFeatures","rRNA_mergedFeatures","protein_coding_mergedFeatures","processed_pseudogene_mergedFeatures","snRNA_mergedFeatures","snoRNA_mergedFeatures","all_MT_mergedFeatures","all_piRNA_mergedFeatures","all_lncRNA_mergedFeatures","vaultRNA_mergedFeatures","misc_RNA_mergedFeatures","Other_types_mergedFeatures","RepeatMasker_tRNA_mergedFeatures","RepeatMasker_rRNA_mergedFeatures","RepeatMasker_mergedFeatures","Ensembl_genes_mergedFeatures"}
+  for type in {"all_miRNA_mergedFeatures","GtRNAdb_mergedFeatures","rRNA_mergedFeatures","protein_coding_mergedFeatures","processed_pseudogene_mergedFeatures","snRNA_mergedFeatures","snoRNA_mergedFeatures","all_MT_mergedFeatures","all_piRNA_mergedFeatures","all_lncRNA_mergedFeatures","vault_RNA_mergedFeatures","misc_RNA_mergedFeatures","Other_types_mergedFeatures","RepeatMasker_tRNA_mergedFeatures","RepeatMasker_rRNA_mergedFeatures","RepeatMasker_mergedFeatures","Ensembl_genes_mergedFeatures"}
   do
     printf '%s\t%i\n' "$type" `cat $shdir/htseq-count_$f.$type.txt | grep -v "^__" | gawk '{s+=$2} END {print s}'`
   done
@@ -83,12 +87,13 @@ function mystat {
 
 function countOver {
   htseq_opt="htseq-count -f sam -a 0 -s no --secondary-alignments score -q"
-  for type in {"miRBase_mature_mergedFeatures","miRBase_hairpin_mergedFeatures","miRNA_mergedFeatures","piRNAdb_mergedFeatures","piRNAbank_mergedFeatures","piRBase_mergedFeatures","YRNA(misc_RNA)_mergedFeatures","snRNA_mergedFeatures","snoRNA_mergedFeatures","tRF_mergedFeatures","tRNAhalves_mergedFeatures","GtRNAdb_mergedFeatures","rRNA_mergedFeatures","MT_mergedFeatures","Mt_rRNA_mergedFeatures","Mt_tRNA_mergedFeatures","other(MT)_mergedFeatures","vaultRNA_mergedFeatures","lncRNA_mergedFeatures","lncipedia_hc_mergedFeatures","lncipedia_mergedFeatures","noYorPiwi(misc_RNA)_mergedFeatures","protein_coding_mergedFeatures","processed_pseudogene_mergedFeatures","Other_types_mergedFeatures","RepeatMasker_tRNA_mergedFeatures","RepeatMasker_rRNA_mergedFeatures","RepeatMasker_mergedFeatures","Ensembl_genes_mergedFeatures","miRBase_mature","miRBase_hairpin","miRNA","piRNAdb","piRNAbank","piRBase","YRNA(misc_RNA)","snRNA","snoRNA","tRF","tRNAhalves","GtRNAdb","rRNA","MT","Mt_rRNA","Mt_tRNA","other(MT)","vaultRNA","lncRNA","lncipedia_hc","lncipedia","noYorPiwi(misc_RNA)","protein_coding","processed_pseudogene","Other_types","RepeatMasker_tRNA","RepeatMasker_rRNA","RepeatMasker","Ensembl_genes"}
+  for type in {"miRBase_mature_mergedFeatures","miRBase_hairpin_mergedFeatures","miRNA_mergedFeatures","piRNAdb_mergedFeatures","piRNAbank_mergedFeatures","piRBase_mergedFeatures","YRNA(misc_RNA)_mergedFeatures","snRNA_mergedFeatures","snoRNA_mergedFeatures","tRF_mergedFeatures","tRNAhalves_mergedFeatures","GtRNAdb_mergedFeatures","rRNA_mergedFeatures","MT_mergedFeatures","Mt_rRNA_mergedFeatures","Mt_tRNA_mergedFeatures","other(MT)_mergedFeatures","vault_RNA_mergedFeatures","lncRNA_mergedFeatures","lncipedia_hc_mergedFeatures","lncipedia_mergedFeatures","noYorPiwi(misc_RNA)_mergedFeatures","protein_coding_mergedFeatures","processed_pseudogene_mergedFeatures","Other_types_mergedFeatures","RepeatMasker_tRNA_mergedFeatures","RepeatMasker_rRNA_mergedFeatures","RepeatMasker_mergedFeatures","Ensembl_genes_mergedFeatures","miRBase_mature","miRBase_hairpin","miRNA","piRNAdb","piRNAbank","piRBase","YRNA(misc_RNA)","snRNA","snoRNA","tRF","tRNAhalves","GtRNAdb","rRNA","MT","Mt_rRNA","Mt_tRNA","other(MT)","vault_RNA","lncRNA","lncipedia_hc","lncipedia","noYorPiwi(misc_RNA)","protein_coding","processed_pseudogene","Other_types","RepeatMasker_tRNA","RepeatMasker_rRNA","RepeatMasker","Ensembl_genes"}
   do
     # ann=$DB/gtf_biotypes/$type$ext
     # if [ ! -e $ann ]; then ann="$DB/gtf_biotypes/$type.gtf"; fi
     # $htseq_opt --nonunique all -q $a1 $DB/gtf_biotypes/$type$ext -o $a2/tmp.a.sam > $a2/htseq-nopriority_$f.$type.a.txt
-    $htseq_opt $shdir/$f.sam $DB/gtf_biotypes/$type$ext -o $shdir/tmp.sam > $shdir/htseq-nopriority_$f.$type.txt
+    # $htseq_opt $shdir/$f.sam $DB/gtf_biotypes/$type$ext -o $shdir/tmp.sam > $shdir/htseq-nopriority_$f.$type.txt
+    Rscript --vanilla $rsubread $shdir $shdir/$f.sam $DB/gtf_biotypes/$type$ext $shdir/htseq-nopriority_$f.$type.txt $shdir/tmp.sam
     grep -v __no_feature $shdir/tmp.sam | grep -v __not_aligned  > $shdir/htseq_$type.sam
     rm $shdir/tmp.sam
     grep -v "^@" $shdir/htseq_$type.sam | gawk '{print $1}' > $shdir/htseq_reads_list.$type.txt
@@ -101,9 +106,10 @@ export PATH=$HOME/bin:$HOME/conda/bin:$HOME/.local/bin:$PATH
 DV="genomes"
 DB="$out/$DV"
 DFA="$(pwd)/www/db/genomes/${specie}.fa"
-DBW="$(pwd)/www/db/genomes/bowtie/${specie}/${specie}"
+DBW="$(pwd)/www/db/genomes/bowtie2/${specie}/${specie}"
 samtools="samtools "
 gencore="$(pwd)/bin/gencore "
+rsubread="$(pwd)/bin/rsubread.R "
 shortstack="$(pwd)/ShortStack/ShortStack "
 isomiRSEA="$(pwd)/bin/isomiR-SEA "
 taxonomy="ktImportTaxonomy -tax $(pwd)/www/db/taxonomy "
