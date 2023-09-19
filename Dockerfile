@@ -14,8 +14,8 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
         r-cran-shinyjs r-cran-foreach r-cran-domc r-cran-futile.logger r-cran-sendmailr r-cran-openxlsx \
         r-cran-venndiagram r-bioc-rtracklayer r-cran-xml r-bioc-deseq2 r-bioc-annotate python3-keras seqtk radiant && \
     apt-get autoremove -y && \
-    apt-get autoclean -y && \
-    R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
+    apt-get autoclean -y
+RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           if (!requireNamespace('BiocManager')) install.packages('BiocManager'); \
           chooseBioCmirror(graphics =FALSE,ind=1); \
           BiocManager::install(c('GOstats'), ask=FALSE)"
