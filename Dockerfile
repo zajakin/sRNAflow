@@ -12,9 +12,8 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
         bowtie bowtie2 cutadapt samtools fastqc ncbi-blast+ ncbi-entrez-direct python3-htseq trnascan-se multiqc seqtk radiant \
 #        r-cran-gdata r-cran-gplots r-cran-ggplot2 r-cran-gridextra r-cran-shinydashboard r-cran-dt r-cran-corrplot \
 #        r-cran-shinyjs r-cran-foreach r-cran-domc r-cran-futile.logger r-cran-sendmailr r-cran-openxlsx \
-#        r-cran-venndiagram r-bioc-rtracklayer r-cran-xml r-bioc-deseq2 r-bioc-annotate && \
-    apt-get autoremove -y && \
-    apt-get autoclean -y #    python3-keras
+#        r-cran-venndiagram r-bioc-rtracklayer r-cran-xml r-bioc-deseq2 r-bioc-annotate \
+    && apt-get autoremove -y && apt-get autoclean -y # python3-keras libjpeg-dev libcurl4-openssl-dev kraken2 rna-star fastp cnvkit picard-tools sortmerna bcftools gffread bedtools
 RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           if (!requireNamespace('BiocManager')) install.packages('BiocManager'); \
           chooseBioCmirror(graphics =FALSE,ind=1); \
@@ -41,7 +40,6 @@ COPY gtf_biotypes /srv/shiny-server/gtf_biotypes/
 # RUN wget https://github.com/cbiagii/target-prediction/blob/master/miRanda-aug2010.tar.gz?raw=true -O miRanda-aug2010.tar.gz && tar zxvf miRanda-aug2010.tar.gz && cd miRanda-3.3a && ./configure && make
 # RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); BiocManager::install(c('org.Hs.eg.db','edgeR','reticulate'), ask=FALSE)"
 # remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
-#        libjpeg-dev libcurl4-openssl-dev kraken2 rna-star fastp cnvkit  picard-tools sortmerna bcftools gffread bedtools
 
 #chmod 777 . && docker pull ghcr.io/zajakin/srnaflow && docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v /tmp/shinylog/:/var/log/shiny-server/ ghcr.io/zajakin/srnaflow
 #docker build  -t srnaflow . && chmod 777 . && docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v /tmp/shinylog/:/var/log/shiny-server/ srnaflow
