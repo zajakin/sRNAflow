@@ -29,7 +29,7 @@ RUN mv /srv/shiny-server /srv/shiny-server.orig && mkdir -p /srv/shiny-server/bi
     mv isomiR-SEA_1_6 /srv/shiny-server/bin/isomiR-SEA && rm tmp.zip && \
     pip3 install multiqc mieaa
 RUN pip3 install tensorflow keras && git clone https://github.com/tjgu/miTAR.git /srv/shiny-server/miTAR && \
-    sed -i 's/tf.set_random_seed(sdnum)/tf.random.set_seed(sdnum)/p' /srv/shiny-server/miTAR/predict_multimiRmultimRNA.py
+    rm -rf /srv/shiny-server/miTAR/conda # && sed -i 's/tf.set_random_seed(sdnum)/tf.random.set_seed(sdnum)/p' /srv/shiny-server/miTAR/predict_multimiRmultimRNA.py
 COPY app.R /srv/shiny-server/app.R
 COPY LICENSE /srv/shiny-server/LICENSE
 COPY README.md /srv/shiny-server/README.md

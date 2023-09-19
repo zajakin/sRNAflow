@@ -13,6 +13,7 @@ WD <-   arg[3]
 name <- arg[4]
 file <- arg[5]
 core <- arg[6]
+if(file.exists(file.path(ED,"species_diagrams",paste0(name,".report.htm")) )) return(0)
 
 # out<- paste0("blasts/",name,".blast")
 DV <- "nt"
@@ -28,7 +29,7 @@ colNames<- c("read","name","taxid","nameEn","kingdom","evalue","bitscore","qlen"
 # blastopt<-paste(DB, "-evalue 100 -perc_identity 100")
 # export PATH=$HOME/bin:$HOME/conda/bin:$HOME/.local/bin:${PATH:-/usr/bin:.}; $HOME/bin/c; update_blastdb --decompress nt"
 # outfmt <- "-outfmt \"6 qseqid ssciname staxid scomname evalue bitscore length pident\""
-for(i in c("forKrona","faTab","blasts","logs")) if(!dir.exists(paste0(WD,i))) dir.create(paste0(WD,i))
+for(i in c("forKrona","faTab","blasts","logs","species_diagrams")) if(!dir.exists(paste0(WD,i))) dir.create(paste0(WD,i))
 
 setwd(WD)
 getwd()
@@ -91,7 +92,7 @@ if(!file.exists(paste0("forKrona/",name,".forKrona.txt"))){
 # blast_formatter -rid `grep -m 1 ^RID $out/$i/Unmapped_$i.blastn | gawk '{print $2}'` -out $out/$i/Unmapped_$i.tab -outfmt 7 
 # system("cat out.blast | sort | uniq > out_filtred.blast; $HOME/bin/parse_blast_output out_filtred.blast | sort -rn > top.txt",intern = TRUE)
 pos<-rbind(rep(0,length(colNames)))[-1,]
-for(out in paste0("blasts/",name,c(".short",".mid",".long"),".blast"))
+for(out in paste0("blasts/",name,c(".short",".mid",".long"),".blast")[file.exists(paste0("blasts/",name,c(".short",".mid",".long"),".blast"))])
     pos<-rbind(pos,read.table(out, comment.char="",quote = "", header = FALSE, sep = "\t",dec = ".", na.strings = "NA",as.is = TRUE))
 pos<-pos[!is.na(pos[,3]),]
 colnames(pos)<-colNames

@@ -4,9 +4,11 @@ for(r in 1:as.numeric(Rep)){ filesIn<-cbind(filesIn,ftN=""); colnames(filesIn)[n
 if(!dir.exists(file.path(ED,"qc"))) dir.create(file.path(ED,"qc"),recursive = T, mode = "0777")
 if(!dir.exists(file.path(ED,"species_diagrams"))) dir.create(file.path(ED,"species_diagrams"),recursive = TRUE, mode = "0777")
 
-trimm<-function(rf,ext,s,d,qc,ad3,ad5,sizerange,arx){
-	if(trimws(sub("#.*","",ad3)) != "") ad3<-paste("-a",trimws(sub("#.*","",ad3)))
-	if(trimws(sub("#.*","",ad5)) != "") ad5<-paste("-g",trimws(sub("#.*","",ad5)))
+trimm<-function(rf,ext,s,d,qc,ad3,ad5,sizerange,arx,wf=rf){
+	ad3<-trimws(sub("#.*","",ad3))
+	ad5<-trimws(sub("#.*","",ad5))
+	if(ad3 != "") ad3<-paste("-a",ad3)
+	if(ad5 != "") ad5<-paste("-g",ad5)
 	cat <- "cat "
 	if(arx!="") cat <-"pigz -cd "
 	qcc<-""

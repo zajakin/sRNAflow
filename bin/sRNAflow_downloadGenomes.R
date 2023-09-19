@@ -13,6 +13,8 @@ refseq<-read.table("www/db/genomes/refseq.txt", comment.char="",skip=1,quote = "
 # ensemblgenomes<-ensemblgenomes[ensemblgenomes[,"ftp_path"]!="na",]
 genbank<-genbank[genbank[,"ftp_path"]!="na",]
 refseq<-refseq[refseq[,"ftp_path"]!="na",]
+availible_genomes<-unique(c(genbank[,"taxid"],genbank[,"species_taxid"],refseq[,"taxid"],refseq[,"species_taxid"],ensemblgenomes[,"taxonomy_id"]))
+cat(availible_genomes[order(availible_genomes)],file="www/db/genomes/availible_genomes.txt",sep="\n")
 
 if(!dir.exists(WD)) dir.create(WD,recursive = TRUE)
 if(!dir.exists(archive)) dir.create(archive,recursive = TRUE)
@@ -26,7 +28,7 @@ for(id in species99[,"id"]){
 	print(paste(i<-i+1,id,species99[as.character(id),2],date()))
 	spname<-sub(" .*","",sub(" ","_",species99[as.character(id),2]))
 	if(id=="9606"){
-		system(paste0("cat www/db/genomes/",specie,".fa | sed 's/^>/>",id,"_",specie,"_/g' >> ",fa))
+		system(paste0("cat www/db/genomes/",specie,".fa | seqtk seq -Sl60 | sed 's/^>/>",id,"_",specie,"_/g' >> ",fa))
 		next
 	} 
 	urls<-refseq[refseq[,"taxid"]==id,"ftp_path"]
@@ -39,10 +41,12 @@ for(id in species99[,"id"]){
 		if(!file.exists(file.path(archive,id,paste0(basename(url),ext)))){
 			download.file(paste0(url,"/",basename(url),ext),file.path(archive,id,paste0(basename(url),ext)))
 		}
-		system(paste0("pigz -cd ",file.path(archive,id,paste0(basename(url),ext))," | sed 's/^>/>",id,"_",spname,"_/g' >> ",fa)  )
+		system(paste0("pigz -cd ",file.path(archive,id,paste0(basename(url),ext))," | seqtk seq -Sl60 | sed 's/^>/>",id,"_",spname,"_/g' >> ",fa)  )
 	}
 	#IDEA Select representative contig per specie (by clustering?)
 }
+# paste0("mv ",fa," ",fa,".tmp && awk '!/^>/ {printf \"%s\", $0; n = \"\\n\"} /^>/ {print n $0; n = \"\"}' ",fa,".tmp | fold -w 80 > ",fa)
+# system(paste0("cp ",fa," ",fa,".tmp && seqtk seq -Sl60 ",fa,".tmp > ",fa),intern = T)
 options(timeout=timeout)
 rm(ensemblgenomes,genbank,refseq)
 
