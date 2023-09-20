@@ -153,7 +153,7 @@ myGO<-function(myids, minimum.population=5,deUp=c(),deDown=c()){
 # 	write.xlsx2(as.data.frame(res),fileName,row.names=TRUE,col.names = TRUE,sheet=sheet,append=TRUE)
 # }
  
-makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],filexlsx){
+makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],filexlsx,servRow=c()){
 	dat<-httab[!(rownames(httab) %in% servRow),sel]
 	dat<-as.matrix(dat[rowSums(dat>lim)!=0,])
 	mode(dat)<-"integer"
@@ -230,7 +230,7 @@ filexlsx<-paste0(fileName,".xlsx")
 value<-c(Exp=Exp,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,sizerange =sizerange,lim =lim,log2FoldChange=log2FoldChange,padj =padj,email =email,smtpServer=smtpServer)
 value<-rbind(cbind(variable=names(value),value=value," "=" ","  "=" ")," ",c("file","size","date","group"),cbind(FilesIn,group=GroupsSel[FilesIn[,"file"]]))
 write.xlsx2(value,filexlsx,sheet="Settings",row.names = FALSE)
-stat<-read.table(file.path(ED,"stats.tsv"), sep = "\t",header = TRUE)
+stat<-read.table(file.path(ED,paste0("stats",tax,".tsv")), sep = "\t",header = TRUE)
 enrow<-grep("all_Ensembl",stat[,1])
 write.xlsx2(stat[1:enrow,],filexlsx,sheet="Quality",row.names = FALSE,append = TRUE)
 write.xlsx2(stat[(enrow+1):nrow(stat),],filexlsx,sheet="Catalog",row.names = FALSE,append = TRUE)

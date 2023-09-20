@@ -2,10 +2,10 @@
 
 out="$1"
 pushd $out
-stats=`ls $out/*/stat.txt | tr "\n" " "`
-count=`ls $out/*/stat.txt | wc -l`
+stats=`ls $out/*/stat$2.txt | tr "\n" " "`
+count=`ls $out/*/stat$2.txt | wc -l`
 columns="1,`seq -s "," 2 2 $((count*2+1)) | tr "\n" " "`"
-paste $stats | cut -f $columns  > $out/stats.tsv
+paste $stats | tr " " "\t" | cut -f $columns  > $out/stats$2.tsv
 popd
 # conda activate qiime
 # FASTA=`ls -m $out/*/*.json.biom`

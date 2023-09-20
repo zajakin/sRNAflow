@@ -27,29 +27,12 @@ source("bin/sRNAflow_aggregate_species.R")
 source("bin/sRNAflow_downloadGenomes.R")
 
 #Mapping & RNA types catalog  ####
+tax<-"_tax_filtExactRC"
 err<-foreach(i=1:nrow(filesIn)) %dopar% { system(paste(file.path(wd,"bin","sRNAflow_mapping_and_RNA_catalog.sh"),
 	"-s",strategy,"-v",specie,"-n",filesIn[i,"name"],"-r",filesIn[i,"rf"],"-f",filesIn[i,"wf"],"-t",filesIn[i,"type"],"-o",ED),intern = TRUE); }
 #United table
-system(paste0(wd,"/bin/sRNAflow_united_table_of_mapping_and_RNA_catalogs.sh ",ED),intern = TRUE)
+system(paste0(wd,"/bin/sRNAflow_united_table_of_mapping_and_RNA_catalogs.sh ",ED," ",tax),intern = TRUE)
 
 source("bin/sRNAflow_DESeq2.R")
-
-# OPTIMIR https://github.com/FlorianThibord/OptimiR
-
-# https://www.bioconductor.org/packages/release/bioc/html/isomiRs.html
-# BiocManager::install("isomiRs") 
-# apt install mirtop libpng-dev
-# library("isomiRs")
-# data(mirData)
-# head(isoSelect(mirData, mirna="hsa-let-7a-5p", 1000))
-# BiocManager::install("targetscan.Hs.eg.db")
-# library("targetscan.Hs.eg.db")
-# mirna_ma <- isomiRs::mirna2targetscan(c("hsa-miR-34c-5p"))
-# head(mirna_ma)
-
-#TODO miRanda,TarBase, MiRtaget2 (?)
-# https://www.bioconductor.org/packages/release/bioc/html/miRNAtap.html
-# BiocManager::install("gsubfn")
-# BiocManager::install("miRNAtap")
 
 source("bin/sRNAflow_sendmail.R")

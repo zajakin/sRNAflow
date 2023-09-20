@@ -41,6 +41,8 @@ Krona
 ShortStack
 bin/isomiR-SEA
 bin/gencore
+bin/miranda
 README.html
 old
 .git
+.github
