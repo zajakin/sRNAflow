@@ -30,8 +30,6 @@ source("bin/sRNAflow_downloadGenomes.R")
 tax<-"_tax_filtExactRC"
 err<-foreach(i=1:nrow(filesIn)) %dopar% { system(paste(file.path(wd,"bin","sRNAflow_mapping_and_RNA_catalog.sh"),
 	"-s",strategy,"-v",specie,"-n",filesIn[i,"name"],"-r",filesIn[i,"rf"],"-f",filesIn[i,"wf"],"-t",filesIn[i,"type"],"-o",ED),intern = TRUE); }
-#United table
-system(paste0(wd,"/bin/sRNAflow_united_table_of_mapping_and_RNA_catalogs.sh ",ED," ",tax),intern = TRUE)
 
 source("bin/sRNAflow_DESeq2.R")
 
