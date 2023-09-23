@@ -78,7 +78,7 @@ body <- dashboardBody(
                 fluidRow(
                     column(4,sliderInput("sizerange", "Size range", min = 10,max = 300, value = sizerange, width ='100%')),
                     column(4,selectInput('blast', 'BLAST to (nr/nt will be used if absent local db):', c("main specie & bacteria+","nr/nt"), selected = blast, width ='100%')),
-                    column(4,br(),br(),actionButton("start", "Start analysis",icon = icon("bar-chart-o"), width ='100%'))
+                    column(4,br(),br(),actionButton("start", "Start analysis",icon = icon("glyphicon glyphicon-indent-left"), width ='100%'))
                 ),
                 verbatimTextOutput("Config")
         ),
