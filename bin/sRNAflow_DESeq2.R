@@ -7,6 +7,17 @@ library(ggplot2)
 library(VennDiagram)
 tmp<-futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
 
+write.xlsx2<-function(data=c(),filexlsx="Book1.xlsx",sheet="Sheet1",append=FALSE,col.names=TRUE,row.names=TRUE){
+	library(openxlsx)
+	if(append & file.exists(filexlsx)){ wb <- loadWorkbook(filexlsx)
+	} else wb<-createWorkbook()
+	if(nchar(sheet)>31) sheet<-substr(sheet,1,31)
+	addWorksheet(wb = wb, sheetName = sheet, gridLines = TRUE)
+	freezePane(wb, sheet, firstRow = TRUE, firstCol = TRUE)
+	writeData(wb, sheet = sheet, data, colNames = col.names, rowNames = row.names)
+	saveWorkbook(wb,filexlsx,overwrite = TRUE)
+}
+
 options(echo=TRUE)
 setwd(file.path(ED,"species_diagrams"))
 print(paste(date(),"Compress species diagrams"))

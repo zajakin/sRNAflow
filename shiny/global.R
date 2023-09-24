@@ -11,7 +11,7 @@ registerDoMC(cores = core)
 
 wd<-sub("/shiny$","",getwd())
 setwd(wd)
-source(file.path(wd,"bin","utils.R"))
+Sys.setlocale(category = "LC_ALL", locale = "en_US.utf8")
 
 filesUploaded           <- rbind(rep(NA,3))[-1,]
 colnames(filesUploaded) <- c("file","size","date")

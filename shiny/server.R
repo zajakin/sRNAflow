@@ -193,10 +193,10 @@ server <- function(input, output, session) {
             showModal(modalDialog(title = "Warning","Analysis with this name already started!"))
         } else {
             setwd(wd)
-            system(paste0('Rscript --vanilla bin/batch.R "',wd,'"'), wait = FALSE)
+            system(paste0('Rscript --vanilla bin/sRNAflow_batch.R "',wd,'"'), wait = FALSE)
             showModal(modalDialog('Analysis started. Go to "Reports" and press ""Refresh reports list"" to see generated files'))
             # if (inherits(p, "masterProcess")) {
-            #     source("bin/batch.R")
+            #     source("bin/sRNAflow_batch.R")
             #     parallel:::mcexit()
             # }
             withProgress(message = 'Starting job', {
@@ -238,9 +238,9 @@ server <- function(input, output, session) {
         system(paste0('Rscript --vanilla bin/sRNAflow_gtf_annotations.R "',wd,'" ',specie," ",core), wait = FALSE)
         showModal(modalDialog("Downloading and merging of small RNA annotations started"))
     })
-    #         # system(paste("Rscript","bin/batch.R",Exp),wait = FALSE)
-    #         system(paste0("R -e 'Exp<-\"",Exp,"\"; source(\"bin/batch.R\")'"),wait = FALSE)
-    #         # source("bin/batch.R")
+    #         # system(paste("Rscript","bin/sRNAflow_batch.R",Exp),wait = FALSE)
+    #         system(paste0("R -e 'Exp<-\"",Exp,"\"; source(\"bin/sRNAflow_batch.R\")'"),wait = FALSE)
+    #         # source("bin/sRNAflow_batch.R")
 }
 
 
