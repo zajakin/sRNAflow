@@ -1,4 +1,4 @@
-#!/usr/bin/R --no-save
+#!/usr/bin/env Rscript --vanilla 
 # args <- commandArgs(TRUE)
 wd<-sub("/bin$","",getwd())
 setwd(wd)

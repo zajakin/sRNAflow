@@ -45,7 +45,7 @@ for(id in species99[,"id"]){
 	}
 	#IDEA Select representative contig per specie (by clustering?)
 }
-# paste0("mv ",fa," ",fa,".tmp && awk '!/^>/ {printf \"%s\", $0; n = \"\\n\"} /^>/ {print n $0; n = \"\"}' ",fa,".tmp | fold -w 80 > ",fa)
+# paste0("mv ",fa," ",fa,".tmp && gawk '!/^>/ {printf \"%s\", $0; n = \"\\n\"} /^>/ {print n $0; n = \"\"}' ",fa,".tmp | fold -w 80 > ",fa)
 # system(paste0("cp ",fa," ",fa,".tmp && seqtk seq -Sl60 ",fa,".tmp > ",fa),intern = T)
 options(timeout=timeout)
 rm(ensemblgenomes,genbank,refseq)

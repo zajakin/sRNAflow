@@ -3,7 +3,7 @@ FROM rocker/shiny
 MAINTAINER Pawel Zayakin "pawel@biomed.lu.lv"
 
 RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
-  env DEBIAN_FRONTEND=noninteractive apt-get update && \
+    env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends apt-utils && \
     env DEBIAN_FRONTEND=noninteractive apt-get upgrade -y --no-install-recommends && \
     env DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y --no-install-recommends && \
@@ -13,13 +13,16 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
 #        r-cran-gdata r-cran-gplots r-cran-ggplot2 r-cran-gridextra r-cran-shinydashboard r-cran-dt r-cran-corrplot \
 #        r-cran-shinyjs r-cran-foreach r-cran-domc r-cran-futile.logger r-cran-sendmailr r-cran-openxlsx \
 #        r-cran-venndiagram r-bioc-rtracklayer r-cran-xml r-bioc-deseq2 r-bioc-annotate \
-    && apt-get autoremove -y && apt-get autoclean -y # python3-keras libjpeg-dev libcurl4-openssl-dev kraken2 rna-star fastp cnvkit picard-tools sortmerna bcftools gffread bedtools python3-htseq 
+#        python3-keras libjpeg-dev libcurl4-openssl-dev kraken2 rna-star fastp cnvkit picard-tools sortmerna bcftools gffread bedtools python3-htseq 
+    && apt-get autoremove -y && apt-get autoclean -y \
+    && [ -d /usr/share/kronatools/scripts ] && ln -s /usr/share/perl5/KronaTools/scripts /usr/share/kronatools/scripts
+
 RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           if (!requireNamespace('BiocManager')) install.packages('BiocManager'); \
           chooseBioCmirror(graphics =FALSE,ind=1); \
           BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot'), ask=FALSE); \
           BiocManager::install(c('shinyjs','foreach','doMC','futile.logger','sendmailR','openxlsx','seqinr'), ask=FALSE); \
-          BiocManager::install(c('VennDiagram','rtracklayer','XML','DESeq2','annotate','GOstats','msa','ape'), ask=FALSE)"
+          BiocManager::install(c('VennDiagram','rtracklayer','XML','DESeq2','annotate','GOstats','msa','ape'), ask=FALSE)" # c('org.Hs.eg.db','edgeR','reticulate')
 #    git clone https://github.com/marbl/Krona.git /srv/shiny-server/Krona && cd /srv/shiny-server/Krona/KronaTools && ./install.pl && \
 RUN mv /srv/shiny-server /srv/shiny-server.orig && mkdir -p /srv/shiny-server/bin && \
     git clone https://github.com/zajakin/ShortStack.git  /srv/shiny-server/ShortStack && \
@@ -36,10 +39,5 @@ COPY bin /srv/shiny-server/bin/
 COPY shiny /srv/shiny-server/shiny/
 COPY gtf_biotypes /srv/shiny-server/gtf_biotypes/
 # git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && mkdir -m 777 /home/shiny/R
-# RUN wget http://cbio.mskcc.org/miRNA2003/src1.9/binaries/miRanda-1.9-i686-linux-gnu.tar.gz
-# RUN wget https://github.com/cbiagii/target-prediction/blob/master/miRanda-aug2010.tar.gz?raw=true -O miRanda-aug2010.tar.gz && tar zxvf miRanda-aug2010.tar.gz && cd miRanda-3.3a && ./configure && make
-# RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); chooseBioCmirror(graphics =FALSE,ind=1); BiocManager::install(c('org.Hs.eg.db','edgeR','reticulate'), ask=FALSE)"
-# remotes::install_github('fbreitwieser/shinyFileTree', type = 'source')"
-
 #chmod 777 . && docker pull ghcr.io/zajakin/srnaflow && docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v /tmp/shinylog/:/var/log/shiny-server/ ghcr.io/zajakin/srnaflow
-#docker build  -t srnaflow . && chmod 777 . && docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v /tmp/shinylog/:/var/log/shiny-server/ srnaflow
+#git clone https://github.com/zajakin/sRNAflow.git && cd sRNAflow && docker build  -t srnaflow . && chmod 777 . && docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v /tmp/shinylog/:/var/log/shiny-server/ srnaflow

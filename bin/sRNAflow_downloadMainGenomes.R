@@ -14,15 +14,7 @@ getDBfile<-function(base=c('http://ftp.ensembl.org/pub/current_gtf/',specie),sp=
 		tmp<-sapply(filenames,nchar)
 		filenames <-filenames[tmp==min(tmp)][1]
 		download.file(paste(c(base,'/',filenames),collapse=""),file.path(path,paste0(sp,ext2)),"auto",mode = "wb")
-		# system(paste("wget",paste(c(base,'/',filenames),collapse=""),"-O",file.path(path,paste0(sp,ext2))))
 		system(paste("pigz -df",file.path(path,paste0(sp,ext2))))
-		# out<-file(file.path(path,paste0(sp,ext2)),"wt")
-		# zz <-gzcon(file(file.path(path,paste0(sp,ext)),"r"))
-		# tmp<-readLines(zz)
-		# close(zz)
-		# writeLines(tmp,out,sep="\n")
-		# close(out)
-		# file.remove(file.path(path,paste0(sp,ext)))
 	}
 }
 print(paste(date(),"Download main genome files"))
@@ -39,7 +31,7 @@ blasttaxids<-read.table(file.path(wd,"www","db","blast.txids"))[,1]
 
 #### Pull taxonomy from Krona  # system("kronatools_updateTaxonomy")
 if(!dir.exists(file.path(wd,"www","db","taxonomy"))) dir.create(file.path(wd,"www","db","taxonomy"),recursive = TRUE, mode = "0777")
-system(paste(file.path(wd,"Krona","KronaTools","updateTaxonomy.sh"),file.path(wd,"www","db","taxonomy")))
+system(paste(file.path("","usr","bin","kronatools_updateTaxonomy && cp"),file.path("","var","lib","kronatools","taxonomy","*"),file.path(wd,"www","db","taxonomy")))
 
 #### Make meta.txids from taxonomy.tab
 if(!file.exists(file.path(wd,"www","db","meta.txids")) 
@@ -71,8 +63,6 @@ if(!file.exists(paste0(i,".gz")) || difftime(Sys.time(),file.mtime(paste0(i,".gz
 if(!file.exists(file.path(wd,"www","db","genomes",paste0(specie,".fa"))) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes",paste0(specie,".fa"))),units = "days")>30){
 	getDBfile(c('ftp://ftp.ensembl.org/pub/current_fasta/',specie,'/dna'),specie,".dna.primary_assembly.fa.gz",".fa.gz")
 	dir.create(file.path(wd,"www","db","genomes","bowtie2",specie),recursive = TRUE, mode = "0777")
-	# tax<-system(paste0("gawk -F'\t' 'tolower($5) ~/^",sub("_"," ",specie),"$/{print $1}' ",file.path(wd,"www","db","genomes","taxonomy.tab")),intern = TRUE)
-	# system(paste0("cat www/db/genomes/",specie,".fa | sed 's/^>/>",tax,"_",specie,"_/g' >> ",fa))
 	system(paste0("bowtie2-build --threads ",core," ",file.path(wd,"www","db","genomes",specie),".fa ",file.path(wd,"www","db","genomes","bowtie2",specie,specie)," > ",file.path(wd,"www","db","genomes","bowtie2",specie,"bowtie2-build.log")))
 # system(paste0("zcat ",specie,".dna.primary_assembly.fa.gz > ",specie,".fa"))
 # system(paste0("zcat ",specie,".gtf.gz > ",specie,".gtf"))
@@ -83,8 +73,8 @@ if(!file.exists(file.path(wd,"www","db","genomes","univec.fa")) || difftime(Sys.
 	system(paste("bowtie2-build --threads",core,file.path(wd,"www","db","genomes","univec.fa"),file.path(wd,"www","db","genomes","bowtie2","univec","univec"),">",file.path(wd,"www","db","genomes","bowtie2","univec","bowtie2-build.log")))
 }
 if(!file.exists(file.path(wd,"www","db","genomes","mature.fa")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","mature.fa")),units = "days")>30){
-	download.file("https://mirbase.org/ftp/CURRENT/mature.fa.gz",file.path("www","db","genomes","mature.fa.gz"))
-	system(paste("pigz -df",file.path("www","db","genomes","mature.fa.gz")))
+	download.file("https://mirbase.org/download/mature.fa",file.path("www","db","genomes","mature.fa"))
+#	system(paste("pigz -df",file.path("www","db","genomes","mature.fa.gz")))
 # pigz -cd $DV.fa.gz | fasta_formatter | sed '/^[^>]/ y/uU/tT/' > $DV.fa
 }
 if(!file.exists(file.path(wd,"www","db","genomes","ensemblgenomes.txt")) || difftime(Sys.time(),file.mtime(file.path(wd,"www","db","genomes","ensemblgenomes.txt")),units = "days")>30){
