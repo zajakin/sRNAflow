@@ -5,10 +5,10 @@ library(DESeq2)
 library(gridExtra)
 library(ggplot2)
 library(VennDiagram)
+library(openxlsx)
 tmp<-futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
 
 write.xlsx2<-function(data=c(),filexlsx="Book1.xlsx",sheet="Sheet1",append=FALSE,col.names=TRUE,row.names=TRUE){
-	library(openxlsx)
 	if(append & file.exists(filexlsx)){ wb <- loadWorkbook(filexlsx)
 	} else wb<-createWorkbook()
 	if(nchar(sheet)>31) sheet<-substr(sheet,1,31)
@@ -84,8 +84,8 @@ figVen<-function(dat,lim,limS,txt="",filexlsx){
 			print(grid.draw(venn.diagram(vv,fill = 2:(length(vv)+1), alpha = 0.3, filename=NULL,cex=2,
 			main=title,cat.default.pos="outer",cat.cex=2,main.cex=2,euler.d = FALSE,scaled=FALSE),recording = F))
 		}
-		wb<-openxlsx::loadWorkbook(filexlsx)
-		openxlsx::insertPlot(wb,sheet=txt,width = 8, height = 6, dpi=150,startCol = 4)
+		wb<-loadWorkbook(filexlsx)
+		insertPlot(wb,sheet=txt,width = 8, height = 6, dpi=150,startCol = 4)
 		saveWorkbook(wb,filexlsx, overwrite = TRUE)
 	}
 }
@@ -261,9 +261,9 @@ data <- data.frame(samples,RNA_types,frequency)
 png(paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, res=300, units = "in")
 print(ggplot(data, aes(fill=RNA_types, y=frequency, x=samples)) + geom_bar(position="fill", stat="identity") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
 dev.off()
-wb<-openxlsx::loadWorkbook(filexlsx)
-# openxlsx::insertPlot(wb,sheet="Catalog",width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
-openxlsx::insertImage(wb,sheet="Catalog",file=paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
+wb<-loadWorkbook(filexlsx)
+# insertPlot(wb,sheet="Catalog",width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
+insertImage(wb,sheet="Catalog",file=paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
 saveWorkbook(wb,filexlsx, overwrite = TRUE)
 file.remove(paste0(fileName,".png"))
 # deGTF<-unique(sub(".*\\.","",sub(".txt$","",dir(ED,"_mergedFeatures.txt$",recursive = TRUE))))
@@ -320,21 +320,21 @@ for(gr in deGTF){
 			write.xlsx2(rbind(data.frame(signif(c,2),check.names = F)," "=" ","p-values"=colnames(c),pv),
 						filexlsx = filexlsx, sheet = paste(sub("_mergedFeatures","",gr),set,method), append = T)
 			if((sum(is.na(c))==0 && length(table(c))>1) || ncol(c)<20){
-				wb<-openxlsx::loadWorkbook(filexlsx)
+				wb<-loadWorkbook(filexlsx)
 				if(ncol(c)<20){
 					png(paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150, units = "in")
 					corrplot.mixed(c, p.mat = p, number.cex = 1, sig.level = .05,title=paste(sub("_mergedFeatures","",gr),set,method),mar=c(1,1,3,1))
 					dev.off()
-					openxlsx::insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
-					# openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
+					insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
+					# insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
 				}
 				if(sum(is.na(c))==0 && length(table(c))>1){
 					png(paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150, units = "in")
 					heatmap.2(c,Rowv=TRUE,Colv=TRUE, dendrogram="row", revC = T, scale="none", col=greenred(75),na.rm=TRUE, key=TRUE, density.info="none", trace="none",mar=c(8,8))
 					title(paste(sub("_mergedFeatures","",gr),set,method),cex.main=0.8)
 					dev.off()
-					openxlsx::insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
-					# openxlsx::insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
+					insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
+					# insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
 				}
 				saveWorkbook(wb,filexlsx, overwrite = TRUE)
 			}

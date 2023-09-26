@@ -13,7 +13,8 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
 #        r-cran-gdata r-cran-gplots r-cran-ggplot2 r-cran-gridextra r-cran-shinydashboard r-cran-dt r-cran-corrplot \
 #        r-cran-shinyjs r-cran-foreach r-cran-domc r-cran-futile.logger r-cran-sendmailr r-cran-openxlsx \
 #        r-cran-venndiagram r-bioc-rtracklayer r-cran-xml r-bioc-deseq2 r-bioc-annotate \
-#        python3-keras libjpeg-dev libcurl4-openssl-dev kraken2 rna-star fastp cnvkit picard-tools sortmerna bcftools gffread bedtools python3-htseq 
+#        python3-keras libcurl4-openssl-dev kraken2 rna-star fastp cnvkit picard-tools sortmerna bcftools gffread bedtools python3-htseq
+#        libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev libproj-dev
     && apt-get autoremove -y && apt-get autoclean -y \
     && [ -d /usr/share/kronatools/scripts ] && ln -s /usr/share/perl5/KronaTools/scripts /usr/share/kronatools/scripts
 
@@ -22,7 +23,8 @@ RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           chooseBioCmirror(graphics =FALSE,ind=1); \
           BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot'), ask=FALSE); \
           BiocManager::install(c('shinyjs','foreach','doMC','futile.logger','sendmailR','openxlsx','seqinr'), ask=FALSE); \
-          BiocManager::install(c('VennDiagram','rtracklayer','XML','DESeq2','annotate','GOstats','msa','ape'), ask=FALSE)" # c('org.Hs.eg.db','edgeR','reticulate')
+          BiocManager::install(c('EnhancedVolcano','PCAtools','org.Hs.eg.db','edgeR','Rsubread'), ask=FALSE); \
+          BiocManager::install(c('VennDiagram','rtracklayer','XML','DESeq2','annotate','GOstats','msa','ape'), ask=FALSE)" # c(,'reticulate')
 #    git clone https://github.com/marbl/Krona.git /srv/shiny-server/Krona && cd /srv/shiny-server/Krona/KronaTools && ./install.pl && \
 RUN mv /srv/shiny-server /srv/shiny-server.orig && mkdir -p /srv/shiny-server/bin && \
     git clone https://github.com/zajakin/ShortStack.git  /srv/shiny-server/ShortStack && \
