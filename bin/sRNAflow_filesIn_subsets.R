@@ -27,20 +27,18 @@ trimm<-function(rf,ext,s,d,qc,ad3,ad5,sizerange,arx,wf=rf){
 	system(paste("cutadapt --cores=0 --quiet -M",sizerange[2],"-o",paste0(d,s,"_r4.",ext),paste0(d,s,"_r3.",ext)),intern = TRUE)
 	writeLines(paste0("Filter_long\t",system(paste0("grep -c \"",mark,"\" ",paste0(d,s,"_r4.",ext)),intern = TRUE)),con)
 
+
+	system(paste0("bash -c \"sed -n '1~4N;2~4N;3~4N;s/\\n/	/g;4~4p' ",paste0(d,s,"_r4.",ext)," | grep -v -F -f ",ED,"/exclude | tr '\t' '\n' \" > ",paste0(d,s,"_r5.",ext)),intern = TRUE)
+	writeLines(paste0("Environment\t",system(paste0("grep -c \"",mark,"\" ",paste0(d,s,"_r5.",ext)),intern = TRUE)),con)
+
 	wf<-paste0(d,s,".",ext)
-	system(paste("cutadapt --cores=0 --quiet -m",sizerange[1],"-o",wf,paste0(d,s,"_r4.",ext)),intern = TRUE)
-	# writeLines(paste0("Filter_short\t",system(paste0("grep -c \"",mark,"\" ",wf),intern = TRUE)),con)
+	system(paste("cutadapt --cores=0 --quiet -m",sizerange[1],"-o",wf,paste0(d,s,"_r5.",ext)),intern = TRUE)
+
 	fasta2tab<-" | gawk '/^>/ {printf(\"%s%s\\t\",(N>0?\"\\n\":\"\"),$1);N++;next;} {printf(\"%s\",$0);} END {printf(\"\\n\");}' > "
 	if(ext == "fastq"){
 		system(paste0("fastqc -q --threads ",core," -o ",ED,"/qc ",wf),intern = TRUE)
 		system(paste0("sed -n '1~4s/^@/>/p;2~4p' ",wf,fasta2tab,d,'faTab/',s,'.faTab'),intern = TRUE)
-#		system(paste0("sed -n '1~4s/^@/>/p;2~4p' ",wf," | $HOME/conda/bin/fasta_formatter -t -o ",d,'faTab/',s,'.faTab'),intern = TRUE)
-#	} else system(paste0("$HOME/conda/bin/fasta_formatter -i ",wf," -t -o ",d,'faTab/',s,'.faTab'))
 	} else system(paste0("cat ",wf,fasta2tab,d,'faTab/',s,'.faTab'))
-
-	# bowtie2opt="bowtie2 --time --end-to-end -k 21 -p $core --mm -x $DB/$DV $inFasta --un $out/$f/Unmapped_$f.fq --no-unal"
-	# $bowtie2opt -D 20 -R 3 -N 0 -L 20 -i S,1,0.50 -U $ff -S $shdir.sam > $out/$f/logs/bowtie2.log 2>&1
-	
 	system(paste0("bowtie2 --time --end-to-end -k 201 -p ",core," --mm -x ",file.path(wd,"www","db","genomes","bowtie2","univec","univec"),
 		  " --un /dev/null --no-unal -D 20 -R 3 -N 0 -L 20 -i S,1,0.50 -U ",wf," -S ",d,"univec.sam > ",d,"logs/univec.log 2>&1"))
 	writeLines(paste0("UniVec\t",system(paste0("grep \"overall alignment rate\" ",d,"logs/univec.log | gawk '{print $1}'"),intern = TRUE)),con)
@@ -48,14 +46,13 @@ trimm<-function(rf,ext,s,d,qc,ad3,ad5,sizerange,arx,wf=rf){
 	mstat<-'gawk \'{ i++; seq[i] = length($NF); sum += length($NF) } END { asort(seq,sorted,"@val_num_asc"); print("Filter_short\\t" i "\\nMedian_reads_length\\t" sorted[int(i/2)] "\\nMean_reads_length\\t" sum / i) }\' '
 	writeLines(system(paste0(mstat,d,'faTab/',s,'.faTab'),intern=TRUE),con)
 	close(con)
-	file.remove(paste0(d,s,"_r3.",ext),paste0(d,s,"_r4.",ext))
+	file.remove(paste0(d,s,"_r3.",ext),paste0(d,s,"_r4.",ext),paste0(d,s,"_r5.",ext))
 	system(paste("pigz -9f ",wf))
 	wf<-paste0(wf,".gz")
 	return(wf)
 }
 
-print(paste(date(),"Trimming and QC checking"))
-filesIn<-foreach(i=1:nrow(filesIn),.combine = rbind) %dopar% {
+filesInGen<-function(i){
 	rf <- file.path(wd,"www","upload",filesIn[i,"rf"])
 	ext<- tolower(sub('^.*[.$]',".",rf))
 	arx<- ""
@@ -88,9 +85,29 @@ filesIn<-foreach(i=1:nrow(filesIn),.combine = rbind) %dopar% {
 		system(paste0("shuf -n ",tsize," ",filesIn[i,"ft"]," -o ",d,"faTab/",s,"_random",tsize,".",r,".faTab"), intern = T)
 		filesIn[i,paste0("ft",r)]<-paste0(d,"faTab/",s,"_random",tsize,".",r,".faTab")
 	}
+	system(paste0("cut -f 2 ",filesIn[i,"ft"]," | sort | uniq -c | sort -r | pigz -9cf  > ",d,s,".reads.gz"),intern = T)
 	file.remove(filesIn[i,"ft"])
 	filesIn[i,]
 }
+
+print(paste(date(),"Trimming and QC checking"))
+cat("",file=file.path(ED,"exclude"))
+filesInEnvironment<-foreach(i=which(filesIn[,"gr"]=="environment"),.combine = rbind) %dopar% filesInGen(i)
+RevCompl <- function(x="") chartr("ATGCatgcUu","TACGtacgAa",sapply(lapply(strsplit(x,NULL),rev),paste,collapse=""))
+exclude<-c()
+for(f in filesInEnvironment[filesInEnvironment[,"gr"]=="environment","name"]){
+	tmp<-read.table(paste0(file.path(ED,f,f),".reads.gz"))
+	exclude<-c(exclude,tmp[tmp[,1]>1,2])
+}
+if(length(exclude)>0){
+	exclude<-unique(exclude)
+	exclude<-c(exclude,unlist(lapply(exclude, RevCompl)))
+	exclude<-exclude[order(exclude)]
+	cat(unique(exclude),file=file.path(ED,"exclude"), sep="\n", append=F)
+}
+
+filesIn<-foreach(i=which(filesIn[,"gr"]!="environment"),.combine = rbind) %dopar% filesInGen(i)
+filesIn<-rbind(filesIn,filesInEnvironment)
 zip(file.path(ED,paste0(Exp,"_fastQC.zip")),files=dir(file.path(ED,"qc"),".html",full.names = T),flags="-joq9")
 
 setwd(file.path(ED,"qc"))

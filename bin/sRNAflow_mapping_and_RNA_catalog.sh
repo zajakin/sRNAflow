@@ -138,7 +138,8 @@ if   [ ! -d "${shdir}${tax}" ]; then
 		bowtie2 $bowtie2opt -k 201 -x $DB/$DV --un $out/$f/Unmapped${tax}.fq -U $ff                          -S $shdir.sam > $out/$f/logs/bowtie2${tax}.log 2>&1
 	fi
 	# $samtools view -uhS -F4 $shdir.sam | $samtools sort -@ $core - -o $shfile > /dev/null 2>&1
-	cat $shdir.sam | grep -v -F -f $out/genomeless/exclude | $samtools view -uhS -F4 | $samtools sort -@ $core - -o $shfile > /dev/null 2>&1  #  -w
+################ DONE: Moved filter "grep -v -F -f $out/exclude" to sRNAflow_filesIn_subsets.R  Keep there for legacy #################
+	cat $shdir.sam | grep -v -F -f $out/exclude | $samtools view -uhS -F4 | $samtools sort -@ $core - -o $shfile > /dev/null 2>&1  #  -w
 	rm $shdir.sam
 	rm -rf ${shdir}${tax}
 	# mkdir -p ${shdir}${tax}; mv $shfile ${shdir}${tax}/$f.bam
@@ -157,7 +158,7 @@ fi
 gawk '/reads; of these/{ print "For_mapping\t" $1 }' $out/$f/logs/bowtie2${tax}.log >> $txtLog
 gawk '/were unpaired; of these/{ print "Unpaired\t" $1 }' $out/$f/logs/bowtie2${tax}.log >> $txtLog
 gawk '/were unpaired; of these/{ print "Unpaired_%\t" $2 }' $out/$f/logs/bowtie2${tax}.log >> $txtLog
-echo -e "Unmapped(no_environment)\t$(sed -n '2~4p' $out/$f/Unmapped${tax}.fq | grep -v -c -F -f $out/genomeless/exclude)" >> $txtLog # -w
+echo -e "Unmapped(no_environment)\t$(sed -n '2~4p' $out/$f/Unmapped${tax}.fq | grep -v -c -F -f $out/exclude)" >> $txtLog # -w
 gawk '/aligned 0 times/{ print "Unmapped\t" $1 }' $out/$f/logs/bowtie2${tax}.log >> $txtLog
 gawk '/aligned 0 times/{ print "Unmapped_%\t" $2 }' $out/$f/logs/bowtie2${tax}.log >> $txtLog
 gawk '/aligned exactly 1 time/{ print "Uniq_mapped\t" $1 }' $out/$f/logs/bowtie2${tax}.log >> $txtLog

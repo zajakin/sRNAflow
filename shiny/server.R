@@ -84,7 +84,7 @@ server <- function(input, output, session) {
                 filesIn <- rbind(rep(NA,3))[-1,]
                 clear_filesIn_counter<<-input$clear_filesIn
                 GroupsSel <<- rbind(rep(NA,6))[-1,]
-                colnames(GroupsSel) <- c("file","size","date","test","control","ignore")
+                colnames(GroupsSel) <- c("file","size","date","test","control","environment","ignore")
                 save(GroupsSel,file=file.path(wd,"www","db","GroupsSel.RData"))
                 shinyjs::reset("clear_filesIn")
             }
@@ -99,11 +99,11 @@ server <- function(input, output, session) {
     output$groups = DT::renderDataTable({
         tmp<-length(c(input$filesUploaded_rows_selected,input$examples_rows_selected,input$serverFiles_rows_selected,input$filesIn_rows_selected))>0
         if(nrow(rbind(FilesIn))>0){
-            groups <- cbind(rbind(FilesIn),test=c(""),control=c(""),ignore=c(""))
-        } else groups <- rbind(rep(0,6))[-1,]
-        choices <- c("test","control","ignore")
+            groups <- cbind(rbind(FilesIn),test=c(""),control=c(""),environment=c(""),ignore=c(""))
+        } else groups <- rbind(rep(0,7))[-1,]
+        choices <- c("test","control","environment","ignore")
         colnames(groups)<-c("file","size","date",choices)
-        if(nrow(groups)>0) groups[,4:6]<-paste0('<input type="radio" name="',groups[,"file"],'" value="',rep(choices,each=nrow(groups)),'"/>')
+        if(nrow(groups)>0) groups[,4:7]<-paste0('<input type="radio" name="',groups[,"file"],'" value="',rep(choices,each=nrow(groups)),'"/>')
         if(nrow(rbind(FilesIn))>0){
             GroupsSel<<-GroupsSel[names(GroupsSel) %in% FilesIn[,"file"]]
             for(s in names(GroupsSel)) if(!is.null(GroupsSel[s][[1]])) groups[groups[,"file"]==s,GroupsSel[s][[1]]]<-sub("/>"," checked/>",groups[groups[,"file"]==s,GroupsSel[s][[1]]])
