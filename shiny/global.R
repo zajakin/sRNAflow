@@ -37,6 +37,7 @@ if(!exists("tsize")){
 	ad5<-"GTTCAGAGTTCTACAGTCCGACGATC # Illumina TruSeq Small RNA" # ad5<-"CCAAGGCG"  # Ion Torrent
 	sizerange<-c(18,50)
 	lim<-2
+	limS<-1
 	log2FoldChange<-1
 	padj<-0.05
 	email<-""

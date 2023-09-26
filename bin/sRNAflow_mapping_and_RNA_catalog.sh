@@ -144,7 +144,8 @@ if   [ ! -d "${shdir}${tax}" ]; then
 	rm -rf ${shdir}${tax}
 	# mkdir -p ${shdir}${tax}; mv $shfile ${shdir}${tax}/$f.bam
 	$shortstack --readfile $shfile --genomefile $DB/$DV.fa --outdir ${shdir}${tax} --bowtie_cores $core --mismatches 1 --bowtie_m 201 --ranmax 200 --keep_quals --inbam --nohp > $out/$f/logs/Shortstack${tax}.log 2>&1
-	$samtools view -o $out/$f/$f.sam.gz $shfile && rm $shfile
+	# $samtools view -o $out/$f/$f.sam.gz $shfile
+	rm $shfile
 	if [ `echo $f | grep -c dd` == 1 ]; then
 	  dd="_dd"
 ####TODO Statistic from gencore

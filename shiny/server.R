@@ -178,12 +178,13 @@ server <- function(input, output, session) {
         ad5       <<-input$ad5
         sizerange <<-input$sizerange
         lim       <<-input$lim
+        limS      <<-input$limS
         log2FoldChange<<-input$log2FoldChange
         padj      <<-input$padj
         email     <<-input$email
         smtpServer<<-input$smtpServer
-        save(Exp,specie,strategy,tsize,Rep,blast,qc,ad3,ad5,sizerange,lim,log2FoldChange,padj,email,smtpServer,file=file.path(wd,"www","db","Config.RData"))
-        # list(wd=wd,getwd=getwd(),Exp=Exp,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,sizerange =sizerange,lim =lim,log2FoldChange=log2FoldChange,padj =padj,email =email,smtpServer=smtpServer)
+        save(Exp,specie,strategy,tsize,Rep,blast,qc,ad3,ad5,sizerange,lim,limS,log2FoldChange,padj,email,smtpServer,file=file.path(wd,"www","db","Config.RData"))
+        # list(wd=wd,getwd=getwd(),Exp=Exp,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,sizerange =sizerange,lim=lim,limS=limS,log2FoldChange=log2FoldChange,padj =padj,email =email,smtpServer=smtpServer)
         Exp
     })
     

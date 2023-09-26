@@ -59,12 +59,15 @@ body <- dashboardBody(
                     ),
                     column(4,autoWidth = TRUE,
                         h3("Differential expression"),
-                        sliderInput('lim', 'Reads theshold:', min = 0,  max = 100,  value = lim, width ='100%')
+                        fluidRow(
+                            column(6,sliderInput('lim', 'Keep hits that more then:', min = 0,  max = 100,  value = lim, width ='100%')),
+                            column(6,sliderInput('limS','in more then "x" samples; x=:', min = 0,  max = 100,  value = limS, width ='100%'))
+                        )
                     )
                 ),
                 hr(),
                 fluidRow(
-                    column(4,selectizeInput('ad3', "3' adapter:", choices = c('TGGAATTCTCGGGTGCCAAGG #Illumina TruSeq Small RNA','ATCACCGACTGCCCATAGAGAG # Ion Torrent',' # Not remove'),options = list(create = TRUE), selected = ad3, width ='100%')),
+                    column(4,selectizeInput('ad3', "3' adapter:", choices = c('TGGAATTCTCGGGTGCCAAGG #Illumina TruSeq Small RNA','ATCACCGACTGCCCATAGAGAG # Ion Torrent','AGATCGGAAGAGCACACGTCTGAACTCCAGTCACACAGTGATCTCGTATGCCGTCTTCGGCTTG # Universal Illumina adapter',' # Not remove'),options = list(create = TRUE), selected = ad3, width ='100%')),
                     column(4,autoWidth = TRUE,sliderInput('Rep', 'Subsets number:', min = 1,  max = 10,  value = Rep, width ='100%')),
                     column(4,numericInput('log2FoldChange', 'log2FoldChange theshold:', log2FoldChange, min = 0, max = 100, width ='100%'))
                 ),

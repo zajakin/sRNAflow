@@ -55,8 +55,8 @@ for(sample in filesIn[,"name"]){
 }
 zip(file.path(ED,paste0(Exp,"_isomiR-SEA.zip")),files=dir(file.path(ED,"isomiR-SEA"),"_isomiR-SEA.xlsx",full.names = T,recursive = TRUE),flags="-joq9")
 
-figVen<-function(dat,lim,txt="",filexlsx){
-	title<-paste0(txt," >",lim)
+figVen<-function(dat,lim,limS,txt="",filexlsx){
+	title<-paste0(txt," >",lim," in ",limS," samples")
 	vv <- list()
 	if(ncol(dat)>5 || ncol(dat)<2) return()
 	for(i in 1:ncol(dat)){
@@ -166,7 +166,7 @@ myGO<-function(myids, minimum.population=5,deUp=c(),deDown=c()){
  
 makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],filexlsx,servRow=c()){
 	dat<-httab[!(rownames(httab) %in% servRow),sel]
-	dat<-as.matrix(dat[rowSums(dat>lim)!=0,])
+	dat<-as.matrix(dat[rowSums(dat>lim)>limS,])
 	mode(dat)<-"integer"
 	# group<-as.character(colData[sel,"nr"])
 	# design <- model.matrix(~group)
@@ -238,7 +238,7 @@ stattab<-function(tt,servRow=servRow){
 print(paste(date(),"Differencial expressions tables"))
 fileName<-file.path(ED,paste0(Exp,"_results"))
 filexlsx<-paste0(fileName,".xlsx")
-value<-c(Exp=Exp,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,sizerange =sizerange,lim =lim,log2FoldChange=log2FoldChange,padj =padj,email =email,smtpServer=smtpServer)
+value<-c(Exp=Exp,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,sizerange =sizerange,lim=lim,limS=limS,log2FoldChange=log2FoldChange,padj =padj,email =email,smtpServer=smtpServer)
 value<-rbind(cbind(variable=names(value),value=value," "=" ","  "=" ")," ",c("file","size","date","group"),cbind(FilesIn,group=GroupsSel[FilesIn[,"file"]]))
 write.xlsx2(value,filexlsx,sheet="Settings",row.names = FALSE)
 
@@ -286,7 +286,7 @@ for(gr in deGTF){
 	servRow<-rownames(httab)[grep("^__",rownames(httab))]
 	rr<-grep("^__",rownames(httab))
 
-	htexp<-httab[rowSums(httab>lim)>0,]
+	htexp<-httab[rowSums(httab>lim)>limS,]
 	htexp<-rbind(htexp[!(rownames(htexp) %in% servRow),])
 	print(paste(gr,grep(gr,deGTF),"/",length(deGTF),"rows =",nrow(htexp)))
 	if(nrow(htexp)==0) next;
@@ -307,7 +307,7 @@ for(gr in deGTF){
 		out<-makeDG(httab,sel,colData,txt=paste(sub("_mergedFeatures","",gr),sep="_"),sets[1,s],sets[2,s],filexlsx)
 	}
 
-	if(nrow(htexp)>1) figVen(htexp,lim,paste(sub("_mergedFeatures","",gr),"venn diagram"),filexlsx)
+	if(nrow(htexp)>1) figVen(htexp,lim,limS,paste(sub("_mergedFeatures","",gr),"venn diagram"),filexlsx)
 
 	for(set in c("all", "expr.")){
 		if(set=="all"){ d<-httab[!(rownames(httab) %in% servRow),] } else d<-htexp
