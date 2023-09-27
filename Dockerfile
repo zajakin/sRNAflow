@@ -18,12 +18,12 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
     && apt-get autoremove -y && apt-get autoclean -y \
     && bash -c '[ -d /usr/share/kronatools/scripts ] && ln -s /usr/share/perl5/KronaTools/scripts /usr/share/kronatools/scripts'
 
-RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
-          if (!requireNamespace('BiocManager')) install.packages('BiocManager'); \
-          chooseBioCmirror(graphics =FALSE,ind=1); \
-          BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot'), ask=FALSE); \
-          BiocManager::install(c('shinyjs','foreach','doMC','futile.logger','sendmailR','openxlsx','seqinr'), ask=FALSE); \
-          BiocManager::install(c('EnhancedVolcano','PCAtools','org.Hs.eg.db','edgeR','Rsubread'), ask=FALSE); \
+RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1);
+          if (!requireNamespace('BiocManager')) install.packages('BiocManager'); 
+          chooseBioCmirror(graphics =FALSE,ind=1); 
+          BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot'), ask=FALSE); 
+          BiocManager::install(c('shinyjs','foreach','doMC','futile.logger','sendmailR','openxlsx','seqinr'), ask=FALSE); 
+          BiocManager::install(c('EnhancedVolcano','PCAtools','org.Hs.eg.db','edgeR','Rsubread'), ask=FALSE); 
           BiocManager::install(c('VennDiagram','rtracklayer','XML','DESeq2','annotate','GOstats','msa','ape'), ask=FALSE)" # c(,'reticulate')
 #    git clone https://github.com/marbl/Krona.git /srv/shiny-server/Krona && cd /srv/shiny-server/Krona/KronaTools && ./install.pl && \
 RUN mv /srv/shiny-server /srv/shiny-server.orig && mkdir -p /srv/shiny-server/bin && \
