@@ -15,8 +15,8 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
 #        r-cran-venndiagram r-bioc-rtracklayer r-cran-xml r-bioc-deseq2 r-bioc-annotate \
 #        python3-keras libcurl4-openssl-dev kraken2 rna-star fastp cnvkit picard-tools sortmerna bcftools gffread bedtools python3-htseq
 #        libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev libproj-dev
-    && apt-get autoremove -y && apt-get autoclean -y
-RUN bash -c '[ -d /usr/share/kronatools/scripts ] && ln -s /usr/share/perl5/KronaTools/scripts /usr/share/kronatools/scripts'
+    && apt-get autoremove -y && apt-get autoclean -y \
+    && ln -s /usr/share/perl5/KronaTools/scripts /usr/share/kronatools/scripts
 
 RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           if (!requireNamespace('BiocManager')) install.packages('BiocManager'); \
