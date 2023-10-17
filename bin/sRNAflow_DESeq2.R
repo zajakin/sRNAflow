@@ -8,14 +8,11 @@ library(VennDiagram)
 library(openxlsx)
 tmp<-futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
 
-write.xlsx2<-function(data=c(),filexlsx="Book1.xlsx",sheet="Sheet1",append=FALSE,col.names=TRUE,row.names=TRUE){
-	if(append & file.exists(filexlsx)){ wb <- loadWorkbook(filexlsx)
-	} else wb<-createWorkbook()
+write2xlsx<-function(data=c(),wb,sheet="Sheet1",col.names=TRUE,row.names=TRUE){
 	if(nchar(sheet)>31) sheet<-substr(sheet,1,31)
 	addWorksheet(wb = wb, sheetName = sheet, gridLines = TRUE)
 	freezePane(wb, sheet, firstRow = TRUE, firstCol = TRUE)
 	writeData(wb, sheet = sheet, data, colNames = col.names, rowNames = row.names)
-	saveWorkbook(wb,filexlsx,overwrite = TRUE)
 }
 
 options(echo=TRUE)
@@ -41,21 +38,23 @@ tabs<-c(c("tag_unique","ambigue","unique"),paste(c("tag","ambigue","unique"),"am
 if(!dir.exists(file.path(ED,"isomiR-SEA"))) dir.create(file.path(ED,"isomiR-SEA"),recursive = TRUE, mode = "0777")
 for(sample in filesIn[,"name"]){
 	p<- file.path(ED,sample,"isomiR-SEA")
+	wb<-createWorkbook()
 	filexlsx<- file.path(ED,"isomiR-SEA",paste0(sample,"_isomiR-SEA.xlsx"))
 	tab<-read.table(file.path(p,"summary.txt"), sep = " ",header = F)[,-2]
-	write.xlsx2(tab,filexlsx,sheet="Summary",row.names = FALSE,col.names = FALSE)
+	write2xlsx(tab,wb,sheet="Summary",row.names = FALSE,col.names = FALSE)
 	for(t in tabs){
 		infile<-file.path(p,paste0("out_result_mature_",t,".txt"))
 		if(length(readLines(infile,n=2))==2){
 			tab<-read.table(infile, sep = "\t",header = F,skip = 1,comment.char = "",fill = T)
 			colnames(tab)<-read.table(infile,header = FALSE,nrows = 1,skip = 0,comment.char = "")
-			write.xlsx2(tab,filexlsx,sheet=t,row.names = FALSE,append = TRUE)
+			write2xlsx(tab,wb,sheet=t,row.names = FALSE)
 		}
-	}	
+	}
+	saveWorkbook(wb,filexlsx,overwrite = TRUE)
 }
 zip(file.path(ED,paste0(Exp,"_isomiR-SEA.zip")),files=dir(file.path(ED,"isomiR-SEA"),"_isomiR-SEA.xlsx",full.names = T,recursive = TRUE),flags="-joq9")
 
-figVen<-function(dat,lim,limS,txt="",filexlsx){
+figVen<-function(dat,lim,limS,txt="",wbF){
 	title<-paste0(txt," >",lim," in ",limS," samples")
 	vv <- list()
 	if(ncol(dat)>5 || ncol(dat)<2) return()
@@ -73,7 +72,7 @@ figVen<-function(dat,lim,limS,txt="",filexlsx){
 		}
 		colnames(delist)[1:length(aaa)]<- names(aaa)
 		delist[is.na(delist)]<- " "
-		write.xlsx2(delist,filexlsx,sheet=txt,append=TRUE,row.names = F)
+		write2xlsx(delist,wbF,sheet=txt,row.names = F)
 		grid.newpage()
 		if(length(vv) %in% 2:3){
 			if(length(vv)==2) cat.pos = c(0, 0)
@@ -84,9 +83,7 @@ figVen<-function(dat,lim,limS,txt="",filexlsx){
 			print(grid.draw(venn.diagram(vv,fill = 2:(length(vv)+1), alpha = 0.3, filename=NULL,cex=2,
 			main=title,cat.default.pos="outer",cat.cex=2,main.cex=2,euler.d = FALSE,scaled=FALSE),recording = F))
 		}
-		wb<-loadWorkbook(filexlsx)
-		insertPlot(wb,sheet=txt,width = 8, height = 6, dpi=150,startCol = 4)
-		saveWorkbook(wb,filexlsx, overwrite = TRUE)
+		insertPlot(wbF,sheet=txt,width = 8, height = 6, dpi=150,startCol = 4)
 	}
 }
 
@@ -153,7 +150,7 @@ myGO<-function(myids, minimum.population=5,deUp=c(),deDown=c()){
 	return(output[order(output$p.value),])
 }
 
-# myEdgeR<-function(qlf,sheet,y,fileName){
+# myEdgeR<-function(qlf,sheet,y,wb){
 # 	res<-topTags(qlf, n= nrow(y$counts) )
 # 	# res<-res[as.numeric(res[[1]][,"PValue"])<1,]
 # 	tmp<-(y$counts[rownames(res),]*rep(as.numeric(y$samples[,"norm.factors"]),each=nrow(res)))
@@ -161,10 +158,10 @@ myGO<-function(myids, minimum.population=5,deUp=c(),deDown=c()){
 # 	# y$samples
 # 	res<-cbind(rownames(res),res,NA,baseMedian=rowMedians(tmp),baseMean=rowMeans(tmp),NA,
 # 		tmp,NA,y$counts[rownames(res),])
-# 	write.xlsx2(as.data.frame(res),fileName,row.names=TRUE,col.names = TRUE,sheet=sheet,append=TRUE)
+# 	write2xlsx(as.data.frame(res),wb,row.names=TRUE,col.names = TRUE,sheet=sheet)
 # }
  
-makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],filexlsx,servRow=c()){
+makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],wb,servRow=c()){
 	dat<-httab[!(rownames(httab) %in% servRow),sel]
 	dat<-as.matrix(dat[rowSums(dat>lim)>limS,])
 	mode(dat)<-"integer"
@@ -175,7 +172,7 @@ makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],file
 		dds <- DESeqDataSetFromMatrix(countData = dat, colData = colData[sel,], design = ~ nr)
 		err<-try(dds2 <- DESeq(dds,quiet = T))
 		if(typeof(err)!="S4"){
-			write.xlsx2(gsub("\n"," ",as.character(err)),filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"),append=TRUE)
+			write2xlsx(gsub("\n"," ",as.character(err)),wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"))
 			return(rbind(list(baseMean=1,log2FoldChange=1,lfcSE=1,stat=1,pvalue=1,padj=1))[-1,])
 		}
 		res <- as.data.frame(results(dds2,contrast=c("nr","test","control"),lfcThreshold=log2FoldChange, alpha=padj, cooksCutoff=TRUE))
@@ -185,19 +182,19 @@ makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],file
 		if(nrow(res)>0){
 			counts<-rbind(as.matrix(counts(dds2,normalized=TRUE))[rownames(res),])
 			res<-cbind(rbind(res)," "=" ",baseMedian=rowMedians(counts),"  "=" ",counts,"   "=" ",Raw=rbind(dat[rownames(res),]))
-			write.xlsx2(as.data.frame(rbind(res,NA)),filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"),append=TRUE)
+			write2xlsx(as.data.frame(rbind(res,NA)),wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"))
 			#TODO Make working for mouse etc...  ####
-			if(txt == "all_miRNA") try(write.xlsx2(tomieaa(sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/"))),analysis="ora"),
-												   filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"MIEAA_ORA"),append=TRUE))
-			if(txt == "all_miRNA") try(write.xlsx2(tomieaa(sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/"))),analysis="gsea"),
-												   filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"MIEAA_GSEA"),append=TRUE))
+			if(txt == "all_miRNA") try(write2xlsx(tomieaa(sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/"))),analysis="ora"),
+												   wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"MIEAA_ORA")))
+			if(txt == "all_miRNA") try(write2xlsx(tomieaa(sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/"))),analysis="gsea"),
+												   wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"MIEAA_GSEA")))
 			#TODO Diff expression DESeq2  GOstats ####
 			# if(txt %in% c("Ensembl_genes","protein_coding","all_lncRNA","all_miRNA")){
 			# # 	#  https://www.bioconductor.org/packages/release/bioc/manuals/GOstats/man/GOstats.pdf
 			# 	myGO(myids=sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/"))), minimum.population=5,deUp=c(),deDown=c())
 			# }
-		} else write.xlsx2(c("No matching results found"),filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"),append=TRUE)
-	} else write.xlsx2(c("Normalisation not possible: No found features presented in all samples"),filexlsx,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"),append=TRUE)
+		} else write2xlsx(c("No matching results found"),wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"))
+	} else write2xlsx(c("Normalisation not possible: No found features presented in all samples"),wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"))
 
 	# indat <- DGEList( counts = dat, group = group)
 	# RLE <- calcNormFactors(indat,method="RLE")$samples[,"norm.factors"]
@@ -207,22 +204,22 @@ makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],file
 	# NFcorLibSize<-colSums(y$counts*rep(NF[sel],each=nrow(y$counts)))
 	# RLEcorLibSize<-colSums(y$counts*rep(RLE,each=nrow(y$counts)))
 	# foundGenes<-colSums(y$counts!=0)
-	# write.xlsx2(t(cbind(y$samples,"TMM corrected libSize"=corLibSize,
+	# write2xlsx(t(cbind(y$samples,"TMM corrected libSize"=corLibSize,
 	# 		"Number of genes used for RLE(DESeq2) normalisation"=RLEgenes,
 	# 		"RLE NF"=RLE,"NF by mapped"=NF[sel],"NF2 by mapped to features"=NF2[sel],
 	# 		"LibSize corrected by RLE"=RLEcorLibSize,"LibSize corrected by NF"=NFcorLibSize,
-	# 		foundGenes=foundGenes)),filexlsx,sheet=paste(txt,"NF"),append=TRUE)
+	# 		foundGenes=foundGenes)),wb,sheet=paste(txt,"NF"))
 	# y <- estimateDisp(y,design)
-	# myEdgeR(glmQLFTest(glmQLFit(y,design),coef=2),paste(txt,"edgeR TMM quasi-likelihood F-tests"),y,filexlsx)
-	# myEdgeR(glmLRT(glmFit(y,design),coef=2),paste(txt,"edgeR TMM likelihood ratio tests"),y,filexlsx)
+	# myEdgeR(glmQLFTest(glmQLFit(y,design),coef=2),paste(txt,"edgeR TMM quasi-likelihood F-tests"),y,wb)
+	# myEdgeR(glmLRT(glmFit(y,design),coef=2),paste(txt,"edgeR TMM likelihood ratio tests"),y,wb)
 	# indat$samples[,"norm.factors"]<-NF[sel]
 	# y<-estimateDisp(indat,design)
-	# myEdgeR(glmQLFTest(glmQLFit(y,design),coef=2),paste(txt,"edgeR LibSize quasi-likelihood F-tests"),y,filexlsx)
+	# myEdgeR(glmQLFTest(glmQLFit(y,design),coef=2),paste(txt,"edgeR LibSize quasi-likelihood F-tests"),y,wb)
 	# indat$samples[,"norm.factors"]<-NF2[sel]
 	# y<-estimateDisp(indat,design)
-	# myEdgeR(glmQLFTest(glmQLFit(y,design),coef=2),paste(txt,"mappedFeat edgeR quasi-likelihood F-tests"),y,filexlsx)
-	# myEdgeR(glmLRT(glmFit(y,design),coef=2),paste(txt,"edgeR LibSize likelihood ratio tests"),y,filexlsx)
-	return(out)
+	# myEdgeR(glmQLFTest(glmQLFit(y,design),coef=2),paste(txt,"mappedFeat edgeR quasi-likelihood F-tests"),y,wb)
+	# myEdgeR(glmLRT(glmFit(y,design),coef=2),paste(txt,"edgeR LibSize likelihood ratio tests"),y,wb)
+	# return(out)
 }
 
 stattab<-function(tt,servRow=servRow){
@@ -238,9 +235,10 @@ stattab<-function(tt,servRow=servRow){
 print(paste(date(),"Differencial expressions tables"))
 fileName<-file.path(ED,paste0(Exp,"_results"))
 filexlsx<-paste0(fileName,".xlsx")
+wb<-createWorkbook()
 value<-c(Exp=Exp,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,sizerange =sizerange,lim=lim,limS=limS,log2FoldChange=log2FoldChange,padj =padj,email =email,smtpServer=smtpServer)
 value<-rbind(cbind(variable=names(value),value=value," "=" ","  "=" ")," ",c("file","size","date","group"),cbind(FilesIn,group=GroupsSel[FilesIn[,"file"]]))
-write.xlsx2(value,filexlsx,sheet="Settings",row.names = FALSE)
+write2xlsx(value,wb,sheet="Settings",row.names = FALSE)
 
 stats<-unlist(lapply(dir(ED,full.names =TRUE),dir,pattern=paste0("stat",tax,".txt"),full.names =TRUE))
 #system(paste0("paste ",paste(stats,collapse = " ")," | tr ' ' '\t' | cut -f ",paste(c(1,seq(2,length(stats)*2+1,2)),collapse = ","), "> ",ED,"/stats",tax,"__.tsv"),intern = TRUE)
@@ -250,8 +248,8 @@ for(i in stats[-1]) stat<-cbind(stat,data.frame(read.table(i,na.strings = "",hea
 write.table(stat,paste0(ED,"/stats",tax,".tsv"),quote=FALSE, sep="\t",col.names=TRUE)
 #stat<-read.table(file.path(ED,paste0("stats",tax,".tsv")), sep = "\t",header = TRUE)
 enrow<-grep("all_Ensembl",rownames(stat))
-write.xlsx2(stat[1:enrow,],filexlsx,sheet="Quality",append = TRUE)
-write.xlsx2(stat[(enrow+1):nrow(stat),],filexlsx,sheet="Catalog",append = TRUE)
+write2xlsx(stat[1:enrow,],wb,sheet="Quality")
+write2xlsx(stat[(enrow+1):nrow(stat),],wb,sheet="Catalog")
 
 endrow<- grep("Ensembl_genes_mergedFeatures",rownames(stat))-1
 samples <- rep(colnames(stat),each=(endrow-enrow))
@@ -261,7 +259,6 @@ data <- data.frame(samples,RNA_types,frequency)
 png(paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, res=300, units = "in")
 print(ggplot(data, aes(fill=RNA_types, y=frequency, x=samples)) + geom_bar(position="fill", stat="identity") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
 dev.off()
-wb<-loadWorkbook(filexlsx)
 # insertPlot(wb,sheet="Catalog",width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
 insertImage(wb,sheet="Catalog",file=paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
 saveWorkbook(wb,filexlsx, overwrite = TRUE)
@@ -290,24 +287,24 @@ for(gr in deGTF){
 	htexp<-rbind(htexp[!(rownames(htexp) %in% servRow),])
 	print(paste(gr,grep(gr,deGTF),"/",length(deGTF),"rows =",nrow(htexp)))
 	if(nrow(htexp)==0) next;
-	write.xlsx2(stattab(httab,servRow),filexlsx,sheet=paste(sub("_mergedFeatures","",gr),"Identifed",sep="_"),append=TRUE)
+	write2xlsx(stattab(httab,servRow),wb,sheet=paste(sub("_mergedFeatures","",gr),"Identifed",sep="_"))
 
 	# NF<-max(colSums(httab))/colSums(httab)
 	# norm2all<-httab*max(colSums(httab))/matrix(colSums(httab),byrow=TRUE,ncol=ncol(httab),nrow=nrow(httab))
 	# c2<-colSums(httab[!(rownames(httab) %in% servRow),])
 	# NF2<-max(c2)/c2
 	# norm2feat<-httab*max(c2)/matrix(c2,byrow=TRUE,ncol=ncol(httab),nrow=nrow(httab))
-	# write.xlsx2(stattab(norm2feat,servRow),filexlsx,sheet="Normalised to features mapped reads",append=TRUE)
+	# write2xlsx(stattab(norm2feat,servRow),wb,sheet="Normalised to features mapped reads")
 	sampleTable<-cbind(Sample=colnames(httab),nr=unlist(GroupsSel[filesIn[,"rf"]]))
 	rownames(sampleTable)<-colnames(httab)
 	colData<-as.data.frame(sampleTable) # ,stringAsFactors=FALSE
 	sets<-matrix(c("test","control"),nrow=2)
 	for(s in 1:ncol(sets)){
 		sel<-sampleTable[sampleTable[,"nr"] %in% sets[,s],"Sample"]
-		out<-makeDG(httab,sel,colData,txt=paste(sub("_mergedFeatures","",gr),sep="_"),sets[1,s],sets[2,s],filexlsx)
+		makeDG(httab,sel,colData,txt=paste(sub("_mergedFeatures","",gr),sep="_"),sets[1,s],sets[2,s],wb)
 	}
 
-	if(nrow(htexp)>1) figVen(htexp,lim,limS,paste(sub("_mergedFeatures","",gr),"venn diagram"),filexlsx)
+	if(nrow(htexp)>1) figVen(htexp,lim,limS,paste(sub("_mergedFeatures","",gr),"venn diagram"),wb)
 
 	for(set in c("all", "expr.")){
 		if(set=="all"){ d<-httab[!(rownames(httab) %in% servRow),] } else d<-htexp
@@ -317,16 +314,13 @@ for(gr in deGTF){
 			p <- cor.mtest(d, conf.level = .95)$p
 			pv<-data.frame(signif(p,2),row.names = paste0(rownames(c),"_p"),check.names = F)
 			colnames(pv)<-colnames(c)
-			write.xlsx2(rbind(data.frame(signif(c,2),check.names = F)," "=" ","p-values"=colnames(c),pv),
-						filexlsx = filexlsx, sheet = paste(sub("_mergedFeatures","",gr),set,method), append = T)
+			write2xlsx(rbind(data.frame(signif(c,2),check.names = F)," "=" ","p-values"=colnames(c),pv),wb,sheet=paste(sub("_mergedFeatures","",gr),set,method))
 			if((sum(is.na(c))==0 && length(table(c))>1) || ncol(c)<20){
-				wb<-loadWorkbook(filexlsx)
 				if(ncol(c)<20){
 					png(paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150, units = "in")
 					corrplot.mixed(c, p.mat = p, number.cex = 1, sig.level = .05,title=paste(sub("_mergedFeatures","",gr),set,method),mar=c(1,1,3,1))
 					dev.off()
 					insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
-					# insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
 				}
 				if(sum(is.na(c))==0 && length(table(c))>1){
 					png(paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150, units = "in")
@@ -334,15 +328,15 @@ for(gr in deGTF){
 					title(paste(sub("_mergedFeatures","",gr),set,method),cex.main=0.8)
 					dev.off()
 					insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
-					# insertPlot(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
 				}
-				saveWorkbook(wb,filexlsx, overwrite = TRUE)
+				# saveWorkbook(wb,filexlsx, overwrite = TRUE)
 			}
 		}
 	}
 	file.remove(paste0(fileName,"_corrplot.png"))
 	file.remove(paste0(fileName,"_heatmap.png"))
 }
+saveWorkbook(wb,filexlsx, overwrite = TRUE)
 
 warnings()
 date()
