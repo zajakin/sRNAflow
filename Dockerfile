@@ -10,13 +10,13 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         git gawk unzip pigz libjson-perl curl python3-pip libxml2-dev zlib1g-dev libbz2-dev liblzma-dev libssl-dev \
         bowtie bowtie2 cutadapt samtools fastqc ncbi-blast+ ncbi-entrez-direct trnascan-se multiqc seqtk radiant \
+    && apt-get autoremove -y && apt-get autoclean -y \
+    && ln -s /usr/share/perl5/KronaTools/scripts /usr/share/kronatools/scripts
 #        r-cran-gdata r-cran-gplots r-cran-ggplot2 r-cran-gridextra r-cran-shinydashboard r-cran-dt r-cran-corrplot \
 #        r-cran-shinyjs r-cran-foreach r-cran-domc r-cran-futile.logger r-cran-sendmailr r-cran-openxlsx \
 #        r-cran-venndiagram r-bioc-rtracklayer r-cran-xml r-bioc-deseq2 r-bioc-annotate \
 #        python3-keras libcurl4-openssl-dev kraken2 rna-star fastp cnvkit picard-tools sortmerna bcftools gffread bedtools python3-htseq
 #        libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev libproj-dev
-    && apt-get autoremove -y && apt-get autoclean -y \
-    && ln -s /usr/share/perl5/KronaTools/scripts /usr/share/kronatools/scripts
 
 RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           if (!requireNamespace('BiocManager')) install.packages('BiocManager'); \
