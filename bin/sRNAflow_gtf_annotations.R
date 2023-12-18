@@ -164,7 +164,7 @@ gtfMergeFeatures("gtf_biotypes/GtRNAdb.gtf")
 
 system(paste0("tRNAscan-SE -qQ --detail -o# -m# -f# -l# -s# ",archive,"GtRNAdb.fa"))
 GtRNAdb<-read.table("gtf_biotypes/GtRNAdb.gtf",colClasses = "character",sep="\t",quote = "")
-GtRNAfa<-read.table(paste0(archive,"hg19-tRNAs.fa.faTab"),colClasses = "character",quote = "")
+GtRNAfa<-read.table(paste0(archive,"hg38-tRNAs.fa.faTab"),colClasses = "character",quote = "")
 GtRNAfa<-GtRNAfa[!duplicated(GtRNAfa[,ncol(GtRNAfa)]),]
 tRNAhalves<-tRF<-c()
 i<-191
