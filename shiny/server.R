@@ -83,7 +83,7 @@ server <- function(input, output, session) {
             if(!exists("clear_filesIn_counter") || clear_filesIn_counter<input$clear_filesIn){ 
                 filesIn <- rbind(rep(NA,3))[-1,]
                 clear_filesIn_counter<<-input$clear_filesIn
-                GroupsSel <<- rbind(rep(NA,6))[-1,]
+                GroupsSel <<- rbind(rep(NA,7))[-1,]
                 colnames(GroupsSel) <- c("file","size","date","test","control","environment","ignore")
                 save(GroupsSel,file=file.path(wd,"www","db","GroupsSel.RData"))
                 shinyjs::reset("clear_filesIn")
