@@ -23,7 +23,7 @@ if(!exists("FilesIn"))
 if(!exists("GroupsSel"))
 	if(file.exists(file.path(wd,"www","db","GroupsSel.RData"))){
 		load(file.path(wd,"www","db","GroupsSel.RData"))
-	} else { GroupsSel <- rbind(rep(NA,6))[-1,]; colnames(GroupsSel) <- c("file","size","date","test","control","environment","ignore"); }
+	} else { GroupsSel <- rbind(rep(NA,7))[-1,]; colnames(GroupsSel) <- c("file","size","date","test","control","environment","ignore"); }
 
 species<-c("homo_sapiens")  #,"mus_musculus")
 if(!exists("tsize")){
