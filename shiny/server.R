@@ -151,7 +151,7 @@ server <- function(input, output, session) {
             # View(input$groups_cell_clicked)
             sel<-c()
             for(s in FilesIn[,"file"]){
-                if(length(grep(s,names(input)))>0){
+                if(length(grep(s,names(input)))>0 & !is.null(input[[s]])){
                     sel[s]<-as.character(input[[s]])
                     names(sel)[length(sel)]<-s
                 }
