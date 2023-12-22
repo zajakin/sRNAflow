@@ -16,12 +16,11 @@ blast_per_sample<-function(idr,re,wd,filesIn,tsize,core,ED){
     if(file.exists(file.path(ED,"species_diagrams",paste0(name,".report.htm")) )) return(0)
     
     # out<- paste0("blasts/",name,".blast")
-    DV <- "nt"
-    blastn<- paste0("export BATCH_SIZE=50000; export BLASTDB=",file.path(wd,"www","db","blast"),"; blastn -max_hsps 1 -db ",DV," ")
+    blastn<- paste0("export BATCH_SIZE=50000; export BLASTDB=",file.path(wd,"www","db","blast"),"; blastn -max_hsps 1 -db nt ")
     DB <- paste("-remote")
     if(file.exists(file.path(wd,"www","db","blast","db.done"))){
         DB <- paste("-num_threads",core)
-        if(file.exists(file.path(wd,"www","db","meta.txids"))) blastn<- paste(blastn,"-taxidlist",file.path(wd,"www","db","meta.txids ")) #  && blast!="nr/nt"
+        if(file.exists(file.path(wd,"www","db","meta.txids")) && blast!="nr/nt") blastn<- paste(blastn,"-taxidlist",file.path(wd,"www","db","meta.txids "))
     }
     colQuery<-  "qseqid ssciname staxid scomname sskingdom evalue bitscore qlen slen length pident mismatch qcovs stitle sseqid sstart send"
     colNames<- c("read","name","taxid","nameEn","kingdom","evalue","bitscore","qlen","slen","length","pident","mismatch","qcovs","stitle","sseqid","sstart","send")

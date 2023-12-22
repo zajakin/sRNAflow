@@ -31,8 +31,8 @@ if(!exists("tsize")){
 	specie<-"homo_sapiens"
 	strategy<-"metagenome"
 	tsize<-"200"
-	Rep<-2
-	blast<-"nr/nt"
+	Rep<-1
+	blast<-"main specie & bacteria+"
 	qc<-20
 	ad3<-"TGGAATTCTCGGGTGCCAAGG # Illumina TruSeq Small RNA"  # ad3<-"ATCACCGACTGCCCATAGAGAG"  # Ion Torrent # ad3<-"AGATCGGAAGAGCACACGTCTGAACTCCAGTCACACAGTGATCTCGTATGCCGTCTTCGGCTTG" # universal Illumina adapter
 	ad5<-"GTTCAGAGTTCTACAGTCCGACGATC # Illumina TruSeq Small RNA" # ad5<-"CCAAGGCG"  # Ion Torrent

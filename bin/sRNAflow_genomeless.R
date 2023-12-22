@@ -75,7 +75,7 @@ myphylogenicTree<-function(dl,tc,methodCl="ClustalW",rowLimit=500,txt=""){ # "Cl
 		DB <- paste("-remote")
 		if(file.exists(file.path(wd,"www","db","blast","db.done"))){
 			DB <- paste("-num_threads",core)
-			if(file.exists(file.path(wd,"www","db","meta.txids"))) DB<- paste(DB,"-taxidlist",file.path(wd,"www","db","meta.txids "))
+			if(file.exists(file.path(wd,"www","db","meta.txids")) && blast!="nr/nt") DB<- paste(DB,"-taxidlist",file.path(wd,"www","db","meta.txids "))
 		}
 		# cat(c(rbind(paste0(">",rownames(tmp)),rownames(tmp))),file=paste0(fn,"_4blast.fa"), sep="\n")
 		colQuery<-  "qseqid ssciname staxid scomname sskingdom evalue bitscore qlen slen length pident mismatch qcovs stitle sseqid sstart send"
@@ -197,7 +197,7 @@ genomless<-function(ED,colData){
 			DB <- paste("-remote")
 			if(file.exists(file.path(wd,"www","db","blast","db.done"))){
 				DB <- paste("-num_threads",core)
-				if(file.exists(file.path(wd,"www","db","meta.txids"))) DB<- paste(DB,"-taxidlist",file.path(wd,"www","db","meta.txids "))
+				if(file.exists(file.path(wd,"www","db","meta.txids")) && blast!="nr/nt") DB<- paste(DB,"-taxidlist",file.path(wd,"www","db","meta.txids "))
 			}
 			blastn<- paste0("export BATCH_SIZE=50000; export BLASTDB=",file.path(wd,"www","db","blast"),"; blastn -max_hsps 1 -db nt ",DB)
 			system(paste0(blastn," -query ",DV," -html -out ",sub(".fa$",".html",DV)),intern = FALSE)
