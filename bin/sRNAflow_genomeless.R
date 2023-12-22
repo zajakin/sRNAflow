@@ -72,12 +72,15 @@ myphylogenicTree<-function(dl,tc,methodCl="ClustalW",rowLimit=500,txt=""){ # "Cl
 	fn<-file.path(tc,paste0(txt,"_",min(rowLimit,nrow(dl))))
 	if(!file.exists(paste0(fn,".fa"))){
 		tmp<-data.frame(Id=NA,dl[1:min(rowLimit,nrow(dl)),],check.names = F)
-		# head(tmp)
-		# colnames(tmp)
+		DB <- paste("-remote")
+		if(file.exists(file.path(wd,"www","db","blast","db.done"))){
+			DB <- paste("-num_threads",core)
+			if(file.exists(file.path(wd,"www","db","meta.txids"))) DB<- paste(DB,"-taxidlist",file.path(wd,"www","db","meta.txids "))
+		}
 		# cat(c(rbind(paste0(">",rownames(tmp)),rownames(tmp))),file=paste0(fn,"_4blast.fa"), sep="\n")
 		colQuery<-  "qseqid ssciname staxid scomname sskingdom evalue bitscore qlen slen length pident mismatch qcovs stitle sseqid sstart send"
 		# colNames<- c("read","name","taxid","nameEn","kingdom","evalue","bitscore","qlen","slen","length","pident","mismatch","qcovs","stitle","sseqid","sstart","send")
-		blastn<-paste0("export BATCH_SIZE=50000; export BLASTDB=",file.path(wd,"www","db","blast"),"; blastn -max_hsps 1 -db nt -num_threads ",core)
+		blastn<-paste0("export BATCH_SIZE=50000; export BLASTDB=",file.path(wd,"www","db","blast"),"; blastn -max_hsps 1 -db nt ",DB)
 		
 		cat(c(rbind(paste0(">",rownames(tmp)[nchar(rownames(tmp))<20],"_"),rownames(tmp)[nchar(rownames(tmp))<20])),file=paste0(fn,"_short.fa"), sep="\n")
 		blastopt<-" -evalue 1e+6 -word_size 10 -reward 2 -penalty -3 -ungapped -perc_identity 100"
@@ -191,7 +194,12 @@ genomless<-function(ED,colData){
 				 counts=tabGG[rowSums(tabGG>0)>1,]*matrix(nfGL[colnames(tabGG)],byrow=TRUE,ncol=ncol(tabGG),nrow=nrow(tabGG[rowSums(tabGG>0)>1,])))
 		# toIGV_GL(gg,comp,ED,colnames(tabgl))
 		if(!file.exists(sub(".fa$",".html",DV))){
-			blastn<- paste0("export BATCH_SIZE=50000; export BLASTDB=",file.path(wd,"www","db","blast"),"; blastn -max_hsps 1 -db nt -num_threads ",core)
+			DB <- paste("-remote")
+			if(file.exists(file.path(wd,"www","db","blast","db.done"))){
+				DB <- paste("-num_threads",core)
+				if(file.exists(file.path(wd,"www","db","meta.txids"))) DB<- paste(DB,"-taxidlist",file.path(wd,"www","db","meta.txids "))
+			}
+			blastn<- paste0("export BATCH_SIZE=50000; export BLASTDB=",file.path(wd,"www","db","blast"),"; blastn -max_hsps 1 -db nt ",DB)
 			system(paste0(blastn," -query ",DV," -html -out ",sub(".fa$",".html",DV)),intern = FALSE)
 		}
 		rowSums(tabGG)[order(rowSums(tabGG))]
