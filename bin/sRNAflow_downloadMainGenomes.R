@@ -48,6 +48,7 @@ if(!file.exists(file.path(wd,"www","db","meta.txids"))
 		}
 		taxout<-unique(c(taxout,blasttaxids))
 		cat(taxout[order(taxout)],file=file.path(wd,"www","db","meta.txids"),sep="\n")
+		rm("taxtab","taxout")
 }
 
 if(!dir.exists(file.path(wd,"www","db","genomes"))) dir.create(file.path(wd,"www","db","genomes"),recursive = TRUE, mode = "0777")
@@ -92,4 +93,4 @@ if(!dir.exists(file.path(wd,"www","db","gtf_biotypes"))){
 }
 
 options(timeout=timeout)
-
+rm("getDir","getDBfile","blasttaxids")

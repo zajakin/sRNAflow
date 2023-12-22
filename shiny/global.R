@@ -33,7 +33,7 @@ if(!exists("tsize")){
 	tsize<-"200"
 	Rep<-1
 	blast<-"main specie & bacteria+"
-	qc<-20
+	qc<-8
 	ad3<-"TGGAATTCTCGGGTGCCAAGG # Illumina TruSeq Small RNA"  # ad3<-"ATCACCGACTGCCCATAGAGAG"  # Ion Torrent # ad3<-"AGATCGGAAGAGCACACGTCTGAACTCCAGTCACACAGTGATCTCGTATGCCGTCTTCGGCTTG" # universal Illumina adapter
 	ad5<-"GTTCAGAGTTCTACAGTCCGACGATC # Illumina TruSeq Small RNA" # ad5<-"CCAAGGCG"  # Ion Torrent
 	sizerange<-c(18,50)

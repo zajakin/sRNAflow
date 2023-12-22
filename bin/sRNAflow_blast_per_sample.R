@@ -28,7 +28,7 @@ blast_per_sample<-function(idr,re,wd,filesIn,tsize,core,ED){
     # blastopt<-paste(DB, "-evalue 100 -perc_identity 100")
     # export PATH=$HOME/bin:$HOME/conda/bin:$HOME/.local/bin:${PATH:-/usr/bin:.}; $HOME/bin/c; update_blastdb --decompress nt"
     # outfmt <- "-outfmt \"6 qseqid ssciname staxid scomname evalue bitscore length pident\""
-    for(i in c("forKrona","faTab","blasts","logs","species_diagrams")) if(!dir.exists(paste0(WD,i))) dir.create(paste0(WD,i))
+    for(i in c("forKrona","faTab","blasts","logs")) if(!dir.exists(paste0(WD,i))) dir.create(paste0(WD,i))
     
     setwd(WD)
     getwd()
@@ -92,9 +92,11 @@ blast_per_sample<-function(idr,re,wd,filesIn,tsize,core,ED){
     # system("cat out.blast | sort | uniq > out_filtred.blast; $HOME/bin/parse_blast_output out_filtred.blast | sort -rn > top.txt",intern = TRUE)
     pos<-rbind(rep(0,length(colNames)))[-1,]
     for(out in paste0("blasts/",name,c(".short",".mid",".long"),".blast")[file.exists(paste0("blasts/",name,c(".short",".mid",".long"),".blast"))])
-        pos<-rbind(pos,read.table(out, comment.char="",quote = "", header = FALSE, sep = "\t",dec = ".", na.strings = "NA",as.is = TRUE))
+        if(file.size(out)>1)
+            pos<-rbind(pos,read.table(out, comment.char="",quote = "", header = FALSE, sep = "\t",dec = ".", na.strings = "NA",as.is = TRUE))
     pos<-pos[!is.na(pos[,3]),]
     colnames(pos)<-colNames
+    pos[pos[,"name"]=="N/A","name"]<-sub("_"," ",sub(" .*","",sub(" ","_",sub("PREDICTED: ","",pos[pos[,"name"]=="N/A","stitle"]))))
     
     species<-cbind(data.frame(rbind(c("9606","Homo sapiens"),c("77133","uncultured bacterium"),pos[,3:2])),0,0,0,0,0,NA,NA)
     species<-species[!duplicated(species[,1]),]
@@ -108,7 +110,6 @@ blast_per_sample<-function(idr,re,wd,filesIn,tsize,core,ED){
         a<-as.character(unique(d[,"taxid"]))
         species[a,"pass1"]<- as.numeric(species[a,"pass1"])+1/length(a)
     }
-    head(species)
     species["9606","pass1"]<- as.numeric(species["9606","pass1"])+1e+6
     species["77133","pass1"]<- as.numeric(species["77133","pass1"])-1e+6
     species<-species[order(-as.numeric(species[,"pass1"])),]
@@ -126,11 +127,7 @@ blast_per_sample<-function(idr,re,wd,filesIn,tsize,core,ED){
     }
     
     species2<-species[as.numeric(species[,"count"])>1 & (as.numeric(species[,"send"])-as.numeric(species[,"sstart"]))>100,]
-    dim(species)
-    dim(species2)
     pos2<-pos[pos[,"taxid"] %in% species2[,"id"],]
-    dim(pos)
-    dim(pos2)
     sum(species2[,"count"])
     species2[,"count"]<-0
     head(species2)
@@ -158,8 +155,8 @@ blast_per_sample<-function(idr,re,wd,filesIn,tsize,core,ED){
         species2[a,"count"]<- as.numeric(species2[a,"count"])+1
         reads[reads[,1]==r,2:3] <- as.character(species2[a,1:2])
     }
-    
     # hist(species2[species2[,"count"]>1,"count"],breaks=120)
+    
     species2<-species2[order(-as.numeric(species2[,"count"])),]
     species2[,"percent"]<- as.numeric(species2[,"count"])/sum(as.numeric(species2[,"count"]))*100
     thr<-round(0.99*sum(as.numeric(species2[,"count"]),na.rm=TRUE))
@@ -194,3 +191,4 @@ if(file.exists(file.path(wd,"www","db","blast","db.done"))) blastcores<-1
 registerDoMC(cores = blastcores)
 err<-foreach(combr=1:nrow(comb),.verbose = T) %dopar% blast_per_sample(idr=comb[combr,1],re=comb[combr,2],wd,filesIn,tsize,core,ED)
 registerDoMC(cores = core)
+rm("comb","blastcores")
