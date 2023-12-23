@@ -60,7 +60,7 @@ eger<-function(dat,colData,wb2,txt,epadj=padj,elog2FoldChange=log2FoldChange){
 		insertPlot(wb2,sheet=txt,width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
 	}
 	outDE<-outDE[outDE[,"padj"]<epadj & abs(outDE[,"log2FoldChange"])>=elog2FoldChange,]
-	writeData(wb2, sheet = txt, outDE[1:min(nrow(outDE),3000),], colNames = T, rowNames = F,startRow=4) # [order(outDE[,colnames(outDE)[grep ("t.test",colnames(outDE))[1]]]),]
+	writeData(wb2, sheet = txt, outDE[1:min(nrow(outDE),3000),], colNames = T, rowNames = T,startRow=4) # [order(outDE[,colnames(outDE)[grep ("t.test",colnames(outDE))[1]]]),]
 	return(outDE)
 }
 
@@ -157,15 +157,15 @@ genomless<-function(ED,colData){
 	gless<-eger(dat=tabgl,colData=colData,wb2=wb,txt=paste(Exp,"genomeless"))
 	# save(gless,file=file.path(tc,"gless2.RData")) # load(file.path(tc,"gless2.RData"))
 	if(nrow(gless)>0){
-		methodCl<-"ClustalW"
+		sheet<-methodCl<-"ClustalW"
 		addWorksheet(wb,sheet)
 		rowLimit<-2000
 		clusters<-data.frame(myphylogenicTree(dl=gless[c(rownames(gless)[gless[,"log2FoldChange"]>0][1:min(rowLimit/2,nrow(gless[gless[,"log2FoldChange"]>0,]))],rownames(gless)[gless[,"log2FoldChange"]<0][1:min(rowLimit/2,nrow(gless[gless[,"log2FoldChange"]<0,]))]),],tc,methodCl,rowLimit=rowLimit,txt = paste0("Clusters")))
-		writeDataTable(wb,sheet,clusters,rowNames = TRUE, colNames = TRUE)
-		insertPlot(wb,sheet=sheet,width = 57, height = 427, dpi=75,startCol = 15,startRow = 2)
-		sheet<-paste0(methodCl,"_2")
-		addWorksheet(wb,sheet)
-		writeDataTable(wb,sheet,cbind(clusters,rownames(clusters)),rowNames = F, colNames = TRUE,startRow = 1)
+		clusters<-data.frame(ClustalW=clusters[,1], Seq=sub(" .*","",rownames(clusters)), BLAST=sub(".*%%%","",sub(" ","%%%",rownames(clusters))))
+		modifyBaseFont(wb, fontSize = 11, fontColour = "black", fontName = "Courier New")
+		setColWidths(wb,sheet,cols=1:4,widths = "auto")
+		writeDataTable(wb,sheet,clusters,rowNames = T, colNames = T)
+		insertPlot(wb,sheet=sheet,width = 57, height = 4+nrow(clusters)*0.21, dpi=75,startCol = 6,startRow = 2)
 	}
 	# tc<-file.path(ED,paste0("genomeless",tax),paste0(cancerTypes[project,1],"_",comp))
 	# if(!dir.exists(tc)) dir.create(tc,recursive = T)

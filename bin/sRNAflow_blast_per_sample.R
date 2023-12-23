@@ -110,11 +110,12 @@ blast_per_sample<-function(idr,re,wd,filesIn,tsize,core,ED){
         a<-as.character(unique(d[,"taxid"]))
         species[a,"pass1"]<- as.numeric(species[a,"pass1"])+1/length(a)
     }
+    penalty<-c("77133","410823","1869227","1709941")
     species["9606","pass1"]<- as.numeric(species["9606","pass1"])+1e+6
-    species["77133","pass1"]<- as.numeric(species["77133","pass1"])-1e+6
+    for(i in rownames(species)[rownames(species) %in% penalty]) species[i,"pass1"]<- as.numeric(species[i,"pass1"])-1e+6
     species<-species[order(-as.numeric(species[,"pass1"])),]
     species["9606","pass1"]<- as.numeric(species["9606","pass1"])-1e+6
-    species["77133","pass1"]<- as.numeric(species["77133","pass1"])+1e+6
+    for(i in rownames(species)[rownames(species) %in% penalty]) species[i,"pass1"]<- as.numeric(species[i,"pass1"])+1e+6
     head(species)
     for(r in reads[,1]){
         b<-pos[pos[,1]==r,]
@@ -141,10 +142,10 @@ blast_per_sample<-function(idr,re,wd,filesIn,tsize,core,ED){
     }
     head(species2)
     if("9606" %in% rownames(species2)) species2["9606","pass2"]<- as.numeric(species2["9606","pass2"])+1e+6
-    if("77133" %in% rownames(species2)) species2["77133","pass2"]<- as.numeric(species2["77133","pass2"])-1e+6
+    for(i in rownames(species2)[rownames(species2) %in% penalty]) species2[i,"pass2"]<- as.numeric(species2[i,"pass2"])-1e+6
     species2<-species2[order(-as.numeric(species2[,"pass2"])),]
     if("9606" %in% rownames(species2)) species2["9606","pass2"]<- as.numeric(species2["9606","pass2"])-1e+6
-    if("77133" %in% rownames(species2)) species2["77133","pass2"]<- as.numeric(species2["77133","pass2"])+1e+6
+    for(i in rownames(species2)[rownames(species2) %in% penalty]) species2[i,"pass2"]<- as.numeric(species2[i,"pass2"])+1e+6
     head(species2)
     
     for(r in reads[,1]){
@@ -161,12 +162,12 @@ blast_per_sample<-function(idr,re,wd,filesIn,tsize,core,ED){
     species2[,"percent"]<- as.numeric(species2[,"count"])/sum(as.numeric(species2[,"count"]))*100
     thr<-round(0.99*sum(as.numeric(species2[,"count"]),na.rm=TRUE))
     s<-0
-    for(i in 1:nrow(species2)) 
+    for(i in 1:nrow(species2))
         if(s>=thr){ break;
         } else s<- s+as.numeric(species2[i,"count"])
     species2[1:(i-1),"top"]<- 1
     species99<-species2[as.numeric(species2[,"count"])>=min(as.numeric(species2[species2[,"top"]==1,"count"])),c("id","name")]
-    
+
     fa<-read.table(fileT, comment.char="",quote = "", header = FALSE, sep = "\t",dec = ".", na.strings = "NA",as.is = TRUE)[,1]
     fa <- sub("^>","",fa)
     fa <- sub(" .*","",fa,perl=TRUE)
@@ -176,7 +177,8 @@ blast_per_sample<-function(idr,re,wd,filesIn,tsize,core,ED){
     
     if(!dir.exists("species")) dir.create("species")
     write.table(species2,file=paste0("species/",name,".species.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
-    write.table(species99,file=paste0("species/",name,".species99.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
+    write.table(species2[as.numeric(species2[,"percent"])>=1,c("id","name")],file=paste0("species/",name,".species99.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
+    write.table(species99,file=paste0("species/",name,".species1.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
     if(!dir.exists("reads")) dir.create("reads")
     write.table(reads,file=paste0("reads/",name,".reads.tsv"),quote=FALSE,row.names=TRUE,col.names=TRUE,sep="\t")
     write.table(reads[,1:2],file=paste0("forKrona/",name,".forKrona.txt"),quote=FALSE,row.names=FALSE,col.names=FALSE,sep="\t")

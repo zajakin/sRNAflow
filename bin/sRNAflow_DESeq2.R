@@ -240,6 +240,9 @@ value<-c(Exp=Exp,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,s
 value<-rbind(cbind(variable=names(value),value=value," "=" ","  "=" ")," ",c("file","size","date","group"),cbind(FilesIn,group=GroupsSel[FilesIn[,"file"]]))
 write2xlsx(value,wb,sheet="Settings",row.names = FALSE)
 
+tax<-""
+if(strategy== "successively") tax<-"_tax_filtRC"
+
 stats<-unlist(lapply(dir(ED,full.names =TRUE),dir,pattern=paste0("stat",tax,".txt"),full.names =TRUE))
 #system(paste0("paste ",paste(stats,collapse = " ")," | tr ' ' '\t' | cut -f ",paste(c(1,seq(2,length(stats)*2+1,2)),collapse = ","), "> ",ED,"/stats",tax,"__.tsv"),intern = TRUE)
 rows <- grep("^Ensembl_genes_mergedFeatures",readLines(stats[1]))-1
@@ -261,6 +264,17 @@ print(ggplot(data, aes(fill=RNA_types, y=frequency, x=samples)) + geom_bar(posit
 dev.off()
 # insertPlot(wb,sheet="Catalog",width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
 insertImage(wb,sheet="Catalog",file=paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
+
+httab<-data.frame(species99,row.names = 1)
+for(i in 1:nrow(filesIn)){
+	tmp<-data.frame(read.table(paste0(filesIn[i,"wd"],"forKrona/",filesIn[i,"name"],".counts",tax,".txt")),row.names = 2)
+	httab[[filesIn[i,"name"]]]<- tmp[rownames(httab),]
+}
+httab[is.na(httab)]<-0
+httab<-httab[rowSums(httab[,-1])>0,]
+httab<-httab[order(-rowSums(httab[,-1])),]
+write2xlsx(httab,wb,sheet="Species")
+
 saveWorkbook(wb,filexlsx, overwrite = TRUE)
 file.remove(paste0(fileName,".png"))
 # deGTF<-unique(sub(".*\\.","",sub(".txt$","",dir(ED,"_mergedFeatures.txt$",recursive = TRUE))))
@@ -308,6 +322,7 @@ for(gr in deGTF){
 
 	for(set in c("all", "expr.")){
 		if(set=="all"){ d<-httab[!(rownames(httab) %in% servRow),] } else d<-htexp
+		d<-d[,colSums(d)>0]
 		if(nrow(d)<3) next
 		for(method in c("pearson", "spearman")){
 			c<-cor(d,use="pairwise.complete.obs",method=method)

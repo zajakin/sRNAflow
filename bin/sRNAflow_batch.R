@@ -27,7 +27,6 @@ source("bin/sRNAflow_aggregate_species.R")
 source("bin/sRNAflow_downloadGenomes.R")
 
 #Mapping & RNA types catalog  ####
-tax<-"_tax_filtRC"
 err<-foreach(i=1:nrow(filesIn)) %dopar% { system(paste(file.path(wd,"bin","sRNAflow_mapping_and_RNA_catalog.sh"),
 	"-s",strategy,"-v",specie,"-n",filesIn[i,"name"],"-r",filesIn[i,"rf"],"-f",filesIn[i,"wf"],"-t",filesIn[i,"type"],"-o",ED),intern = TRUE); }
 
