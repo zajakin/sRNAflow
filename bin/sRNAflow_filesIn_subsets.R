@@ -92,7 +92,7 @@ filesInGen<-function(i){
 
 print(paste(date(),"Trimming and QC checking"))
 cat("",file=file.path(ED,"exclude"))
-filesInEnvironment<-foreach(i=which(filesIn[,"gr"]=="environment"),.combine = rbind) %dopar% filesInGen(i)
+filesInEnvironment<-rbind(foreach(i=which(filesIn[,"gr"]=="environment"),.combine = rbind) %dopar% filesInGen(i))
 RevCompl <- function(x="") chartr("ATGCatgcUu","TACGtacgAa",sapply(lapply(strsplit(x,NULL),rev),paste,collapse=""))
 exclude<-c()
 for(f in filesInEnvironment[filesInEnvironment[,"gr"]=="environment","name"]){
