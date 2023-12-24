@@ -2,6 +2,8 @@ library(gplots)
 library(corrplot)
 # library(edgeR)
 library(DESeq2)
+library(EnhancedVolcano) # sudo apt install libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev libproj-dev
+library(PCAtools)
 library(gridExtra)
 library(ggplot2)
 library(VennDiagram)
@@ -184,10 +186,10 @@ makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],wb,s
 			res<-cbind(rbind(res)," "=" ",baseMedian=rowMedians(counts),"  "=" ",counts,"   "=" ",Raw=rbind(dat[rownames(res),]))
 			write2xlsx(as.data.frame(rbind(res,NA)),wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"))
 			#TODO Make working for mouse etc...  ####
-			if(txt == "all_miRNA") try(write2xlsx(tomieaa(sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/"))),analysis="ora"),
-												   wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"MIEAA_ORA")))
-			if(txt == "all_miRNA") try(write2xlsx(tomieaa(sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/"))),analysis="gsea"),
-												   wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"MIEAA_GSEA")))
+			# if(txt == "all_miRNA") try(write2xlsx(tomieaa(sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/"))),analysis="ora"),
+			# 									   wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"MIEAA_ORA")))
+			# if(txt == "all_miRNA") try(write2xlsx(tomieaa(sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/"))),analysis="gsea"),
+			# 									   wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"MIEAA_GSEA")))
 			#TODO Diff expression DESeq2  GOstats ####
 			# if(txt %in% c("Ensembl_genes","protein_coding","all_lncRNA","all_miRNA")){
 			# # 	#  https://www.bioconductor.org/packages/release/bioc/manuals/GOstats/man/GOstats.pdf
@@ -195,7 +197,33 @@ makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],wb,s
 			# }
 		} else write2xlsx(c("No matching results found"),wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"))
 	} else write2xlsx(c("Normalisation not possible: No found features presented in all samples"),wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"))
-
+	subtitle<-paste(txt,"significant = ",nrow(res))
+	# writeData(wb2, sheet = txt, subtitle,startCol=1,startRow=2)
+	# writeData(wb2, sheet = txt, t(colData),startCol=ncol(res)+4,colNames = F, rowNames = T,startRow=1)
+	if(nrow(out)<500){
+		print(EnhancedVolcano(out[,1:6],sub("^hsa-","",sub(".*_mergedFeatures_","",rownames(out))),"log2FoldChange","padj",pCutoff=padj, FCcutoff=log2FoldChange,
+							  xlim = c(min(out[,"log2FoldChange"], na.rm = TRUE) - 0.5, max(out[,"log2FoldChange"], na.rm = TRUE) + 0.5),
+							  ylim = c(0, max(-log10(out[,"padj"]), na.rm = TRUE) + 0.5),
+							  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC) ), expression("adj. p-value"), expression(abs(Log[2] ~ FC) ~ " and adj. p-value")),
+							  drawConnectors = T,maxoverlapsConnectors = 42,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle ))
+		insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
+	}
+	print(EnhancedVolcano(out[,1:6],NA,"log2FoldChange","padj",pCutoff=padj, FCcutoff=log2FoldChange,
+						  xlim = c(min(out[,"log2FoldChange"], na.rm = TRUE) - 0.5, max(out[,"log2FoldChange"], na.rm = TRUE) + 0.5),
+						  ylim = c(0, max(-log10(out[,"padj"]), na.rm = TRUE) + 0.5),
+						  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC) ), expression("adj. p-value"), expression(abs(Log[2] ~ FC) ~ " and adj. p-value")),
+						  drawConnectors = F,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle))
+	insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
+	if(nrow(dat)>1){
+		p <- as.matrix(counts(dds2,normalized=TRUE))
+		rownames(p)<-sub("^hsa-","",sub(".*_mergedFeatures_","",rownames(p)))
+		p <- pca(p, metadata = colData[sel,]) ## , removeVar = 0.1 -- removing the lower 10% of variables based on variance
+		print(screeplot(p, axisLabSize = 18, titleLabSize = 22))
+		insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+		print(biplot(p, colby = 'nr', colLegendTitle = txt, encircle = TRUE, encircleFill = TRUE, hline = 0, vline = c(-25, 0, 25),
+					 legendPosition = 'top', legendLabSize = 16, legendIconSize = 8.0, showLoadings = TRUE, sizeLoadingsNames = 5))
+		insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
+	}
 	# indat <- DGEList( counts = dat, group = group)
 	# RLE <- calcNormFactors(indat,method="RLE")$samples[,"norm.factors"]
 	# RLEgenes<-table(rowSums(dat>0)==ncol(dat))["TRUE"]
@@ -259,24 +287,25 @@ samples <- rep(colnames(stat),each=(endrow-enrow))
 RNA_types <- rep(rownames(stat)[(enrow+1):endrow], ncol(stat))
 frequency <- as.numeric(unlist(stat[(enrow+1):endrow,]))
 data <- data.frame(samples,RNA_types,frequency)
-png(paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, res=300, units = "in")
+# png(paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, res=300, units = "in")
 print(ggplot(data, aes(fill=RNA_types, y=frequency, x=samples)) + geom_bar(position="fill", stat="identity") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
-dev.off()
-# insertPlot(wb,sheet="Catalog",width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
-insertImage(wb,sheet="Catalog",file=paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
+# dev.off()
+insertPlot(wb,sheet="Catalog",width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
+# insertImage(wb,sheet="Catalog",file=paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
 
-httab<-data.frame(species99,row.names = 1)
-for(i in 1:nrow(filesIn)){
-	tmp<-data.frame(read.table(paste0(filesIn[i,"wd"],"forKrona/",filesIn[i,"name"],".counts",tax,".txt")),row.names = 2)
-	httab[[filesIn[i,"name"]]]<- tmp[rownames(httab),]
+if(exists("species99")){
+	httab<-data.frame(species99,row.names = 1)
+	for(i in 1:nrow(filesIn)){
+		tmp<-data.frame(read.table(paste0(filesIn[i,"wd"],"forKrona/",filesIn[i,"name"],".counts",tax,".txt")),row.names = 2)
+		httab[[filesIn[i,"name"]]]<- tmp[rownames(httab),]
+	}
+	httab[is.na(httab)]<-0
+	httab<-httab[rowSums(httab[,-1])>0,]
+	httab<-httab[order(-rowSums(httab[,-1])),]
+	write2xlsx(httab,wb,sheet="Species")
 }
-httab[is.na(httab)]<-0
-httab<-httab[rowSums(httab[,-1])>0,]
-httab<-httab[order(-rowSums(httab[,-1])),]
-write2xlsx(httab,wb,sheet="Species")
-
 saveWorkbook(wb,filexlsx, overwrite = TRUE)
-file.remove(paste0(fileName,".png"))
+# file.remove(paste0(fileName,".png"))
 # deGTF<-unique(sub(".*\\.","",sub(".txt$","",dir(ED,"_mergedFeatures.txt$",recursive = TRUE))))
 deGTF<-c("all_miRNA_mergedFeatures","GtRNAdb_mergedFeatures","rRNA_mergedFeatures","protein_coding_mergedFeatures","processed_pseudogene_mergedFeatures","snRNA_mergedFeatures","snoRNA_mergedFeatures","all_MT_mergedFeatures","all_piRNA_mergedFeatures","all_lncRNA_mergedFeatures","vault_RNA_mergedFeatures","misc_RNA_mergedFeatures","Other_types_mergedFeatures","RepeatMasker_tRNA_mergedFeatures","RepeatMasker_rRNA_mergedFeatures")
 
@@ -320,36 +349,39 @@ for(gr in deGTF){
 
 	if(nrow(htexp)>1) figVen(htexp,lim,limS,paste(sub("_mergedFeatures","",gr),"venn diagram"),wb)
 
-	for(set in c("all", "expr.")){
+	for(set in c("expressed only")){ #"all", 
 		if(set=="all"){ d<-httab[!(rownames(httab) %in% servRow),] } else d<-htexp
 		d<-d[,colSums(d)>0]
 		if(nrow(d)<3) next
-		for(method in c("pearson", "spearman")){
+		for(method in c("spearman")){ # "pearson", 
 			c<-cor(d,use="pairwise.complete.obs",method=method)
 			p <- cor.mtest(d, conf.level = .95)$p
 			pv<-data.frame(signif(p,2),row.names = paste0(rownames(c),"_p"),check.names = F)
 			colnames(pv)<-colnames(c)
-			write2xlsx(rbind(data.frame(signif(c,2),check.names = F)," "=" ","p-values"=colnames(c),pv),wb,sheet=paste(sub("_mergedFeatures","",gr),set,method))
+			sheet<-substr(paste(sub("_mergedFeatures","",gr),set,method),0,31)
+			write2xlsx(rbind(data.frame(signif(c,2),check.names = F)," "=" ","p-values"=colnames(c),pv),wb,sheet=sheet)
 			if((sum(is.na(c))==0 && length(table(c))>1) || ncol(c)<20){
 				if(ncol(c)<20){
-					png(paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150, units = "in")
+					# png(paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150, units = "in")
 					corrplot.mixed(c, p.mat = p, number.cex = 1, sig.level = .05,title=paste(sub("_mergedFeatures","",gr),set,method),mar=c(1,1,3,1))
-					dev.off()
-					insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
+					# dev.off()
+					# insertImage(wb,sheet=sheet,file=paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
+					insertPlot(wb,sheet=sheet,width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, dpi=150,startCol = 4)
 				}
 				if(sum(is.na(c))==0 && length(table(c))>1){
-					png(paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, res=150, units = "in")
+					# png(paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, res=150, units = "in")
 					heatmap.2(c,Rowv=TRUE,Colv=TRUE, dendrogram="row", revC = T, scale="none", col=greenred(75),na.rm=TRUE, key=TRUE, density.info="none", trace="none",mar=c(8,8))
 					title(paste(sub("_mergedFeatures","",gr),set,method),cex.main=0.8)
-					dev.off()
-					insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, dpi=150,startCol = 15)
+					# dev.off()
+					# insertImage(wb,sheet=sheet,file=paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, dpi=150,startCol = 15)
+					insertPlot(wb,sheet=sheet,width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, dpi=150,startCol = 15)
 				}
 				# saveWorkbook(wb,filexlsx, overwrite = TRUE)
 			}
 		}
 	}
-	file.remove(paste0(fileName,"_corrplot.png"))
-	file.remove(paste0(fileName,"_heatmap.png"))
+	# file.remove(paste0(fileName,"_corrplot.png"))
+	# file.remove(paste0(fileName,"_heatmap.png"))
 }
 saveWorkbook(wb,filexlsx, overwrite = TRUE)
 
