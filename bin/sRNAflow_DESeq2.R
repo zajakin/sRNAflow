@@ -338,11 +338,11 @@ for(gr in deGTF){
 					insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
 				}
 				if(sum(is.na(c))==0 && length(table(c))>1){
-					png(paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150, units = "in")
+					png(paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, res=150, units = "in")
 					heatmap.2(c,Rowv=TRUE,Colv=TRUE, dendrogram="row", revC = T, scale="none", col=greenred(75),na.rm=TRUE, key=TRUE, density.info="none", trace="none",mar=c(8,8))
 					title(paste(sub("_mergedFeatures","",gr),set,method),cex.main=0.8)
 					dev.off()
-					insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 15)
+					insertImage(wb,sheet=substr(paste(sub("_mergedFeatures","",gr),set,method),0,31),file=paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, dpi=150,startCol = 15)
 				}
 				# saveWorkbook(wb,filexlsx, overwrite = TRUE)
 			}
