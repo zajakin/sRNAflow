@@ -34,37 +34,53 @@ eger<-function(dat,colData,wb2,txt,epadj=padj,elog2FoldChange=log2FoldChange){
 	writeData(wb2, sheet = txt, subtitle,startCol=1,startRow=2)
 	writeData(wb2, sheet = txt, t(colData),startCol=ncol(res)+4,colNames = F, rowNames = T,startRow=1)
 	if(nrow(outDE)<500){
+		fig<-tempfile()
+		png(fig,width = 12, height = 12, res=150, units = "in")
 		print(EnhancedVolcano(outDE[,1:6],rownames(outDE),"log2FoldChange","padj",pCutoff=epadj,
 							  xlim = c(min(outDE[,"log2FoldChange"], na.rm = TRUE) - 0.5, max(outDE[,"log2FoldChange"], na.rm = TRUE) + 0.5),
 							  ylim = c(0, max(-log10(outDE[,"padj"]), na.rm = TRUE) + 0.5),
 							  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC) >elog2FoldChange), expression(adj. ~ "p-value < ",epadj), expression(adj. ~ "p-value < " ~ epadj ~ and ~ abs(Log[2] ~ FC) > elog2FoldChange)),
 							  drawConnectors = T,maxoverlapsConnectors = 42,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle ))
-		insertPlot(wb2,sheet=txt,width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
+		# insertPlot(wb2,sheet=txt,width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
+		dev.off()
+		insertImage(wb2,sheet=txt,file=fig,width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
 	}
+	fig<-tempfile()
+	png(fig,width = 9, height = 7, res=300, units = "in")
 	print(EnhancedVolcano(outDE[,1:6],NA,"log2FoldChange","padj",pCutoff=epadj,
 						  xlim = c(min(outDE[,"log2FoldChange"], na.rm = TRUE) - 0.5, max(outDE[,"log2FoldChange"], na.rm = TRUE) + 0.5),
 						  ylim = c(0, max(-log10(outDE[,"padj"]), na.rm = TRUE) + 0.5),
 						  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC) ~ "> 1"), expression("adj. p-value < 0.05"), expression(abs(Log[2] ~ FC) ~ "> 1 and adj. p-value < 0.05")),
 						  drawConnectors = F,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle))
-	insertPlot(wb2,sheet=txt,width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
+	# insertPlot(wb2,sheet=txt,width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
+	dev.off()
+	insertImage(wb2,sheet=txt,file=fig, width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
 	if(nrow(indat)>1){
 		# plotMDS(indat,main = "Distances on the plot approximate the typical log2 fold changes between the samples\ntop genes separately for each pairwise comparison between the samples")
 		# insertPlot(wb2,sheet=txt,width = 9, height = 7, dpi=150,startCol = 20,startRow = 63)
 		# plotMDS(indat, gene.selection="common",main = "Distances on the plot approximate the typical log2 fold changes between the samples\nPCA like: the same genes for all comparisons")
 		# insertPlot(wb2,sheet=txt,width = 9, height = 7, dpi=150,startCol = 20,startRow = 98)
 		p <- pca(cpm(indat), metadata = colData) ## , removeVar = 0.1 -- removing the lower 10% of variables based on variance
+		fig<-tempfile()
+		png(fig, width = 9, height = 7, res=150, units = "in")
 		print(screeplot(p, axisLabSize = 18, titleLabSize = 22))
-		insertPlot(wb2,sheet=txt,width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+		# insertPlot(wb2,sheet=txt, width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+		dev.off()
+		insertImage(wb2,sheet=txt,file=fig, width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+		fig<-tempfile()
+		png(fig, width = 9, height = 7, res=300, units = "in")
 		print(biplot(p, colby = 'nr', colLegendTitle = txt, encircle = TRUE, encircleFill = TRUE, hline = 0, vline = c(-25, 0, 25),
 					 legendPosition = 'top', legendLabSize = 16, legendIconSize = 8.0, showLoadings = TRUE, sizeLoadingsNames = 5))
-		insertPlot(wb2,sheet=txt,width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
+		# insertPlot(wb2,sheet=txt,width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
+		dev.off()
+		insertImage(wb2,sheet=txt,file=fig, width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
 	}
 	outDE<-outDE[outDE[,"padj"]<epadj & abs(outDE[,"log2FoldChange"])>=elog2FoldChange,]
 	writeData(wb2, sheet = txt, outDE[1:min(nrow(outDE),3000),], colNames = T, rowNames = T,startRow=4) # [order(outDE[,colnames(outDE)[grep ("t.test",colnames(outDE))[1]]]),]
 	return(outDE)
 }
 
-myphylogenicTree<-function(dl,tc,methodCl="ClustalW",rowLimit=500,txt=""){ # "ClustalW", "Muscle"
+myphylogenicTree<-function(dl,tc,methodCl="ClustalW",rowLimit=500,txt="",wb2=wb,sheet=sheet){ # "ClustalW", "Muscle"
 	library(msa)
 	library(seqinr)
 	library(ape)
@@ -113,14 +129,20 @@ myphylogenicTree<-function(dl,tc,methodCl="ClustalW",rowLimit=500,txt=""){ # "Cl
 		njs<-njs(dist)
 		save(aaa,njs,dist,file=paste0(fn,"_",methodCl,".RData"))
 	} else  load(paste0(fn,"_",methodCl,".RData"))
-	par(family="mono",oma=c(0,0,0,0),mar=c(1,1,1,1))
+	# par(family="mono",oma=c(0,0,0,0),mar=c(1,1,1,1))
 	colourtips<-rep("black",length(njs$tip.label))
 	colourtips[grep("Bacteria",njs$tip.label,ignore.case = T)]<-"darkgreen"
 	colourtips[grep("Eukaryota",njs$tip.label,ignore.case = T)]<-"red"
 	colourtips[grep("fung",njs$tip.label,ignore.case = T)]<-"darkmagenta"
 	colourtips[grep("[ATGCN] -[0-9]",njs$tip.label)]<-"blue"
+
+	fig<-tempfile()
+	png(fig, width = 57, height = 4+length(njs$tip.label)*0.21, res=75, units = "in",family="mono")
 	plot.phylo(njs, main=methodCl,no.margin = T,align.tip.label=T,tip.color=colourtips,use.edge.length=T)
-	par(family="",oma=c(0,0,0,0),mar=c(5.1,4.1,4.1,2.1))
+	# insertPlot(wb2,sheet=sheet,width = 57, height = 4+length(njs$tip.label)*0.21, dpi=75,startCol = 6,startRow = 2)
+	dev.off()
+	insertImage(wb2,sheet=sheet,file=fig, width = 57, height = 4+length(njs$tip.label)*0.21, dpi=75,startCol = 6,startRow = 2)
+	# par(family="",oma=c(0,0,0,0),mar=c(5.1,4.1,4.1,2.1))
 	return(setNames(aaa$seq,aaa$nam)[njs$tip.label])
 }
 
@@ -159,13 +181,12 @@ genomless<-function(ED,colData){
 	if(nrow(gless)>0){
 		sheet<-methodCl<-"ClustalW"
 		addWorksheet(wb,sheet)
-		rowLimit<-2000
-		clusters<-data.frame(myphylogenicTree(dl=gless[c(rownames(gless)[gless[,"log2FoldChange"]>0][1:min(rowLimit/2,nrow(gless[gless[,"log2FoldChange"]>0,]))],rownames(gless)[gless[,"log2FoldChange"]<0][1:min(rowLimit/2,nrow(gless[gless[,"log2FoldChange"]<0,]))]),],tc,methodCl,rowLimit=rowLimit,txt = paste0("Clusters")))
-		clusters<-data.frame(ClustalW=clusters[,1], Seq=sub(" .*","",rownames(clusters)), BLAST=sub(".*%%%","",sub(" ","%%%",rownames(clusters))))
 		modifyBaseFont(wb, fontSize = 11, fontColour = "black", fontName = "Courier New")
 		setColWidths(wb,sheet,cols=1:4,widths = "auto")
+		rowLimit<-2000
+		clusters<-data.frame(myphylogenicTree(dl=gless[c(rownames(gless)[gless[,"log2FoldChange"]>0][1:min(rowLimit/2,nrow(gless[gless[,"log2FoldChange"]>0,]))],rownames(gless)[gless[,"log2FoldChange"]<0][1:min(rowLimit/2,nrow(gless[gless[,"log2FoldChange"]<0,]))]),],tc,methodCl,rowLimit=rowLimit,txt = paste0("Clusters"),wb,sheet=sheet))
+		clusters<-data.frame(ClustalW=clusters[,1], Seq=sub(" .*","",rownames(clusters)), BLAST=sub(".*%%%","",sub(" ","%%%",rownames(clusters))))
 		writeDataTable(wb,sheet,clusters,rowNames = T, colNames = T)
-		insertPlot(wb,sheet=sheet,width = 57, height = 4+nrow(clusters)*0.21, dpi=75,startCol = 6,startRow = 2)
 	}
 	# tc<-file.path(ED,paste0("genomeless",tax),paste0(cancerTypes[project,1],"_",comp))
 	# if(!dir.exists(tc)) dir.create(tc,recursive = T)

@@ -76,7 +76,9 @@ figVen<-function(dat,lim,limS,txt="",wbF){
 		colnames(delist)[1:length(aaa)]<- names(aaa)
 		delist[is.na(delist)]<- " "
 		write2xlsx(delist,wbF,sheet=txt,row.names = F)
-		grid.newpage()
+		fig<-tempfile()
+		png(fig,width = 8, height = 6, res=150, units = "in")
+		# grid.newpage()
 		if(length(vv) %in% 2:3){
 			if(length(vv)==2) cat.pos = c(0, 0)
 			if(length(vv)==3) cat.pos = c(-40, 40, 180)
@@ -86,7 +88,9 @@ figVen<-function(dat,lim,limS,txt="",wbF){
 			print(grid.draw(venn.diagram(vv,fill = 2:(length(vv)+1), alpha = 0.3, filename=NULL,cex=2,
 			main=title,cat.default.pos="outer",cat.cex=2,main.cex=2,euler.d = FALSE,scaled=FALSE),recording = F))
 		}
-		insertPlot(wbF,sheet=txt,width = 8, height = 6, dpi=150,startCol = 4)
+		# insertPlot(wbF,sheet=txt,width = 8, height = 6, dpi=150,startCol = 4)
+		dev.off()
+		insertImage(wbF, sheet=txt, file=fig, width = 8, height = 6, dpi=150,startCol = 4)
 	}
 }
 
@@ -202,28 +206,45 @@ makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],wb,s
 		# writeData(wb2, sheet = txt, subtitle,startCol=1,startRow=2)
 		# writeData(wb2, sheet = txt, t(colData),startCol=ncol(res)+4,colNames = F, rowNames = T,startRow=1)
 		if(nrow(out)<500){
+			fig<-tempfile()
+			png(fig,width = 12, height = 12, res=150, units = "in")
 			print(EnhancedVolcano(out[,1:6],sub("^hsa-","",sub(".*_mergedFeatures_","",rownames(out))),"log2FoldChange","padj",pCutoff=padj, FCcutoff=log2FoldChange,
 								  xlim = c(min(out[,"log2FoldChange"], na.rm = TRUE) - 0.5, max(out[,"log2FoldChange"], na.rm = TRUE) + 0.5),
 								  ylim = c(0, max(-log10(out[,"padj"]), na.rm = TRUE) + 0.5),
 								  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC) ), expression("adj. p-value"), expression(abs(Log[2] ~ FC) ~ " and adj. p-value")),
 								  drawConnectors = T,maxoverlapsConnectors = 42,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle ))
-			insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
+			# insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
+			dev.off()
+			insertImage(wb,sheet=paste(txt,"DESeq2"), file=fig, width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
 		}
+		fig<-tempfile()
+		png(fig,width = 9, height = 7, res=300, units = "in")
 		print(EnhancedVolcano(out[,1:6],NA,"log2FoldChange","padj",pCutoff=padj, FCcutoff=log2FoldChange,
 							  xlim = c(min(out[,"log2FoldChange"], na.rm = TRUE) - 0.5, max(out[,"log2FoldChange"], na.rm = TRUE) + 0.5),
 							  ylim = c(0, max(-log10(out[,"padj"]), na.rm = TRUE) + 0.5),
 							  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC) ), expression("adj. p-value"), expression(abs(Log[2] ~ FC) ~ " and adj. p-value")),
 							  drawConnectors = F,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle))
-		insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
+		# insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
+		dev.off()
+		insertImage(wb,sheet=paste(txt,"DESeq2"), file=fig, width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
 		if(nrow(dat)>1){
 			p <- as.matrix(counts(dds2,normalized=TRUE))
 			rownames(p)<-sub("^hsa-","",sub(".*_mergedFeatures_","",rownames(p)))
 			p <- pca(p, metadata = colData[sel,]) ## , removeVar = 0.1 -- removing the lower 10% of variables based on variance
+			fig<-tempfile()
+			png(fig,width = 9, height = 7, res=150, units = "in")
 			print(screeplot(p, axisLabSize = 18, titleLabSize = 22, subtitle = "RLE(DESeq2) normalisation"))
-			insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+			# insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+			dev.off()
+			insertImage(wb,sheet=paste(txt,"DESeq2"), file=fig, width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+			
+			fig<-tempfile()
+			png(fig,width = 9, height = 7, res=300, units = "in")
 			print(biplot(p, colby = 'nr', colLegendTitle = txt, encircle = TRUE, encircleFill = TRUE, hline = 0, vline = c(-25, 0, 25),
 						 legendPosition = 'top', legendLabSize = 16, legendIconSize = 8.0, showLoadings = TRUE, sizeLoadingsNames = 5, subtitle = "RLE(DESeq2) normalisation"))
-			insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
+			# insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
+			dev.off()
+			insertImage(wb,sheet=paste(txt,"DESeq2"), file=fig, width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
 		}
 	} else {
 		write2xlsx(c("RLE(DESeq2) normalisation not possible: No found features presented in all samples"),wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"))
@@ -231,11 +252,20 @@ makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],wb,s
 			p <- cpm(dat[,colSums(dat)>0])
 			rownames(p)<-sub("^hsa-","",sub(".*_mergedFeatures_","",rownames(p)))
 			p <- pca(p, metadata = colData[sel,][colSums(dat)>0,]) ## , removeVar = 0.1 -- removing the lower 10% of variables based on variance
+			fig<-tempfile()
+			png(fig,width = 9, height = 7, res=300, units = "in")
 			print(screeplot(p, axisLabSize = 18, titleLabSize = 22, subtitle = "Counts per Million normalisation"))
-			insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+			# insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+			dev.off()
+			insertImage(wb,sheet=paste(txt,"DESeq2"), file=fig, width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+			
+			fig<-tempfile()
+			png(fig,width = 9, height = 7, res=300, units = "in")
 			print(biplot(p, colby = 'nr', colLegendTitle = txt, encircle = TRUE, encircleFill = TRUE, hline = 0, vline = c(-25, 0, 25),
 						 legendPosition = 'top', legendLabSize = 16, legendIconSize = 8.0, showLoadings = TRUE, sizeLoadingsNames = 5,subtitle = "Counts per Million normalisation"))
-			insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
+			# insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
+			dev.off()
+			insertImage(wb,sheet=paste(txt,"DESeq2"), file=fig, width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
 		}
 	}
 	# indat <- DGEList( counts = dat, group = group)
@@ -301,11 +331,12 @@ samples <- rep(colnames(stat),each=(endrow-enrow))
 RNA_types <- sub("_mergedFeatures","",rep(rownames(stat)[(enrow+1):endrow], ncol(stat)))
 frequency <- as.numeric(unlist(stat[(enrow+1):endrow,]))
 data <- data.frame(samples,RNA_types,frequency)
-# png(paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, res=300, units = "in")
+fig<-tempfile()
+png(fig,width = 6+ncol(stat)/4, height = 8, res=300, units = "in")
 print(ggplot(data, aes(fill=RNA_types, y=frequency, x=samples)) + geom_bar(position="fill", stat="identity") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
-# dev.off()
-insertPlot(wb,sheet="Catalog",width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
-# insertImage(wb,sheet="Catalog",file=paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
+dev.off()
+# insertPlot(wb,sheet="Catalog",width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
+insertImage(wb,sheet="Catalog",file=fig,width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
 
 if(exists("species99")){
 	httab<-data.frame(species99,row.names = 1)
@@ -365,30 +396,34 @@ for(gr in deGTF){
 
 	for(set in c("expressed only")){ #"all", 
 		if(set=="all"){ d<-httab[!(rownames(httab) %in% servRow),] } else d<-htexp
-		d<-d[,colSums(d)>0]
+		d<-d[,colVars(as.matrix(d))>0]
 		if(nrow(d)<3) next
 		for(method in c("spearman")){ # "pearson", 
 			c<-cor(d,use="pairwise.complete.obs",method=method)
 			p <- cor.mtest(d, conf.level = .95)$p
 			pv<-data.frame(signif(p,2),row.names = paste0(rownames(c),"_p"),check.names = F)
 			colnames(pv)<-colnames(c)
-			sheet<-substr(paste(sub("_mergedFeatures","",gr),set,method),0,31)
-			write2xlsx(rbind(data.frame(signif(c,2),check.names = F)," "=" ","p-values"=colnames(c),pv),wb,sheet=sheet)
+			sheet=paste(sub("_mergedFeatures","",gr),"Identifed",sep="_")
+			writeData(wb, sheet = sheet, rbind(data.frame(signif(c,2),check.names = F)," "=" ","p-values"=colnames(c),pv), colNames = T, rowNames = T, startRow = 10)
+			# sheet<-substr(paste(sub("_mergedFeatures","",gr),set,method),0,31)
+			# write2xlsx(rbind(data.frame(signif(c,2),check.names = F)," "=" ","p-values"=colnames(c),pv),wb,sheet=sheet)
 			if((sum(is.na(c))==0 && length(table(c))>1) || ncol(c)<20){
 				if(ncol(c)<20){
-					# png(paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, res=150, units = "in")
+					fig<-tempfile()
+					png(fig,width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, res=150, units = "in")
 					corrplot.mixed(c, p.mat = p, number.cex = 1, sig.level = .05,title=paste(sub("_mergedFeatures","",gr),set,method),mar=c(1,1,3,1))
-					# dev.off()
-					# insertImage(wb,sheet=sheet,file=paste0(fileName,"_corrplot.png"),width = 3+ncol(stat)/4, height = 1+ncol(stat)/4, dpi=150,startCol = 4)
-					insertPlot(wb,sheet=sheet,width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, dpi=150,startCol = 4)
+					dev.off()
+					insertImage(wb,sheet=sheet,file=fig,width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, dpi=150,startCol = 4, startRow = 15)
+					# insertPlot(wb,sheet=sheet,width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, dpi=150,startCol = 4)
 				}
 				if(sum(is.na(c))==0 && length(table(c))>1){
-					# png(paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, res=150, units = "in")
+					fig<-tempfile()
+					png(fig,width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, res=150, units = "in")
 					heatmap.2(c,Rowv=TRUE,Colv=TRUE, dendrogram="row", revC = T, scale="none", col=greenred(75),na.rm=TRUE, key=TRUE, density.info="none", trace="none",mar=c(8,8))
 					title(paste(sub("_mergedFeatures","",gr),set,method),cex.main=0.8)
-					# dev.off()
-					# insertImage(wb,sheet=sheet,file=paste0(fileName,"_heatmap.png"),width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, dpi=150,startCol = 15)
-					insertPlot(wb,sheet=sheet,width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, dpi=150,startCol = 15)
+					dev.off()
+					insertImage(wb,sheet=sheet,file=fig,width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, dpi=150,startCol = 15, startRow = 15)
+					# insertPlot(wb,sheet=sheet,width = 3+ncol(stat)/4, height = 3+ncol(stat)/4, dpi=150,startCol = 15)
 				}
 				# saveWorkbook(wb,filexlsx, overwrite = TRUE)
 			}
