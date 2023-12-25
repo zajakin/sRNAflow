@@ -108,7 +108,7 @@ myphylogenicTree<-function(dl,tc,methodCl="ClustalW",rowLimit=500,txt="",wb2=wb,
 		if(file.size(paste0(fn,"_middle.fa"))>1)
 			system(paste0(blastn,blastopt,' -outfmt \"6 ',colQuery,'\" -query ',paste0(fn,"_middle.fa")," -out ",paste0(fn,"_middle.tsv")," >> ",paste0(fn,"_blast.log")," 2>&1 "),intern = FALSE)
 		
-		cat(c(rbind(paste0(">",rownames(tmp)[nchar(rownames(tmp))>30]),rownames(tmp)[nchar(rownames(tmp))>30],"_")),file=paste0(fn,"_long.fa"), sep="\n")
+		cat(c(rbind(paste0(">",rownames(tmp)[nchar(rownames(tmp))>30],"_"),rownames(tmp)[nchar(rownames(tmp))>30])),file=paste0(fn,"_long.fa"), sep="\n")
 		blastopt<-" -evalue 0.01 -word_size 11 -reward 2 -penalty -3 -gapopen 5 -gapextend 2"
 		if(file.size(paste0(fn,"_long.fa"))>1)
 			system(paste0(blastn,blastopt,' -outfmt \"6 ',colQuery,'\" -query ',paste0(fn,"_long.fa")," -out ",paste0(fn,"_long.tsv")," >> ",paste0(fn,"_blast.log")," 2>&1 "),intern = FALSE)
