@@ -1,7 +1,7 @@
 #!/usr/bin/R --no-save
 sendresults<-function(){
 library(sendmailR)
-from <- sprintf("sRNAflow@biomed.lu.lv","sRNAflow")
+from <- sprintf("sRNAflow@biomed.lu.lv")
 to <- sprintf(email)
 subject <- paste("sRNAflow",Exp)
 body <- paste("sRNAflow",Exp)

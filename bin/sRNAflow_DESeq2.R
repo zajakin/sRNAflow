@@ -1,6 +1,6 @@
 library(gplots)
 library(corrplot)
-# library(edgeR)
+library(edgeR)
 library(DESeq2)
 library(EnhancedVolcano) # sudo apt install libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev libproj-dev
 library(PCAtools)
@@ -14,6 +14,7 @@ write2xlsx<-function(data=c(),wb,sheet="Sheet1",col.names=TRUE,row.names=TRUE){
 	if(nchar(sheet)>31) sheet<-substr(sheet,1,31)
 	addWorksheet(wb = wb, sheetName = sheet, gridLines = TRUE)
 	freezePane(wb, sheet, firstRow = TRUE, firstCol = TRUE)
+	setColWidths(wb,sheet,cols=1:4,widths = "auto")
 	writeData(wb, sheet = sheet, data, colNames = col.names, rowNames = row.names)
 }
 
@@ -170,6 +171,7 @@ makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],wb,s
 	# group<-as.character(colData[sel,"nr"])
 	# design <- model.matrix(~group)
 	colData[,2]<-as.factor(colData[,2])
+	subtitle<-paste(txt,"significant = 0")
 	if(sum((rowSums((dat==0)+0)==0)+0)>1){
 		dds <- DESeqDataSetFromMatrix(countData = dat, colData = colData[sel,], design = ~ nr)
 		err<-try(dds2 <- DESeq(dds,quiet = T))
@@ -195,34 +197,46 @@ makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],wb,s
 			# # 	#  https://www.bioconductor.org/packages/release/bioc/manuals/GOstats/man/GOstats.pdf
 			# 	myGO(myids=sub("\\[[+-.]\\]","",unlist(strsplit(sub(".*_mergedFeatures_","",rownames(res)),"/"))), minimum.population=5,deUp=c(),deDown=c())
 			# }
-		} else write2xlsx(c("No matching results found"),wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"))
-	} else write2xlsx(c("Normalisation not possible: No found features presented in all samples"),wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"))
-	subtitle<-paste(txt,"significant = ",nrow(res))
-	# writeData(wb2, sheet = txt, subtitle,startCol=1,startRow=2)
-	# writeData(wb2, sheet = txt, t(colData),startCol=ncol(res)+4,colNames = F, rowNames = T,startRow=1)
-	if(nrow(out)<500){
-		print(EnhancedVolcano(out[,1:6],sub("^hsa-","",sub(".*_mergedFeatures_","",rownames(out))),"log2FoldChange","padj",pCutoff=padj, FCcutoff=log2FoldChange,
+			subtitle<-paste(txt,"significant = ",nrow(res))
+		} else write2xlsx(c(paste("No significant results found. RLE(DESeq2) normalisation. |log2FoldChange| >",log2FoldChange," and adjusted p-value <",padj)),wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"))
+		# writeData(wb2, sheet = txt, subtitle,startCol=1,startRow=2)
+		# writeData(wb2, sheet = txt, t(colData),startCol=ncol(res)+4,colNames = F, rowNames = T,startRow=1)
+		if(nrow(out)<500){
+			print(EnhancedVolcano(out[,1:6],sub("^hsa-","",sub(".*_mergedFeatures_","",rownames(out))),"log2FoldChange","padj",pCutoff=padj, FCcutoff=log2FoldChange,
+								  xlim = c(min(out[,"log2FoldChange"], na.rm = TRUE) - 0.5, max(out[,"log2FoldChange"], na.rm = TRUE) + 0.5),
+								  ylim = c(0, max(-log10(out[,"padj"]), na.rm = TRUE) + 0.5),
+								  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC) ), expression("adj. p-value"), expression(abs(Log[2] ~ FC) ~ " and adj. p-value")),
+								  drawConnectors = T,maxoverlapsConnectors = 42,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle ))
+			insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
+		}
+		print(EnhancedVolcano(out[,1:6],NA,"log2FoldChange","padj",pCutoff=padj, FCcutoff=log2FoldChange,
 							  xlim = c(min(out[,"log2FoldChange"], na.rm = TRUE) - 0.5, max(out[,"log2FoldChange"], na.rm = TRUE) + 0.5),
 							  ylim = c(0, max(-log10(out[,"padj"]), na.rm = TRUE) + 0.5),
 							  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC) ), expression("adj. p-value"), expression(abs(Log[2] ~ FC) ~ " and adj. p-value")),
-							  drawConnectors = T,maxoverlapsConnectors = 42,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle ))
-		insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
-	}
-	print(EnhancedVolcano(out[,1:6],NA,"log2FoldChange","padj",pCutoff=padj, FCcutoff=log2FoldChange,
-						  xlim = c(min(out[,"log2FoldChange"], na.rm = TRUE) - 0.5, max(out[,"log2FoldChange"], na.rm = TRUE) + 0.5),
-						  ylim = c(0, max(-log10(out[,"padj"]), na.rm = TRUE) + 0.5),
-						  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC) ), expression("adj. p-value"), expression(abs(Log[2] ~ FC) ~ " and adj. p-value")),
-						  drawConnectors = F,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle))
-	insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
-	if(nrow(dat)>1){
-		p <- as.matrix(counts(dds2,normalized=TRUE))
-		rownames(p)<-sub("^hsa-","",sub(".*_mergedFeatures_","",rownames(p)))
-		p <- pca(p, metadata = colData[sel,]) ## , removeVar = 0.1 -- removing the lower 10% of variables based on variance
-		print(screeplot(p, axisLabSize = 18, titleLabSize = 22))
-		insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
-		print(biplot(p, colby = 'nr', colLegendTitle = txt, encircle = TRUE, encircleFill = TRUE, hline = 0, vline = c(-25, 0, 25),
-					 legendPosition = 'top', legendLabSize = 16, legendIconSize = 8.0, showLoadings = TRUE, sizeLoadingsNames = 5))
-		insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
+							  drawConnectors = F,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle))
+		insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
+		if(nrow(dat)>1){
+			p <- as.matrix(counts(dds2,normalized=TRUE))
+			rownames(p)<-sub("^hsa-","",sub(".*_mergedFeatures_","",rownames(p)))
+			p <- pca(p, metadata = colData[sel,]) ## , removeVar = 0.1 -- removing the lower 10% of variables based on variance
+			print(screeplot(p, axisLabSize = 18, titleLabSize = 22, subtitle = "RLE(DESeq2) normalisation"))
+			insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+			print(biplot(p, colby = 'nr', colLegendTitle = txt, encircle = TRUE, encircleFill = TRUE, hline = 0, vline = c(-25, 0, 25),
+						 legendPosition = 'top', legendLabSize = 16, legendIconSize = 8.0, showLoadings = TRUE, sizeLoadingsNames = 5, subtitle = "RLE(DESeq2) normalisation"))
+			insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
+		}
+	} else {
+		write2xlsx(c("RLE(DESeq2) normalisation not possible: No found features presented in all samples"),wb,row.names=TRUE,col.names = TRUE,sheet=paste(txt,"DESeq2"))
+		if(nrow(dat)>1){
+			p <- cpm(dat[,colSums(dat)>0])
+			rownames(p)<-sub("^hsa-","",sub(".*_mergedFeatures_","",rownames(p)))
+			p <- pca(p, metadata = colData[sel,][colSums(dat)>0,]) ## , removeVar = 0.1 -- removing the lower 10% of variables based on variance
+			print(screeplot(p, axisLabSize = 18, titleLabSize = 22, subtitle = "Counts per Million normalisation"))
+			insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+			print(biplot(p, colby = 'nr', colLegendTitle = txt, encircle = TRUE, encircleFill = TRUE, hline = 0, vline = c(-25, 0, 25),
+						 legendPosition = 'top', legendLabSize = 16, legendIconSize = 8.0, showLoadings = TRUE, sizeLoadingsNames = 5,subtitle = "Counts per Million normalisation"))
+			insertPlot(wb,sheet=paste(txt,"DESeq2"),width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
+		}
 	}
 	# indat <- DGEList( counts = dat, group = group)
 	# RLE <- calcNormFactors(indat,method="RLE")$samples[,"norm.factors"]
@@ -264,7 +278,7 @@ print(paste(date(),"Differencial expressions tables"))
 fileName<-file.path(ED,paste0(Exp,"_results"))
 filexlsx<-paste0(fileName,".xlsx")
 wb<-createWorkbook()
-value<-c(Exp=Exp,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,sizerange =sizerange,lim=lim,limS=limS,log2FoldChange=log2FoldChange,padj =padj,email =email,smtpServer=smtpServer)
+value<-c(Exp=Exp,strategy=strategy,specie=specie,tsize=tsize,Rep=Rep,blast=blast,ad3=ad3,ad5=ad5,sizerange =sizerange,lim=lim,limS=limS,log2FoldChange=log2FoldChange,padj =padj,email =email,smtpServer=smtpServer)
 value<-rbind(cbind(variable=names(value),value=value," "=" ","  "=" ")," ",c("file","size","date","group"),cbind(FilesIn,group=GroupsSel[FilesIn[,"file"]]))
 write2xlsx(value,wb,sheet="Settings",row.names = FALSE)
 
@@ -284,7 +298,7 @@ write2xlsx(stat[(enrow+1):nrow(stat),],wb,sheet="Catalog")
 
 endrow<- grep("Ensembl_genes_mergedFeatures",rownames(stat))-1
 samples <- rep(colnames(stat),each=(endrow-enrow))
-RNA_types <- rep(rownames(stat)[(enrow+1):endrow], ncol(stat))
+RNA_types <- sub("_mergedFeatures","",rep(rownames(stat)[(enrow+1):endrow], ncol(stat)))
 frequency <- as.numeric(unlist(stat[(enrow+1):endrow,]))
 data <- data.frame(samples,RNA_types,frequency)
 # png(paste0(fileName,".png"),width = 6+ncol(stat)/4, height = 8, res=300, units = "in")
