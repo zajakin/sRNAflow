@@ -39,7 +39,7 @@ eger<-function(dat,colData,wb2,txt,epadj=padj,elog2FoldChange=log2FoldChange){
 		print(EnhancedVolcano(outDE[,1:6],rownames(outDE),"log2FoldChange","padj",pCutoff=epadj,
 							  xlim = c(min(outDE[,"log2FoldChange"], na.rm = TRUE) - 0.5, max(outDE[,"log2FoldChange"], na.rm = TRUE) + 0.5),
 							  ylim = c(0, max(-log10(outDE[,"padj"]), na.rm = TRUE) + 0.5),
-							  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC) >elog2FoldChange), expression(adj. ~ "p-value < ",epadj), expression(adj. ~ "p-value < " ~ epadj ~ and ~ abs(Log[2] ~ FC) > elog2FoldChange)),
+							  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC) ), expression(adj. ~ "p-value"), expression(adj. ~ "p-value" ~ and ~ abs(Log[2] ~ FC) )),
 							  drawConnectors = T,maxoverlapsConnectors = 42,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle ))
 		# insertPlot(wb2,sheet=txt,width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
 		dev.off()
@@ -50,7 +50,7 @@ eger<-function(dat,colData,wb2,txt,epadj=padj,elog2FoldChange=log2FoldChange){
 	print(EnhancedVolcano(outDE[,1:6],NA,"log2FoldChange","padj",pCutoff=epadj,
 						  xlim = c(min(outDE[,"log2FoldChange"], na.rm = TRUE) - 0.5, max(outDE[,"log2FoldChange"], na.rm = TRUE) + 0.5),
 						  ylim = c(0, max(-log10(outDE[,"padj"]), na.rm = TRUE) + 0.5),
-						  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC) ~ "> 1"), expression("adj. p-value < 0.05"), expression(abs(Log[2] ~ FC) ~ "> 1 and adj. p-value < 0.05")),
+						  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC)), expression("adj. p-value"), expression(abs(Log[2] ~ FC) ~ " and adj. p-value")),
 						  drawConnectors = F,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle))
 	# insertPlot(wb2,sheet=txt,width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
 	dev.off()
