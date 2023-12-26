@@ -16,7 +16,17 @@ Sys.setlocale(category = "LC_ALL", locale = "en_US.utf8")
 
 filesUploaded           <- rbind(rep(NA,3))[-1,]
 colnames(filesUploaded) <- c("file","size","date")
-if(!dir.exists(file.path(wd,"www","db"))) dir.create(file.path(wd,"www","db"),recursive = TRUE, mode = "0777")
+if(!dir.exists(file.path(wd,"www","db"))){
+	dir.create(file.path(wd,"www","db"),recursive = TRUE, mode = "0777")
+	examplesdir<-file.path(wd,"www","results","Example")
+	if(!dir.exists(examplesdir)) dir.create(examplesdir,recursive = TRUE, mode = "0777")
+	file.copy(dir(file.path(wd,"examples","results"),full.names =TRUE),examplesdir, recursive = TRUE, copy.mode = FALSE, copy.date = TRUE)
+	unzip(file.path(examplesdir,"Example_sRNAflow_diagrams.zip"),exdir = file.path(examplesdir,"species_diagrams"))
+	unzip(file.path(examplesdir,"Example_fastQC.zip"),exdir = file.path(examplesdir,"qc"))
+	examplesdir<-file.path(wd,"www","upload","example-samples")
+	if(!dir.exists(examplesdir)) dir.create(examplesdir,recursive = TRUE, mode = "0777")
+	file.copy(dir(file.path(wd,"examples","samples"),full.names =TRUE),examplesdir, recursive = FALSE, copy.mode = FALSE, copy.date = TRUE)
+}
 if(!exists("FilesIn"))
 	if(file.exists(file.path(wd,"www","db","FilesIn.RData"))){
 		load(file.path(wd,"www","db","FilesIn.RData"))

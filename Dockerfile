@@ -40,6 +40,7 @@ COPY README.md /srv/shiny-server/README.md
 COPY bin /srv/shiny-server/bin/
 COPY shiny /srv/shiny-server/shiny/
 COPY gtf_biotypes /srv/shiny-server/gtf_biotypes/
+COPY examples /srv/shiny-server/examples/
 # git clone https://github.com/zajakin/sRNAflow.git /srv/shiny-server && mkdir -m 777 /home/shiny/R
 #chmod 777 . && docker pull ghcr.io/zajakin/srnaflow && docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v /tmp/shinylog/:/var/log/shiny-server/ ghcr.io/zajakin/srnaflow
 #git clone https://github.com/zajakin/sRNAflow.git && cd sRNAflow && docker build  -t srnaflow . && chmod 777 . && docker run -it --rm -p 3838:3838 -v `pwd`:/srv/shiny-server/www -v /tmp/shinylog/:/var/log/shiny-server/ srnaflow
