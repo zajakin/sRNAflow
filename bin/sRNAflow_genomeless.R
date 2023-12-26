@@ -27,12 +27,13 @@ eger<-function(dat,colData,wb2,txt,epadj=padj,elog2FoldChange=log2FoldChange){
 	colnames(res)[c(1,5)]<-c("log2FoldChange","padj")
 	outDE<-cbind(res,BH=p.adjust((res[,"PValue"]),method="BH"), .=rep(" ",nrow(res)),
 				 counts[rownames(res),], ..=rep(" ",nrow(res)),dat[rownames(res),])
-	addWorksheet(wb = wb2, sheetName = txt, gridLines = TRUE)
-	freezePane(wb2, sheet = txt, firstActiveRow = 5, firstActiveCol = 2)
-	writeData(wb2, sheet = txt, paste("edgeR LibSize quasi-likelihood F-tests"),startCol=1,startRow=1)
+	sheet = substr(txt,1,31)
+	addWorksheet(wb = wb2, sheetName = sheet, gridLines = TRUE)
+	freezePane(wb2, sheet = sheet, firstActiveRow = 5, firstActiveCol = 2)
+	writeData(wb2, sheet = sheet, paste("edgeR LibSize quasi-likelihood F-tests"),startCol=1,startRow=1)
 	subtitle<-paste(txt,"significant = ",nrow(outDE[outDE[,"padj"]<epadj & abs(outDE[,"log2FoldChange"])>=elog2FoldChange,]))
-	writeData(wb2, sheet = txt, subtitle,startCol=1,startRow=2)
-	writeData(wb2, sheet = txt, t(colData),startCol=ncol(res)+4,colNames = F, rowNames = T,startRow=1)
+	writeData(wb2, sheet = sheet, subtitle,startCol=1,startRow=2)
+	writeData(wb2, sheet = sheet, t(colData),startCol=ncol(res)+4,colNames = F, rowNames = T,startRow=1)
 	if(nrow(outDE)<500){
 		fig<-tempfile()
 		png(fig,width = 12, height = 12, res=150, units = "in")
@@ -41,9 +42,9 @@ eger<-function(dat,colData,wb2,txt,epadj=padj,elog2FoldChange=log2FoldChange){
 							  ylim = c(0, max(-log10(outDE[,"padj"]), na.rm = TRUE) + 0.5),
 							  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC) ), expression(adj. ~ "p-value"), expression(adj. ~ "p-value" ~ and ~ abs(Log[2] ~ FC) )),
 							  drawConnectors = T,maxoverlapsConnectors = 42,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle ))
-		# insertPlot(wb2,sheet=txt,width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
+		# insertPlot(wb2,sheet=sheet,width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
 		dev.off()
-		insertImage(wb2,sheet=txt,file=fig,width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
+		insertImage(wb2,sheet=sheet,file=fig,width = 12, height = 12, dpi=150,startCol = 20,startRow = 5)
 	}
 	fig<-tempfile()
 	png(fig,width = 9, height = 7, res=300, units = "in")
@@ -52,31 +53,31 @@ eger<-function(dat,colData,wb2,txt,epadj=padj,elog2FoldChange=log2FoldChange){
 						  ylim = c(0, max(-log10(outDE[,"padj"]), na.rm = TRUE) + 0.5),
 						  col = c("grey30", "blue", "forestgreen", "red"),colAlpha=1,legendLabels = c("NS", expression(abs(Log[2] ~ FC)), expression("adj. p-value"), expression(abs(Log[2] ~ FC) ~ " and adj. p-value")),
 						  drawConnectors = F,lengthConnectors=unit(0.01, "npc"),legendPosition = "top",pointSize = 1,subtitle=subtitle))
-	# insertPlot(wb2,sheet=txt,width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
+	# insertPlot(wb2,sheet=sheet,width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
 	dev.off()
-	insertImage(wb2,sheet=txt,file=fig, width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
+	insertImage(wb2,sheet=sheet,file=fig, width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
 	if(nrow(indat)>1){
 		# plotMDS(indat,main = "Distances on the plot approximate the typical log2 fold changes between the samples\ntop genes separately for each pairwise comparison between the samples")
-		# insertPlot(wb2,sheet=txt,width = 9, height = 7, dpi=150,startCol = 20,startRow = 63)
+		# insertPlot(wb2,sheet=sheet,width = 9, height = 7, dpi=150,startCol = 20,startRow = 63)
 		# plotMDS(indat, gene.selection="common",main = "Distances on the plot approximate the typical log2 fold changes between the samples\nPCA like: the same genes for all comparisons")
-		# insertPlot(wb2,sheet=txt,width = 9, height = 7, dpi=150,startCol = 20,startRow = 98)
+		# insertPlot(wb2,sheet=sheet,width = 9, height = 7, dpi=150,startCol = 20,startRow = 98)
 		p <- pca(cpm(indat), metadata = colData) ## , removeVar = 0.1 -- removing the lower 10% of variables based on variance
 		fig<-tempfile()
 		png(fig, width = 9, height = 7, res=150, units = "in")
 		print(screeplot(p, axisLabSize = 18, titleLabSize = 22))
-		# insertPlot(wb2,sheet=txt, width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+		# insertPlot(wb2,sheet=sheet, width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
 		dev.off()
-		insertImage(wb2,sheet=txt,file=fig, width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
+		insertImage(wb2,sheet=sheet,file=fig, width = 9, height = 7, dpi=150,startCol = 10,startRow = 75)
 		fig<-tempfile()
 		png(fig, width = 9, height = 7, res=300, units = "in")
 		print(biplot(p, colby = 'nr', colLegendTitle = txt, encircle = TRUE, encircleFill = TRUE, hline = 0, vline = c(-25, 0, 25),
 					 legendPosition = 'top', legendLabSize = 16, legendIconSize = 8.0, showLoadings = TRUE, sizeLoadingsNames = 5))
-		# insertPlot(wb2,sheet=txt,width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
+		# insertPlot(wb2,sheet=sheet,width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
 		dev.off()
-		insertImage(wb2,sheet=txt,file=fig, width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
+		insertImage(wb2,sheet=sheet,file=fig, width = 9, height = 7, dpi=300,startCol = 10,startRow = 40)
 	}
 	outDE<-outDE[outDE[,"padj"]<epadj & abs(outDE[,"log2FoldChange"])>=elog2FoldChange,]
-	writeData(wb2, sheet = txt, outDE[1:min(nrow(outDE),3000),], colNames = T, rowNames = T,startRow=4) # [order(outDE[,colnames(outDE)[grep ("t.test",colnames(outDE))[1]]]),]
+	writeData(wb2, sheet = sheet, outDE[1:min(nrow(outDE),3000),], colNames = T, rowNames = T,startRow=4) # [order(outDE[,colnames(outDE)[grep ("t.test",colnames(outDE))[1]]]),]
 	return(outDE)
 }
 
