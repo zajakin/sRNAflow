@@ -113,10 +113,9 @@ zip(file.path(ED,paste0(Exp,"_fastQC.zip")),files=dir(file.path(ED,"qc"),".html"
 setwd(file.path(ED,"qc"))
 con<-file(file.path("..",paste0(Exp,"_fastQC.html")),"wt")
 index<-dir(".",".html$")
-cat(paste0('<html><head><link rel="stylesheet" type="text/css" href="/shared/shiny.css"/></head><body><table width="100%" border="2">',
-		'<tr><td width="10%">File</td><td rowspan="',length(index),' width="90%""><iframe srcdoc="" name="QC" width="100%" height="',length(index)*40,'px"> </iframe></td></tr>'),file = con)
-for(i in index) cat(paste0("<tr align=center><td><a href=qc/",i," target='QC'>",i,"</a></td></tr>"),file = con)
-cat(paste("</table></body></html>"),file = con)
+cat(paste0('<html><body><div style="overflow:hidden; height:100%">\n<table width="100%" border="2" style="height:100%;"><tr><td width="10%">File</td><td rowspan="',length(index),'" width="90%" style="height:100%;">\n<iframe srcdoc="" name="QC" width="100%" height="100%"> </iframe></td></tr>\n'),file = con)
+for(i in index) cat(paste0("<tr align=center><td><a href=qc/",i," target='QC'>",sub("_fastqc.html","",i),"</a></td></tr>\n"),file = con)
+cat(paste("</table></div></body></html>"),file = con)
 close(con)
 setwd(wd)
 
