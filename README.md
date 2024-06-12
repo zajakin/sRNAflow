@@ -8,8 +8,10 @@ Finalising results as a united report for all stages of workflow will be generat
 To install sRNAflow on a server via Docker, execute the following command in your server terminal:
 
 >    mkdir -m 777 sRNAflow
+> 
 >    docker pull ghcr.io/zajakin/srnaflow
->    docker run -d -p 3838:3838 -v `pwd`/sRNAflow:/srv/shiny-server/www ghcr.io/zajakin/srnaflow
+> 
+>    docker run -d -p 3838:3838 -v \`pwd\`/sRNAflow:/srv/shiny-server/www ghcr.io/zajakin/srnaflow
 
 After running, access the user interface in a web browser at HTTP://<your server name>:3838 (or another port if modified).
 All uploads, databases, and analysis results are stored in the "sRNAflow" sub folder of terminal’s current working folder. It is advised to create a local BLAST database using the command in the “Setup” tab.
