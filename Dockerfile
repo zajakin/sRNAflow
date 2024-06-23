@@ -8,8 +8,8 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
     env DEBIAN_FRONTEND=noninteractive apt-get upgrade -y --no-install-recommends && \
     env DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y --no-install-recommends && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        git gawk unzip pigz libjson-perl curl python3-pip libxml2-dev zlib1g-dev libbz2-dev liblzma-dev libssl-dev \
-        bowtie bowtie2 cutadapt samtools fastqc ncbi-blast+ ncbi-entrez-direct trnascan-se multiqc seqtk radiant \
+        git gawk unzip pigz libjson-perl curl python3-pip libxml2-dev zlib1g-dev libbz2-dev liblzma-dev libssl-dev libproj-dev \
+        bowtie bowtie2 cutadapt samtools fastqc ncbi-blast+ ncbi-entrez-direct trnascan-se seqtk radiant \
     && apt-get autoremove -y && apt-get autoclean -y \
     && ln -s /usr/share/perl5/KronaTools/scripts /usr/share/kronatools/scripts
 #        r-cran-gdata r-cran-gplots r-cran-ggplot2 r-cran-gridextra r-cran-shinydashboard r-cran-dt r-cran-corrplot \
@@ -21,7 +21,7 @@ RUN sed -i 's/main$/main contrib non-free/' /etc/apt/sources.list && \
 RUN R -e "chooseCRANmirror(graphics =FALSE,ind=1); \
           if (!requireNamespace('BiocManager')) install.packages('BiocManager'); \
           chooseBioCmirror(graphics =FALSE,ind=1); \
-          BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot'), ask=FALSE); \
+          BiocManager::install(c('gdata','gplots','ggplot2','gridExtra','shinydashboard','DT','corrplot','ggalt'), ask=FALSE); \
           BiocManager::install(c('shinyjs','foreach','doMC','futile.logger','sendmailR','openxlsx','seqinr'), ask=FALSE); \
           BiocManager::install(c('EnhancedVolcano','PCAtools','org.Hs.eg.db','edgeR','Rsubread'), ask=FALSE); \
           BiocManager::install(c('VennDiagram','rtracklayer','XML','DESeq2','annotate','GOstats','msa','ape'), ask=FALSE)" # c(,'reticulate')
@@ -32,7 +32,7 @@ RUN mv /srv/shiny-server /srv/shiny-server.orig && mkdir -p /srv/shiny-server/bi
     wget https://eda.polito.it/isomir-sea/isomiR-SEA_1.6_webpacket.zip -O tmp.zip && \
     unzip -oj tmp.zip isomiR-SEA_1.6_webpacket/isomiR-SEA_OS/Ubuntu_14_04_2LTS_x86_64/isomiR-SEA_1_6 && \
     mv isomiR-SEA_1_6 /srv/shiny-server/bin/isomiR-SEA && rm tmp.zip && \
-    pip3 install mieaa keras tensorflow && git clone https://github.com/tjgu/miTAR.git /srv/shiny-server/miTAR && \
+    pip3 install mieaa keras tensorflow multiqc && git clone https://github.com/tjgu/miTAR.git /srv/shiny-server/miTAR && \
     rm -rf /srv/shiny-server/miTAR/conda  # multiqc && sed -i 's/tf.set_random_seed(sdnum)/tf.random.set_seed(sdnum)/p' /srv/shiny-server/miTAR/predict_multimiRmultimRNA.py
 COPY app.R /srv/shiny-server/app.R
 COPY LICENSE /srv/shiny-server/LICENSE

@@ -12,10 +12,10 @@ tmp<-futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogg
 
 write2xlsx<-function(data=c(),wb,sheet="Sheet1",col.names=TRUE,row.names=TRUE){
 	if(nchar(sheet)>31) sheet<-substr(sheet,1,31)
-	addWorksheet(wb = wb, sheetName = sheet, gridLines = TRUE)
-	freezePane(wb, sheet, firstRow = TRUE, firstCol = TRUE)
-	setColWidths(wb,sheet,cols=1:4,widths = "auto")
-	writeData(wb, sheet = sheet, data, colNames = col.names, rowNames = row.names)
+	openxlsx::addWorksheet(wb = wb, sheetName = sheet, gridLines = TRUE)
+	openxlsx::freezePane(wb, sheet, firstRow = TRUE, firstCol = TRUE)
+	openxlsx::setColWidths(wb,sheet,cols=1:4,widths = "auto")
+	openxlsx::writeData(wb, sheet = sheet, data, colNames = col.names, rowNames = row.names)
 }
 
 options(echo=TRUE)
@@ -229,7 +229,8 @@ makeDG<-function(httab,sel,colData,txt="test",cat1=sets[1,s],cat2=sets[2,s],wb,s
 		insertImage(wb,sheet=paste(txt,"DESeq2"), file=fig, width = 9, height = 7, dpi=300,startCol = 10,startRow = 5)
 		if(nrow(dat)>1){
 			p <- as.matrix(counts(dds2,normalized=TRUE))
-			rownames(p)<-sub("^hsa-","",sub(".*_mergedFeatures_","",rownames(p)))
+			nn<-sub("^hsa-","",sub(".*_mergedFeatures_","",rownames(p)))
+			rownames(p)[!duplicated(nn)]<-nn[!duplicated(nn)]
 			p <- pca(p, metadata = colData[sel,]) ## , removeVar = 0.1 -- removing the lower 10% of variables based on variance
 			fig<-tempfile()
 			png(fig,width = 9, height = 7, res=150, units = "in")
@@ -328,6 +329,7 @@ write2xlsx(stat[(enrow+1):nrow(stat),],wb,sheet="Catalog")
 
 endrow<- grep("Ensembl_genes_mergedFeatures",rownames(stat))-1
 samples <- rep(colnames(stat),each=(endrow-enrow))
+# RNA_types <- sub("^all_","",sub("_mergedFeatures","",rep(rownames(stat)[(enrow+1):endrow], ncol(stat))))
 RNA_types <- sub("_mergedFeatures","",rep(rownames(stat)[(enrow+1):endrow], ncol(stat)))
 frequency <- as.numeric(unlist(stat[(enrow+1):endrow,]))
 data <- data.frame(samples,RNA_types,frequency)
@@ -335,6 +337,18 @@ fig<-tempfile()
 png(fig,width = 6+ncol(stat)/4, height = 8, res=300, units = "in")
 print(ggplot(data, aes(fill=RNA_types, y=frequency, x=samples)) + geom_bar(position="fill", stat="identity") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
 dev.off()
+x<-5000
+png(fig,width = x, height = x/1.22, res=800, units = "px", pointsize = 12)
+cbPalette <- c("#66e8ff", "#0358fd", "#0f3fe9", "#0900ab", "#4d00b0", "#ba00a8", "#c10050", "#c30018","#c81a00", "#f04d00", "#ff6e00", "#fff67d", "#9cff06", "#5bf869", "#519f8f", "#0baf99")
+# cbPalette <- palette("Classic Tableau")
+# cbPalette <- hcl.colors(endrow-enrow,"Spectral")
+# cbPalette <- palette.colors(endrow-enrow,"Classic Tableau",1)
+# palette.pals()
+print(ggplot(data, aes(fill=RNA_types, y=frequency, x=samples)) + geom_bar(position="fill", stat="identity") + 
+	  	theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +scale_fill_manual(values=cbPalette)  )
+dev.off()
+
+
 # insertPlot(wb,sheet="Catalog",width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
 insertImage(wb,sheet="Catalog",file=fig,width = 6+ncol(stat)/4, height = 8, dpi=300,startCol = 8)
 
@@ -342,10 +356,12 @@ if(exists("species99")){
 	httab<-data.frame(species99,row.names = 1)
 	for(i in 1:nrow(filesIn)){
 		tmp<-data.frame(read.table(paste0(filesIn[i,"wd"],"forKrona/",filesIn[i,"name"],".counts",tax,".txt")),row.names = 2)
-		httab[[filesIn[i,"name"]]]<- tmp[rownames(httab),]
+		if(nrow(tmp)==1) tmp<-data.frame(tmp[1],row.names = tmp[2])
+		tmp<-tmp[rownames(httab),]
+		tmp[is.na(tmp)]<- 0
+		httab[[filesIn[i,"name"]]]<- tmp
 	}
-	httab[is.na(httab)]<-0
-	httab<-httab[rowSums(httab[,-1])>0,]
+	httab<-httab[rowSums(httab[,-1],na.rm = T)>0,]
 	httab<-httab[order(-rowSums(httab[,-1])),]
 	write2xlsx(httab,wb,sheet="Species")
 }
@@ -389,13 +405,14 @@ for(gr in deGTF){
 	sets<-matrix(c("test","control"),nrow=2)
 	for(s in 1:ncol(sets)){
 		sel<-sampleTable[sampleTable[,"nr"] %in% sets[,s],"Sample"]
-		makeDG(httab,sel,colData,txt=paste(sub("_mergedFeatures","",gr),sep="_"),sets[1,s],sets[2,s],wb)
+		makeDG(httab,sel,colData,txt=paste(sub("_mergedFeatures","",gr),sep="_"),cat1=sets[1,s],cat2=sets[2,s],wb)
 	}
 
 	if(nrow(htexp)>1) figVen(htexp,lim,limS,paste(sub("_mergedFeatures","",gr),"venn diagram"),wb)
 
 	for(set in c("expressed only")){ #"all", 
 		if(set=="all"){ d<-httab[!(rownames(httab) %in% servRow),] } else d<-htexp
+		if(nrow(d)<3) next
 		d<-d[,colVars(as.matrix(d))>0]
 		if(nrow(d)<3) next
 		for(method in c("spearman")){ # "pearson", 

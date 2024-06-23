@@ -21,6 +21,7 @@ while getopts ":s:v:n:r:f:t:o:" opt; do
 done
 
 # strategy="successively"; specie="homo_sapiens"; f="07NS-v1"; rawfile="Cristina_202005/data/07NS-v1.fastq.gz"; ff="/home/pawel/Desktop/sRNAflow/www/results/Prostate/07NS-v1/07NS-v1.fastq.gz"; ftype="fq"; out="/home/pawel/Desktop/sRNAflow/www/results/Prostate"
+
 function mycount {
   Rscript --vanilla $rsubread $shdir $shdir/$f.sam $DB/$DV$ext $shdir/htseq-count_$f.txt -
   stLog="$shdir/htseq_${f}__no_feature.txt $shdir/htseq_${f}__ambiguous.txt $shdir/htseq_${f}__too_low_aQual.txt $shdir/htseq_${f}__not_aligned.txt $shdir/htseq_${f}__alignment_not_unique.txt"
@@ -131,6 +132,7 @@ if [ "${strategy}" == "successively" ]; then
   gawk '/overall alignment rate/{ print "Main_Overall_alignment_rate_%\t" $1 }' $out/$f/logs/bowtie2main.log >> $txtLog
   gawk '{l+=$3; s+=$4 } END {print "Main_mapped_reads\t" l+s "\nMain_mapped_reads_less200\t" l "\nMain_mapped_reads_over200\t" s}' ${shdir}/mapped.txt >> $txtLog
 fi
+# rm -rf "${shdir}${tax}"
 if   [ ! -d "${shdir}${tax}" ]; then
 	if [ "${strategy}" == "successively" ]; then
 		bowtie2 $bowtie2opt -k 201 -x $DB/$DV --un $out/$f/Unmapped${tax}.fq -U $out/$f/Unmapped_2main_$f.fq -S $shdir.sam > $out/$f/logs/bowtie2${tax}.log 2>&1
