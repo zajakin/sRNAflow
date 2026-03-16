@@ -97,7 +97,8 @@ RevCompl <- function(x="") chartr("ATGCatgcUu","TACGtacgAa",sapply(lapply(strspl
 exclude<-c()
 for(f in filesInEnvironment[filesInEnvironment[,"gr"]=="environment","name"]){
 	tmp<-read.table(paste0(file.path(ED,f,f),".reads.gz"))
-	exclude<-c(exclude,tmp[tmp[,1]>1,2])
+	# exclude<-c(exclude,tmp[tmp[,1]>1,2])
+	exclude<-c(exclude,tmp[,2])
 }
 if(length(exclude)>0){
 	exclude<-unique(exclude)

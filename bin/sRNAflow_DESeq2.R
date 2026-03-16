@@ -126,9 +126,10 @@ myGO<-function(myids, minimum.population=5,deUp=c(),deDown=c()){
 		ggo <- select(org.Hs.eg.db, rownames(go.table), keys=keyunis, columns = c("GOALL","SYMBOL","ENTREZID"), keytype="GOALL")
 		# columns(org.Hs.eg.db)
 		if (nrow(go.table)>0) {
-			go.table$Pvalue <- p.adjust(go.table$Pvalue, method="none")
+		  go.table <- go.table[go.table$Size >= minimum.population,]
+		  go.table$Pvalue <- p.adjust(go.table$Pvalue, method="none")
 			go.table$adj_pval <- p.adjust(go.table$Pvalue, method="fdr")
-			go.table <- go.table[go.table$Pvalue <= 0.05 & go.table$Size >= minimum.population,]
+			go.table <- go.table[go.table$Pvalue <= 0.05,]
 			if (nrow(go.table)>0) {
 				rownames(go.table) <- go.table[,1]
 				go.table <- go.table[,c(6,4,5,2,8,3,7)]

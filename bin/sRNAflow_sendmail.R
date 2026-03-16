@@ -6,7 +6,7 @@ to <- sprintf(email)
 subject <- paste("sRNAflow",Exp)
 body <- paste("sRNAflow",Exp)
 bodyWithAttachment <- list(body)
-system(paste("cd ",ED,"; multiqc ."))
+system(paste("cd ",ED,"; multiqc --force ."))
 file.rename(file.path(ED,"multiqc_report.html"),file.path(ED,paste0(Exp,"_multiqc.html")))
 mailsize<-1000
 for(f in c(paste0(Exp,"_results.xlsx"),paste0(Exp,"_fastQC.zip"),paste0(Exp,"_multiqc.html"),paste0(Exp,"_isomiR-SEA.zip"))){
